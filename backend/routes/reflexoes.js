@@ -31,8 +31,8 @@ router.get('/', (req, res) => {
   const { agenda_id } = req.query;
   let sql = `
     SELECT r.*, u.nome as usuario_nome, a.titulo as agenda_titulo,
-      IFNULL(GROUP_CONCAT(e.nome ORDER BY e.nome SEPARATOR ', '), '') as equipes_nomes,
-      IFNULL(GROUP_CONCAT(e.id ORDER BY e.nome), '') as equipes_ids
+      COALESCE(STRING_AGG(e.nome, ', ' ORDER BY e.nome), '') as equipes_nomes,
+      COALESCE(STRING_AGG(e.id::text, ',' ORDER BY e.nome), '') as equipes_ids
     FROM reflexao r
     JOIN usuario u ON r.usuario_id = u.id
     LEFT JOIN agenda a ON r.agenda_id = a.id
@@ -42,10 +42,10 @@ router.get('/', (req, res) => {
   const params = [];
   const conditions = [];
   if (agenda_id) {
-    conditions.push('r.agenda_id = ?'); params.push(agenda_id);
+    conditions.push('r.agenda_id = $1'); params.push(agenda_id);
   }
   if (conditions.length) sql += ' WHERE ' + conditions.join(' AND ');
-  sql += ' GROUP BY r.id ORDER BY r.data DESC';
+  sql += ' GROUP BY r.id, u.nome, a.titulo ORDER BY r.data DESC';
   db.query(sql, params, (err, results) => {
     if (err) {
       console.error('Erro ao listar reflexões:', err);

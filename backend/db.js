@@ -2,31 +2,64 @@
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
-const mysql = require('mysql2');
+const { Client } = require('pg');
 
-// Configuração do banco - Railway em produção, local em desenvolvimento
+// Configuração do banco - Railway PostgreSQL em produção, local em desenvolvimento
 const dbConfig = {
-  host: process.env.MYSQL_HOST || process.env.DATABASE_HOST || 'localhost',
-  user: process.env.MYSQL_USER || process.env.DATABASE_USER || 'root',
-  password: process.env.MYSQL_PASSWORD || process.env.DATABASE_PASSWORD || 'Bu@130978',
-  database: process.env.MYSQL_DATABASE || process.env.DATABASE_NAME || 'novo',
-  port: process.env.MYSQL_PORT || process.env.DATABASE_PORT || 3306
+  host: process.env.PGHOST || process.env.DATABASE_HOST || 'localhost',
+  user: process.env.PGUSER || process.env.DATABASE_USER || 'postgres',
+  password: process.env.PGPASSWORD || process.env.DATABASE_PASSWORD || '',
+  database: process.env.PGDATABASE || process.env.DATABASE_NAME || 'railway',
+  port: process.env.PGPORT || process.env.DATABASE_PORT || 5432,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 };
 
-console.log('🔌 Configuração do banco:', {
+console.log('🔌 Configuração do banco PostgreSQL:', {
   host: dbConfig.host,
   user: dbConfig.user,
   database: dbConfig.database,
   port: dbConfig.port,
-  password: dbConfig.password ? '***definida***' : 'NÃO DEFINIDA'
+  password: dbConfig.password ? '***definida***' : 'NÃO DEFINIDA',
+  ssl: dbConfig.ssl ? 'habilitado' : 'desabilitado'
 });
 
-const db = mysql.createConnection(dbConfig);
+const dbClient = new Client(dbConfig);
 
 // efetua a conexão
-db.connect((err) => {
-  if (err) console.error('Erro ao conectar ao MySQL (db.js):', err);
-  else console.log('Conectado ao MySQL (db.js)!');
-});
+dbClient.connect()
+  .then(() => {
+    console.log('Conectado ao PostgreSQL (db.js)!');
+  })
+  .catch(err => {
+    console.error('Erro ao conectar ao PostgreSQL (db.js):', err.message);
+  });
+
+// Wrapper para manter compatibilidade com MySQL
+const db = {
+  query: (sql, params, callback) => {
+    // Se não tem callback, params é o callback
+    if (typeof params === 'function') {
+      callback = params;
+      params = [];
+    }
+    
+    // Converter placeholders MySQL (?) para PostgreSQL ($1, $2, etc)
+    let sqlPostgreSQL = sql;
+    let paramIndex = 1;
+    while (sqlPostgreSQL.includes('?')) {
+      sqlPostgreSQL = sqlPostgreSQL.replace('?', `$${paramIndex}`);
+      paramIndex++;
+    }
+    
+    dbClient.query(sqlPostgreSQL, params)
+      .then(result => {
+        // Simular formato MySQL
+        callback(null, result.rows);
+      })
+      .catch(err => {
+        callback(err, null);
+      });
+  }
+};
 
 module.exports = db;

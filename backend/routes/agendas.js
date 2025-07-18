@@ -5,7 +5,7 @@ const db = require('../db');
 // Listar todas as agendas com equipes associadas
 router.get('/', (req, res) => {
   const sql = `
-    SELECT a.*, GROUP_CONCAT(ae.equipe_id) AS equipe_ids
+    SELECT a.*, STRING_AGG(ae.equipe_id::text, ',') AS equipe_ids
     FROM agenda a
     LEFT JOIN agenda_equipes ae ON ae.agenda_id = a.id
     GROUP BY a.id`;
@@ -22,7 +22,7 @@ router.get('/', (req, res) => {
 // Buscar agenda por ID com equipes associadas
 router.get('/:id', (req, res) => {
   const sql = `
-    SELECT a.*, GROUP_CONCAT(ae.equipe_id) AS equipe_ids
+    SELECT a.*, STRING_AGG(ae.equipe_id::text, ',') AS equipe_ids
     FROM agenda a
     LEFT JOIN agenda_equipes ae ON ae.agenda_id = a.id
     WHERE a.id = ?

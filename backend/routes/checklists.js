@@ -6,10 +6,10 @@ const db = require('../db');
 router.get('/', (req, res) => {
   const sql = `
     SELECT c.id, c.titulo, c.descricao, c.tipo,
-      GROUP_CONCAT(ce.equipe_id) AS equipe_ids
+      STRING_AGG(ce.equipe_id::text, ',') AS equipe_ids
     FROM checklist c
     LEFT JOIN checklist_equipes ce ON ce.checklist_id = c.id
-    GROUP BY c.id`;
+    GROUP BY c.id, c.titulo, c.descricao, c.tipo`;
   db.query(sql, (err, results) => {
     if (err) return res.status(500).json({ error: err });
     const data = results.map(r => ({
