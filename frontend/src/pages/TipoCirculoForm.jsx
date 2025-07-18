@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Form, Input, Button, Card, message } from 'antd';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
+import { getApiUrl } from '../config/api';
 
 const TipoCirculoForm = () => {
   const [form] = Form.useForm();
@@ -11,7 +12,7 @@ const TipoCirculoForm = () => {
 
   useEffect(() => {
     if (isEdit) {
-      axios.get(`http://localhost:3001/tipo_circulo/${id}`)
+      axios.get(getApiUrl('tipo_circulo/${id}'))
         .then(res => form.setFieldsValue(res.data))
         .catch(() => message.error('Erro ao carregar tipo de círculo'));
     }
@@ -20,10 +21,10 @@ const TipoCirculoForm = () => {
   const onFinish = async (values) => {
     try {
       if (isEdit) {
-        await axios.put(`http://localhost:3001/tipo_circulo/${id}`, values);
+        await axios.put(getApiUrl('tipo_circulo/${id}'), values);
         message.success('Tipo de círculo atualizado com sucesso');
       } else {
-        await axios.post('http://localhost:3001/tipo_circulo', values);
+        await axios.post(getApiUrl('tipo_circulo'), values);
         message.success('Tipo de círculo criado com sucesso');
       }
       navigate('/tipo_circulo');

@@ -54,6 +54,7 @@ function App() {
 
   return (
     <Routes>
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route element={<AdminLayout user={user} onLogout={handleLogout} />}>
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="usuarios" element={<Usuarios />} />

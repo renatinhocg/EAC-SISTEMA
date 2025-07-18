@@ -1,3 +1,6 @@
+// Carregar variáveis de ambiente
+require('dotenv').config({ path: './backend/.env.railway' });
+
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
@@ -20,7 +23,10 @@ const reflexoesRoutes = require('./backend/routes/reflexoes');
 const tipoCirculoRoutes = require('./backend/routes/tipo_circulo');
 const usuariosFotoRoutes = require('./backend/routes/usuarios_foto');
 
-// Servir arquivos estáticos do PWA
+// Servir arquivos estáticos do Frontend Admin em /admin
+app.use('/admin', express.static(path.join(__dirname, 'frontend/dist')));
+
+// Servir arquivos estáticos do PWA na raiz
 app.use(express.static(path.join(__dirname, 'pwa/dist')));
 
 // API Routes
@@ -61,6 +67,11 @@ app.get('/api/test-db', (req, res) => {
       test: results[0]
     });
   });
+});
+
+// Rota específica para o admin (SPA routing)
+app.get('/admin/*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend/dist/index.html'));
 });
 
 // Todas as outras rotas servem o PWA (SPA routing)

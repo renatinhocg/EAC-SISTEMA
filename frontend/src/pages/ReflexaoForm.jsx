@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { UploadOutlined } from '@ant-design/icons';
 import EquipeSelect from '../components/EquipeSelect';
+import { getApiUrl } from '../config/api';
 
 const ReflexaoForm = () => {
   const [form] = Form.useForm();
@@ -16,12 +17,12 @@ const ReflexaoForm = () => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   useEffect(() => {
-    axios.get('http://localhost:3001/agendas')
+    axios.get(getApiUrl('agendas'))
       .then(res => setAgendas(res.data))
       .catch(() => {});
 
     if (isEdit) {
-      axios.get(`http://localhost:3001/reflexoes/${id}`)
+      axios.get(getApiUrl('reflexoes/${id}'))
         .then(res => {
           form.setFieldsValue({
             texto: res.data.texto,
@@ -35,9 +36,9 @@ const ReflexaoForm = () => {
                 uid: '-1',
                 name: res.data.anexo.split('/').pop(),
                 status: 'done',
-                url: `http://localhost:3001/${res.data.anexo}`,
+                url: getApiUrl('${res.data.anexo}'),
                 // Necessário para download/preview
-                thumbUrl: `http://localhost:3001/${res.data.anexo}`,
+                thumbUrl: getApiUrl('${res.data.anexo}'),
               }
             ]);
           } else {
@@ -75,14 +76,14 @@ const ReflexaoForm = () => {
       }
       if (isEdit) {
         await axios.put(
-          `http://localhost:3001/reflexoes/${id}`,
+          getApiUrl('reflexoes/${id}'),
           dataToSend,
           fileList.length > 0 ? { headers: { 'Content-Type': 'multipart/form-data' } } : {}
         );
         message.success('Reflexão atualizada com sucesso');
       } else {
         await axios.post(
-          'http://localhost:3001/reflexoes',
+          getApiUrl('reflexoes'),
           dataToSend,
           fileList.length > 0 ? { headers: { 'Content-Type': 'multipart/form-data' } } : {}
         );

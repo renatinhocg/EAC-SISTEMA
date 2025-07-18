@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Form, Input, Button, message, Card, Select } from 'antd';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
+import { getApiUrl } from '../config/api';
 
 const ChecklistForm = () => {
   const [form] = Form.useForm();
@@ -12,11 +13,11 @@ const ChecklistForm = () => {
 
   useEffect(() => {
     // Carregar equipes para seleção múltipla
-    axios.get('http://localhost:3001/equipes')
+    axios.get(getApiUrl('equipes'))
       .then(res => setEquipes(res.data))
       .catch(() => {});
     if (isEdit) {
-      axios.get(`http://localhost:3001/checklists/${id}`)
+      axios.get(getApiUrl(`checklists/${id}`))
         .then(res => {
           const { titulo, descricao, tipo } = res.data;
           form.setFieldsValue({ titulo, descricao, tipo, equipe_ids: res.data.equipe_ids });
@@ -34,10 +35,10 @@ const ChecklistForm = () => {
         equipe_ids: values.equipe_ids || []
       };
       if (isEdit) {
-        await axios.put(`http://localhost:3001/checklists/${id}`, payload);
+        await axios.put(getApiUrl(`checklists/${id}`), payload);
         message.success('Checklist atualizada com sucesso');
       } else {
-        await axios.post('http://localhost:3001/checklists', payload);
+        await axios.post(getApiUrl('checklists'), payload);
         message.success('Checklist criada com sucesso');
       }
       navigate('/checklists');

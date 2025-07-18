@@ -1,10 +1,10 @@
 import axios from 'axios';
 
-// Configuração da API que funciona tanto local quanto em produção
+// Configuração da API 
 const getBaseURL = () => {
-  // Se estiver em produção, usa o mesmo domínio mas com /api
+  // Se estiver em produção, usa a URL do environment ou fallback
   if (import.meta.env.PROD) {
-    return `${window.location.origin}/api`;
+    return import.meta.env.VITE_API_URL || 'https://eac-pwa-project-production.up.railway.app/api';
   }
   
   // Se estiver em desenvolvimento

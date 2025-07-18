@@ -3,6 +3,7 @@ import { Form, Input, Button, message, Card, Upload, Select } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
+import { getApiUrl } from '../config/api';
 
 const UsuarioForm = () => {
   const [form] = Form.useForm();
@@ -20,13 +21,13 @@ const UsuarioForm = () => {
     async function loadData() {
       try {
         const [teamsRes, tipoRes] = await Promise.all([
-          axios.get('http://localhost:3001/equipes'),
-          axios.get('http://localhost:3001/tipo_circulo'),
+          axios.get(getApiUrl('equipes')),
+          axios.get(getApiUrl('tipo_circulo')),
         ]);
         setTeams(teamsRes.data);
         setTipoCirculos(tipoRes.data);
         if (isEdit) {
-          const userRes = await axios.get(`http://localhost:3001/usuarios/${id}`);
+          const userRes = await axios.get(getApiUrl('usuarios/${id}'));
           console.log('Dados de usuário recebidos para edição:', userRes.data);
           // Converter equipe_id para number e preencher formulário
           form.setFieldsValue({
@@ -38,7 +39,7 @@ const UsuarioForm = () => {
               uid: '-1',
               name: userRes.data.foto.split('/').pop(),
               status: 'done',
-              url: `http://localhost:3001/${userRes.data.foto}`
+              url: getApiUrl('${userRes.data.foto}')
             }]);
           }
         }
@@ -54,8 +55,8 @@ const UsuarioForm = () => {
     try {
       // Cria ou atualiza usuário com equipe
       const res = isEdit
-        ? await axios.put(`http://localhost:3001/usuarios/${id}`, values)
-        : await axios.post('http://localhost:3001/usuarios', values);
+        ? await axios.put(getApiUrl('usuarios/${id}'), values)
+        : await axios.post(getApiUrl('usuarios'), values);
       // A equipe é atualizada pelo endpoint PUT /usuarios/:id
       // (sem necessidade de chamada adicional)
       const savedId = isEdit ? id : res.data.id;
@@ -65,7 +66,7 @@ const UsuarioForm = () => {
         const formData = new FormData();
         formData.append('foto', fileList[0].originFileObj);
         const fotoRes = await axios.post(
-          `http://localhost:3001/usuarios/${savedId}/foto`,
+          getApiUrl('usuarios/${savedId}/foto'),
           formData,
           { headers: { 'Content-Type': 'multipart/form-data' } }
         );

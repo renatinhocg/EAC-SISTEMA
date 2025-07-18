@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Form, Input, Button, message, Card, Select, Switch } from 'antd';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
+import { getApiUrl } from '../config/api';
 
 const NotificacaoForm = () => {
   const [form] = Form.useForm();
@@ -12,12 +13,12 @@ const NotificacaoForm = () => {
 
   useEffect(() => {
     // Carregar equipes para seleção
-    axios.get('http://localhost:3001/equipes')
+    axios.get(getApiUrl('equipes'))
       .then(res => setEquipes(res.data))
       .catch(() => {});
 
     if (isEdit) {
-      axios.get(`http://localhost:3001/notificacoes/${id}`)
+      axios.get(getApiUrl('notificacoes/${id}'))
         .then(res => {
           const { titulo, descricao, para_todos, equipe_id } = res.data;
           form.setFieldsValue({
@@ -40,10 +41,10 @@ const NotificacaoForm = () => {
         equipe_id: values.equipe_id ?? null
       };
       if (isEdit) {
-        await axios.put(`http://localhost:3001/notificacoes/${id}`, payload);
+        await axios.put(getApiUrl('notificacoes/${id}'), payload);
         message.success('Notificação atualizada com sucesso');
       } else {
-        await axios.post('http://localhost:3001/notificacoes', payload);
+        await axios.post(getApiUrl('notificacoes'), payload);
         message.success('Notificação criada com sucesso');
       }
       navigate('/notificacoes');

@@ -3,6 +3,7 @@ import { Table, Typography, Button, Space, Popconfirm, message, Select } from 'a
 import { EditOutlined, DeleteOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { getApiUrl } from '../config/api';
 
 const { Title } = Typography;
 
@@ -16,10 +17,10 @@ const Reflexoes = () => {
 
   // Carrega opções de agendas e equipes
   useEffect(() => {
-    axios.get('http://localhost:3001/agendas')
+    axios.get(getApiUrl('agendas'))
       .then(res => setAgendas(res.data))
       .catch(() => {});
-    axios.get('http://localhost:3001/equipes')
+    axios.get(getApiUrl('equipes'))
       .then(res => setEquipes(res.data))
       .catch(() => {});
   }, []);
@@ -29,7 +30,7 @@ const Reflexoes = () => {
     const params = {};
     if (filterAgenda) params.agenda_id = filterAgenda;
     if (filterEquipe) params.equipe_id = filterEquipe;
-    axios.get('http://localhost:3001/reflexoes', { params })
+    axios.get(getApiUrl('reflexoes'), { params })
       .then(res => setData(res.data))
       .catch(() => message.error('Erro ao carregar reflexões'));
   }, [filterAgenda, filterEquipe]);
@@ -40,7 +41,7 @@ const Reflexoes = () => {
   const handleCreate = () => navigate('/reflexoes/novo');
   const handleEdit = record => navigate(`/reflexoes/${record.id}/editar`);
   const handleDelete = id => {
-    axios.delete(`http://localhost:3001/reflexoes/${id}`)
+    axios.delete(getApiUrl('reflexoes/${id}'))
       .then(() => { message.success('Reflexão deletada'); loadReflexoes(); })
       .catch(() => message.error('Erro ao deletar reflexão'));
   };

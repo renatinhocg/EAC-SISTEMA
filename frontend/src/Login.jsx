@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Form, Input, Typography, message, Card } from 'antd';
 import axios from 'axios';
+import { getApiUrl } from './config/api';
 import Illustration from './Illustration';
 
 const { Title, Text } = Typography;
@@ -11,7 +12,7 @@ const Login = ({ onLogin }) => {
   const onFinish = async (values) => {
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:3001/usuarios/login', values);
+      const response = await axios.post(getApiUrl('usuarios/login'), values);
       message.success('Login realizado com sucesso!');
       axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
       onLogin(response.data.token, response.data.user);

@@ -3,6 +3,7 @@ import { Table, Typography, Button, Space, Popconfirm, message, Select } from 'a
 import { PlusOutlined, EditOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { getApiUrl } from '../config/api';
 
 const { Title } = Typography;
 
@@ -15,7 +16,7 @@ const Notificacoes = () => {
 
   // Carregar equipes para filtro e render
   useEffect(() => {
-    axios.get('http://localhost:3001/equipes')
+    axios.get(getApiUrl('equipes'))
       .then(res => setEquipes(res.data))
       .catch(() => {});
   }, []);
@@ -24,7 +25,7 @@ const Notificacoes = () => {
     setLoading(true);
     const params = {};
     if (filterEquipe) params.equipe_id = filterEquipe;
-    axios.get('http://localhost:3001/notificacoes', { params })
+    axios.get(getApiUrl('notificacoes'), { params })
       .then(res => {
         const list = Array.isArray(res.data) ? res.data : [];
         setData(list);
@@ -44,7 +45,7 @@ const Notificacoes = () => {
       title: 'Ações', key: 'actions', render: (_, record) => (
         <Space>
           <Button type="link" icon={<EditOutlined />} onClick={() => navigate(`/notificacoes/${record.id}/editar`)} />
-          <Popconfirm title="Tem certeza?" onConfirm={() => axios.delete(`http://localhost:3001/notificacoes/${record.id}`).then(() => { message.success('Notificação deletada'); loadData(); }).catch(() => message.error('Erro ao deletar notificação'))} okText="Sim" cancelText="Não">
+          <Popconfirm title="Tem certeza?" onConfirm={() => axios.delete(getApiUrl('notificacoes/${record.id}')).then(() => { message.success('Notificação deletada'); loadData(); }).catch(() => message.error('Erro ao deletar notificação'))} okText="Sim" cancelText="Não">
             <Button type="link" icon={<DeleteOutlined />} danger />
           </Popconfirm>
         </Space>

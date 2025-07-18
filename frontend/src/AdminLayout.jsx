@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Layout, Menu, Avatar, Typography, Input, Dropdown } from 'antd';
 import { Link, Outlet, useLocation } from 'react-router-dom';
+import { getApiUrl } from './config/api';
 import {
   UserOutlined,
   TeamOutlined,
@@ -92,7 +93,7 @@ const AdminLayout = ({ user, onLogout }) => {
             <Dropdown overlay={avatarMenu} trigger={['click']} placement="bottomRight">
               <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
                 <Avatar
-                  src={user?.foto ? `http://localhost:3001/${user.foto}` : undefined}
+                  src={user?.foto ? getApiUrl('${user.foto}') : undefined}
                   icon={!user?.foto && <UserOutlined />}
                 />
                 <Text style={{ marginLeft: 8, textTransform: 'capitalize' }}>{user?.tipo_usuario}</Text>

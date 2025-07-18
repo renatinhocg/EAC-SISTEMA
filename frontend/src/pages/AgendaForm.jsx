@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Form, Input, Button, message, Card, Select, Checkbox } from 'antd';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
+import { getApiUrl } from '../config/api';
 
 const AgendaForm = () => {
   const [form] = Form.useForm();
@@ -12,7 +13,7 @@ const AgendaForm = () => {
 
   useEffect(() => {
     if (isEdit) {
-      axios.get(`http://localhost:3001/agendas/${id}`)
+      axios.get(getApiUrl('agendas/${id}'))
         .then(res => {
           const { titulo, descricao, local, equipe_ids, presenca_ativa, data, hora_inicio, hora_fim } = res.data;
           form.setFieldsValue({
@@ -29,7 +30,7 @@ const AgendaForm = () => {
         .catch(() => message.error('Erro ao carregar evento'));
     }
     // Carregar equipes para seleção
-    axios.get('http://localhost:3001/equipes')
+    axios.get(getApiUrl('equipes'))
       .then(res => setEquipes(res.data))
       .catch(() => {});
   }, [id, isEdit, form]);
@@ -49,13 +50,13 @@ const AgendaForm = () => {
       console.log('Enviando payload agenda:', payload);
       if (isEdit) {
         await axios.put(
-          `http://localhost:3001/agendas/${id}`,
+          getApiUrl('agendas/${id}'),
           payload
         );
         message.success('Evento atualizado com sucesso');
       } else {
         await axios.post(
-          'http://localhost:3001/agendas',
+          getApiUrl('agendas'),
           payload
         );
         message.success('Evento criado com sucesso');

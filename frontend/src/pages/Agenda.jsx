@@ -4,6 +4,7 @@ import { EditOutlined, DeleteOutlined, PlusOutlined, ReloadOutlined, EyeOutlined
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { getApiUrl } from '../config/api';
 
 const { Title } = Typography;
 
@@ -18,7 +19,7 @@ const Agenda = () => {
 
   const fetchData = () => {
     setLoading(true);
-    axios.get('http://localhost:3001/agendas')
+    axios.get(getApiUrl('agendas'))
       .then(res => { setData(res.data); setFilteredData(res.data); })
       .catch(() => message.error('Erro ao carregar eventos'))
       .finally(() => setLoading(false));
@@ -43,7 +44,7 @@ const Agenda = () => {
   const handleCreate = () => navigate('/agendas/novo');
   const handleEdit = record => navigate(`/agendas/${record.id}/editar`);
   const handleDelete = id => {
-    axios.delete(`http://localhost:3001/agendas/${id}`)
+    axios.delete(getApiUrl('agendas/${id}'))
       .then(() => { message.success('Evento deletado'); fetchData(); })
       .catch(() => message.error('Erro ao deletar evento'));
   };

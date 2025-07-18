@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Select, Spin } from 'antd';
 import axios from 'axios';
+import { getApiUrl } from '../config/api';
 
 // Componente de seleção de equipe(s) reutilizável
 // Props:
@@ -19,7 +20,7 @@ const EquipeSelect = ({ value, onChange, multiple = false, placeholder = 'Seleci
 
   useEffect(() => {
     setLoading(true);
-    axios.get('http://localhost:3001/equipes')
+    axios.get(getApiUrl('equipes'))
       .then(res => {
         const lista = Array.isArray(res.data) ? res.data : [];
         setEquipes(lista.sort((a, b) => (a.nome || '').localeCompare(b.nome || '')));

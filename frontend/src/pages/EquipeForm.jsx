@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Form, Input, Button, Card, message } from 'antd';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
+import { getApiUrl } from '../config/api';
 
 const EquipeForm = () => {
   const descRef = useRef(null);
@@ -13,7 +14,7 @@ const EquipeForm = () => {
 
   useEffect(() => {
     if (isEdit) {
-      axios.get(`http://localhost:3001/equipes/${id}`)
+      axios.get(getApiUrl(`equipes/${id}`))
         .then(res => {
           form.setFieldsValue({ nome: res.data.nome, funcao: res.data.funcao });
           if (descRef.current) descRef.current.innerHTML = res.data.descricao || '';
@@ -31,10 +32,10 @@ const EquipeForm = () => {
         sobre: sobreRef.current?.innerHTML || ''
       };
       if (isEdit) {
-        await axios.put(`http://localhost:3001/equipes/${id}`, payload);
+        await axios.put(getApiUrl(`equipes/${id}`), payload);
         message.success('Equipe atualizada com sucesso');
       } else {
-        await axios.post('http://localhost:3001/equipes', payload);
+        await axios.post(getApiUrl('equipes'), payload);
         message.success('Equipe criada com sucesso');
       }
       navigate('/equipes');

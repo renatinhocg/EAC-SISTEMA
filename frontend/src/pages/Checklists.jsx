@@ -3,6 +3,7 @@ import { Table, Button, Space, Popconfirm, message } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { getApiUrl } from '../config/api';
 
 const Checklists = () => {
   const navigate = useNavigate();
@@ -12,7 +13,7 @@ const Checklists = () => {
 
   const fetchData = () => {
     setLoading(true);
-    axios.get('http://localhost:3001/checklists')
+    axios.get(getApiUrl('checklists'))
       .then(res => {
         const list = Array.isArray(res.data) ? res.data : [];
         setData(list);
@@ -25,7 +26,7 @@ const Checklists = () => {
 
   // Carregar equipes para mapear nomes
   useEffect(() => {
-    axios.get('http://localhost:3001/equipes')
+    axios.get(getApiUrl('equipes'))
       .then(res => setEquipes(res.data))
       .catch(() => {});
   }, []);
@@ -33,7 +34,7 @@ const Checklists = () => {
   const handleCreate = () => navigate('/checklists/novo');
   const handleEdit = record => navigate(`/checklists/${record.id}/editar`);
   const handleDelete = id => {
-    axios.delete(`http://localhost:3001/checklists/${id}`)
+    axios.delete(getApiUrl(`checklists/${id}`))
       .then(() => { message.success('Checklist deletada'); fetchData(); })
       .catch(() => message.error('Erro ao deletar checklist'));
   };

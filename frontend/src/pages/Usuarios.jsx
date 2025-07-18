@@ -4,6 +4,7 @@ import { EditOutlined, DeleteOutlined, PlusOutlined, UploadOutlined } from '@ant
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Papa from 'papaparse';
+import { getApiUrl } from '../config/api';
 
 const { Title } = Typography;
 
@@ -16,7 +17,7 @@ const Usuarios = () => {
   const [csvSuccess, setCsvSuccess] = useState(null);
 
   const fetchData = () => {
-    axios.get('http://localhost:3001/usuarios')
+    axios.get(getApiUrl('usuarios'))
       .then(res => setData(res.data))
       .catch(() => message.error('Erro ao carregar usuários'));
   };
@@ -28,7 +29,7 @@ const Usuarios = () => {
   const handleEdit = (record) => navigate(`/usuarios/${record.id}/editar`);
 
   const handleDelete = (id) => {
-    axios.delete(`http://localhost:3001/usuarios/${id}`)
+    axios.delete(getApiUrl(`usuarios/${id}`))
       .then(() => { message.success('Usuário deletado'); fetchData(); })
       .catch(() => message.error('Erro ao deletar usuário'));
   };
@@ -56,14 +57,14 @@ const Usuarios = () => {
           if (novo.tipo_usuario) novo.tipo_usuario = novo.tipo_usuario.toLowerCase();
           return novo;
         });
-        axios.post('http://localhost:3001/usuarios/import-csv', { usuarios })
+        axios.post(getApiUrl('usuarios/import-csv'), { usuarios })
           .then(() => {
             setCsvSuccess('Usuários importados com sucesso!');
             setCsvError(null);
             message.success('Usuários importados com sucesso!');
             fetchData();
           })
-          .catch((err) => {
+          .catch(() => {
             setCsvError('Erro ao importar usuários.');
             setCsvSuccess(null);
             message.error('Erro ao importar usuários.');

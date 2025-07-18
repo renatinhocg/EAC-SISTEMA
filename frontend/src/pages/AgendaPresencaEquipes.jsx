@@ -3,6 +3,7 @@ import axios from 'axios';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Drawer, Spin, Select, Button, message } from 'antd';
+import { getApiUrl } from '../config/api';
 
 const STATUS_OPTIONS = [
   { value: 1, label: 'Presente' },
@@ -28,7 +29,7 @@ const AgendaPresencaEquipes = () => {
     setLoading(true);
     setErro('');
     try {
-      const res = await axios.get('http://localhost:3001/equipes');
+      const res = await axios.get(getApiUrl('equipes'));
       if (!Array.isArray(res.data) || res.data.length === 0) {
         setEquipes([]);
         setErro('Nenhuma equipe encontrada.');
@@ -36,9 +37,9 @@ const AgendaPresencaEquipes = () => {
       }
       const equipesComPresenca = await Promise.all(res.data.map(async eq => {
         try {
-          const usuariosRes = await axios.get(`http://localhost:3001/equipes/${eq.id}/usuarios`);
+          const usuariosRes = await axios.get(getApiUrl('equipes/${eq.id}/usuarios'));
           const total = usuariosRes.data.length;
-          const presencasRes = await axios.get(`http://localhost:3001/presencas/evento/${agendaId}/equipe/${eq.id}`);
+          const presencasRes = await axios.get(getApiUrl('presencas/evento/${agendaId}/equipe/${eq.id}'));
           const presentes = presencasRes.data.filter(p => p.presente === 1).length;
           const percent = total > 0 ? Math.round((presentes / total) * 100) : 0;
           return {
@@ -75,7 +76,7 @@ const AgendaPresencaEquipes = () => {
     setUsuariosLoading(true);
     try {
       // Busca usuários da equipe
-      const res = await axios.get(`http://localhost:3001/equipes/${equipe.id}/usuarios`);
+      const res = await axios.get(getApiUrl('equipes/${equipe.id}/usuarios'));
       console.log('DEBUG usuarios equipe', equipe.id, res.data);
       // Garante que o nome está presente e normalizado
       const usuariosFormatados = (res.data || [])
@@ -87,7 +88,7 @@ const AgendaPresencaEquipes = () => {
         .sort((a, b) => a.nome.localeCompare(b.nome)); // Ordena por nome A-Z
       setUsuarios(usuariosFormatados);
       // Corrige a rota para buscar presenças por evento e equipe
-      const presencasRes = await axios.get(`http://localhost:3001/presencas/evento/${agendaId}/equipe/${equipe.id}`);
+      const presencasRes = await axios.get(getApiUrl('presencas/evento/${agendaId}/equipe/${equipe.id}'));
       const map = {};
       presencasRes.data.forEach(p => {
         map[p.usuario_id] = p.presente !== null && p.presente !== undefined ? Number(p.presente) : undefined;
@@ -117,7 +118,7 @@ const AgendaPresencaEquipes = () => {
           else if (statusNum === 2 || statusNum === '2') statusStr = 'justificada';
           // Corrige a rota para salvar presença por evento e equipe
           return axios.post(
-            `http://localhost:3001/presencas/evento/${agendaId}/equipe/${drawerEquipe.id}/usuario/${u.id}`,
+            getApiUrl('presencas/evento/${agendaId}/equipe/${drawerEquipe.id}/usuario/${u.id}'),
             { status: statusStr }
           );
         })

@@ -3,6 +3,7 @@ import { Table, Typography, Button, Space, Popconfirm, message } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { getApiUrl } from '../config/api';
 
 const { Title } = Typography;
 
@@ -11,7 +12,7 @@ const TipoCirculo = () => {
   const [data, setData] = useState([]);
 
   const fetchData = () => {
-    axios.get('http://localhost:3001/tipo_circulo')
+    axios.get(getApiUrl('tipo_circulo'))
       .then(res => setData(res.data))
       .catch(() => message.error('Erro ao carregar tipos de círculo'));
   };
@@ -21,7 +22,7 @@ const TipoCirculo = () => {
   const handleCreate = () => navigate('/tipo_circulo/novo');
   const handleEdit = record => navigate(`/tipo_circulo/${record.id}/editar`);
   const handleDelete = id => {
-    axios.delete(`http://localhost:3001/tipo_circulo/${id}`)
+    axios.delete(getApiUrl(`tipo_circulo/${id}`))
       .then(() => { message.success('Tipo de círculo deletado'); fetchData(); })
       .catch(() => message.error('Erro ao deletar tipo de círculo'));
   };

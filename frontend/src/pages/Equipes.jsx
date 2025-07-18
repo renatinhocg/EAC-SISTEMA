@@ -3,6 +3,7 @@ import { Table, Typography, Button, Space, Popconfirm, message, Card } from 'ant
 import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { getApiUrl } from '../config/api';
 
 const { Title } = Typography;
 
@@ -11,7 +12,7 @@ const Equipes = () => {
   const [data, setData] = useState([]);
 
   const fetchData = () => {
-    axios.get('http://localhost:3001/equipes')
+    axios.get(getApiUrl('equipes'))
       .then(res => setData(res.data))
       .catch(() => message.error('Erro ao carregar equipes'));
   };
@@ -21,7 +22,7 @@ const Equipes = () => {
   const handleCreate = () => navigate('/equipes/novo');
   const handleEdit = record => navigate(`/equipes/${record.id}/editar`);
   const handleDelete = id => {
-    axios.delete(`http://localhost:3001/equipes/${id}`)
+    axios.delete(getApiUrl(`equipes/${id}`))
       .then(() => { message.success('Equipe deletada'); fetchData(); })
       .catch(() => message.error('Erro ao deletar equipe'));
   };
