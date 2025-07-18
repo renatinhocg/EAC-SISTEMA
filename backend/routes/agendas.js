@@ -25,7 +25,7 @@ router.get('/:id', (req, res) => {
     SELECT a.*, STRING_AGG(ae.equipe_id::text, ',') AS equipe_ids
     FROM agenda a
     LEFT JOIN agenda_equipes ae ON ae.agenda_id = a.id
-    WHERE a.id = $1
+    WHERE a.id = ?
     GROUP BY a.id`;
   db.query(sql, [req.params.id], (err, results) => {
     if (err) return res.status(500).json({ error: err });
@@ -43,17 +43,17 @@ router.post('/', (req, res) => {
   const { titulo, descricao, data, hora_inicio, hora_fim, local, equipe_ids, presenca_ativa } = req.body;
   console.log('POST /agendas req.body:', req.body); // LOG DEBUG
   db.query(
-    'INSERT INTO agenda (titulo, descricao, data, hora_inicio, hora_fim, local, presenca_ativa) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
+    'INSERT INTO agenda (titulo, descricao, data, hora_inicio, hora_fim, local, presenca_ativa) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id',
     [titulo, descricao, data, hora_inicio, hora_fim, local, presenca_ativa ? 1 : 0],
     (err, result) => {
       if (err) return res.status(500).json({ error: err });
-      const agendaId = result.rows[0].id;
+      const agendaId = result[0].id; // result.rows[0].id -> result[0].id (wrapper simula formato MySQL)
       if (Array.isArray(equipe_ids) && equipe_ids.length) {
-        // PostgreSQL: inserir um por vez ou usar unnest
+        // PostgreSQL: inserir um por vez
         const insertPromises = equipe_ids.map(equipeId => 
           new Promise((resolve, reject) => {
             db.query(
-              'INSERT INTO agenda_equipes (agenda_id, equipe_id) VALUES ($1, $2)',
+              'INSERT INTO agenda_equipes (agenda_id, equipe_id) VALUES (?, ?)',
               [agendaId, equipeId],
               (err2) => {
                 if (err2) reject(err2);
@@ -80,7 +80,7 @@ router.put('/:id', (req, res) => {
   const { titulo, descricao, data, hora_inicio, hora_fim, local, equipe_ids, presenca_ativa } = req.body;
   console.log('PUT /agendas req.body:', req.body); // LOG DEBUG
   db.query(
-    'UPDATE agenda SET titulo = $1, descricao = $2, data = $3, hora_inicio = $4, hora_fim = $5, local = $6, presenca_ativa = $7 WHERE id = $8',
+    'UPDATE agenda SET titulo = ?, descricao = ?, data = ?, hora_inicio = ?, hora_fim = ?, local = ?, presenca_ativa = ? WHERE id = ?',
     [titulo, descricao, data, hora_inicio, hora_fim, local, presenca_ativa ? 1 : 0, req.params.id],
     err => {
       if (err) return res.status(500).json({ error: err });

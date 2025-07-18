@@ -30,7 +30,7 @@ router.get('/:id', (req, res) => {
       STRING_AGG(ce.equipe_id::text, ',') AS equipe_ids
     FROM checklist c
     LEFT JOIN checklist_equipes ce ON ce.checklist_id = c.id
-    WHERE c.id = $1
+    WHERE c.id = ?
     GROUP BY c.id`;
   db.query(sql, [req.params.id], (err, results) => {
     if (err) return res.status(500).json({ error: err });
@@ -51,16 +51,16 @@ router.post('/', (req, res) => {
   const { titulo, descricao, tipo, equipe_ids } = req.body;
   console.log('POST checklist req.body:', req.body); // LOG PARA DEBUG
   db.query(
-    'INSERT INTO checklist (titulo, descricao, tipo) VALUES ($1, $2, $3) RETURNING id',
+    'INSERT INTO checklist (titulo, descricao, tipo) VALUES (?, ?, ?) RETURNING id',
     [titulo, descricao, tipo],
     (err, result) => {
       if (err) return res.status(500).json({ error: err });
-      const checklistId = result.rows[0].id;
+      const checklistId = result[0].id; // wrapper simula formato MySQL
       if (Array.isArray(equipe_ids) && equipe_ids.length) {
         const insertPromises = equipe_ids.map(equipeId => 
           new Promise((resolve, reject) => {
             db.query(
-              'INSERT INTO checklist_equipes (checklist_id, equipe_id) VALUES ($1, $2)',
+              'INSERT INTO checklist_equipes (checklist_id, equipe_id) VALUES (?, ?)',
               [checklistId, equipeId],
               (err2) => {
                 if (err2) reject(err2);

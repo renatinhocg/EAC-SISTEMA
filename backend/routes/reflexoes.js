@@ -91,18 +91,18 @@ router.post('/', upload.single('anexo'), (req, res) => {
   const equipe_id = getEquipeIdsFromBody(req.body);
   const anexoPath = req.file ? path.posix.join('uploads','reflexoes', req.file.filename) : null;
   db.query(
-    'INSERT INTO reflexao (texto, usuario_id, agenda_id, anexo) VALUES ($1,$2,$3,$4) RETURNING id',
+    'INSERT INTO reflexao (texto, usuario_id, agenda_id, anexo) VALUES (?,?,?,?) RETURNING id',
     [texto, usuario_id, agenda_id || null, anexoPath],
     (err, result) => {
       if (err) return res.status(500).json({ error: err });
-      const reflexaoId = result.rows[0].id;
+      const reflexaoId = result[0].id; // wrapper simula formato MySQL
       if (equipe_id.length === 0) {
         return res.status(201).json({ id: reflexaoId, texto, usuario_id, agenda_id, equipe_id: [], anexo: anexoPath });
       }
       const insertPromises = equipe_id.map(equipeId => 
         new Promise((resolve, reject) => {
           db.query(
-            'INSERT INTO reflexao_equipe (reflexao_id, equipe_id) VALUES ($1, $2)',
+            'INSERT INTO reflexao_equipe (reflexao_id, equipe_id) VALUES (?, ?)',
             [reflexaoId, equipeId],
             (err2) => {
               if (err2) reject(err2);
