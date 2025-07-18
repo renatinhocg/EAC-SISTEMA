@@ -27,10 +27,10 @@ router.get('/', (req, res) => {
 router.get('/:id', (req, res) => {
   const sql = `
     SELECT c.id, c.titulo, c.descricao, c.tipo,
-      GROUP_CONCAT(ce.equipe_id) AS equipe_ids
+      STRING_AGG(ce.equipe_id::text, ',') AS equipe_ids
     FROM checklist c
     LEFT JOIN checklist_equipes ce ON ce.checklist_id = c.id
-    WHERE c.id = ?
+    WHERE c.id = $1
     GROUP BY c.id`;
   db.query(sql, [req.params.id], (err, results) => {
     if (err) return res.status(500).json({ error: err });
@@ -51,21 +51,30 @@ router.post('/', (req, res) => {
   const { titulo, descricao, tipo, equipe_ids } = req.body;
   console.log('POST checklist req.body:', req.body); // LOG PARA DEBUG
   db.query(
-    'INSERT INTO checklist (titulo, descricao, tipo) VALUES (?, ?, ?)',
+    'INSERT INTO checklist (titulo, descricao, tipo) VALUES ($1, $2, $3) RETURNING id',
     [titulo, descricao, tipo],
     (err, result) => {
       if (err) return res.status(500).json({ error: err });
-      const checklistId = result.insertId;
+      const checklistId = result.rows[0].id;
       if (Array.isArray(equipe_ids) && equipe_ids.length) {
-        const values = equipe_ids.map(id => [checklistId, id]);
-        db.query(
-          'INSERT INTO checklist_equipes (checklist_id, equipe_id) VALUES ?',
-          [values],
-          err2 => {
-            if (err2) console.error(err2);
-            res.status(201).json({ id: checklistId });
-          }
+        const insertPromises = equipe_ids.map(equipeId => 
+          new Promise((resolve, reject) => {
+            db.query(
+              'INSERT INTO checklist_equipes (checklist_id, equipe_id) VALUES ($1, $2)',
+              [checklistId, equipeId],
+              (err2) => {
+                if (err2) reject(err2);
+                else resolve();
+              }
+            );
+          })
         );
+        Promise.all(insertPromises)
+          .then(() => res.status(201).json({ id: checklistId }))
+          .catch(err2 => {
+            console.error(err2);
+            res.status(500).json({ error: err2 });
+          });
       } else {
         res.status(201).json({ id: checklistId });
       }

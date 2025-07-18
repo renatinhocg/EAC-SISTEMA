@@ -25,7 +25,7 @@ router.get('/:id', (req, res) => {
     SELECT a.*, STRING_AGG(ae.equipe_id::text, ',') AS equipe_ids
     FROM agenda a
     LEFT JOIN agenda_equipes ae ON ae.agenda_id = a.id
-    WHERE a.id = ?
+    WHERE a.id = $1
     GROUP BY a.id`;
   db.query(sql, [req.params.id], (err, results) => {
     if (err) return res.status(500).json({ error: err });
@@ -43,21 +43,31 @@ router.post('/', (req, res) => {
   const { titulo, descricao, data, hora_inicio, hora_fim, local, equipe_ids, presenca_ativa } = req.body;
   console.log('POST /agendas req.body:', req.body); // LOG DEBUG
   db.query(
-    'INSERT INTO agenda (titulo, descricao, data, hora_inicio, hora_fim, local, presenca_ativa) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    'INSERT INTO agenda (titulo, descricao, data, hora_inicio, hora_fim, local, presenca_ativa) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
     [titulo, descricao, data, hora_inicio, hora_fim, local, presenca_ativa ? 1 : 0],
     (err, result) => {
       if (err) return res.status(500).json({ error: err });
-      const agendaId = result.insertId;
+      const agendaId = result.rows[0].id;
       if (Array.isArray(equipe_ids) && equipe_ids.length) {
-        const values = equipe_ids.map(id => [agendaId, id]);
-        db.query(
-          'INSERT INTO agenda_equipes (agenda_id, equipe_id) VALUES ?',
-          [values],
-          err2 => {
-            if (err2) console.error(err2);
-            res.status(201).json({ id: agendaId });
-          }
+        // PostgreSQL: inserir um por vez ou usar unnest
+        const insertPromises = equipe_ids.map(equipeId => 
+          new Promise((resolve, reject) => {
+            db.query(
+              'INSERT INTO agenda_equipes (agenda_id, equipe_id) VALUES ($1, $2)',
+              [agendaId, equipeId],
+              (err2) => {
+                if (err2) reject(err2);
+                else resolve();
+              }
+            );
+          })
         );
+        Promise.all(insertPromises)
+          .then(() => res.status(201).json({ id: agendaId }))
+          .catch(err2 => {
+            console.error(err2);
+            res.status(500).json({ error: err2 });
+          });
       } else {
         res.status(201).json({ id: agendaId });
       }
@@ -70,7 +80,7 @@ router.put('/:id', (req, res) => {
   const { titulo, descricao, data, hora_inicio, hora_fim, local, equipe_ids, presenca_ativa } = req.body;
   console.log('PUT /agendas req.body:', req.body); // LOG DEBUG
   db.query(
-    'UPDATE agenda SET titulo = ?, descricao = ?, data = ?, hora_inicio = ?, hora_fim = ?, local = ?, presenca_ativa = ? WHERE id = ?',
+    'UPDATE agenda SET titulo = $1, descricao = $2, data = $3, hora_inicio = $4, hora_fim = $5, local = $6, presenca_ativa = $7 WHERE id = $8',
     [titulo, descricao, data, hora_inicio, hora_fim, local, presenca_ativa ? 1 : 0, req.params.id],
     err => {
       if (err) return res.status(500).json({ error: err });

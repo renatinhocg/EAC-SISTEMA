@@ -91,19 +91,29 @@ router.post('/', upload.single('anexo'), (req, res) => {
   const equipe_id = getEquipeIdsFromBody(req.body);
   const anexoPath = req.file ? path.posix.join('uploads','reflexoes', req.file.filename) : null;
   db.query(
-    'INSERT INTO reflexao (texto, usuario_id, agenda_id, anexo) VALUES (?,?,?,?)',
+    'INSERT INTO reflexao (texto, usuario_id, agenda_id, anexo) VALUES ($1,$2,$3,$4) RETURNING id',
     [texto, usuario_id, agenda_id || null, anexoPath],
     (err, result) => {
       if (err) return res.status(500).json({ error: err });
-      const reflexaoId = result.insertId;
+      const reflexaoId = result.rows[0].id;
       if (equipe_id.length === 0) {
         return res.status(201).json({ id: reflexaoId, texto, usuario_id, agenda_id, equipe_id: [], anexo: anexoPath });
       }
-      const values = equipe_id.map(eid => [reflexaoId, eid]);
-      db.query('INSERT INTO reflexao_equipe (reflexao_id, equipe_id) VALUES ?', [values], (err2) => {
-        if (err2) return res.status(500).json({ error: err2 });
-        res.status(201).json({ id: reflexaoId, texto, usuario_id, agenda_id, equipe_id, anexo: anexoPath });
-      });
+      const insertPromises = equipe_id.map(equipeId => 
+        new Promise((resolve, reject) => {
+          db.query(
+            'INSERT INTO reflexao_equipe (reflexao_id, equipe_id) VALUES ($1, $2)',
+            [reflexaoId, equipeId],
+            (err2) => {
+              if (err2) reject(err2);
+              else resolve();
+            }
+          );
+        })
+      );
+      Promise.all(insertPromises)
+        .then(() => res.status(201).json({ id: reflexaoId, texto, usuario_id, agenda_id, equipe_id, anexo: anexoPath }))
+        .catch(err2 => res.status(500).json({ error: err2 }));
     }
   );
 });
