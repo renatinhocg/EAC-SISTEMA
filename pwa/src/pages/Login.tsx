@@ -1,12 +1,10 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState } from 'react';
 import { Form, Input, Button } from 'antd';
 import { AuthContext } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios, { type AxiosError } from 'axios';
 
 interface LocationState { from?: { pathname: string } }
-
-import SplashScreen from './SplashScreen';
 
 const Login: React.FC = () => {
   const { login } = useContext(AuthContext);
@@ -15,15 +13,9 @@ const Login: React.FC = () => {
 
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [showSplash, setShowSplash] = useState(true);
 
   const state = location.state as LocationState;
   const from = state?.from?.pathname ?? '/';
-
-  useEffect(() => {
-    const timer = setTimeout(() => setShowSplash(false), 3000);
-    return () => clearTimeout(timer);
-  }, []);
 
   const onFinish = async (values: { email: string; senha: string }) => {
     setError(null);
@@ -59,19 +51,32 @@ const Login: React.FC = () => {
     }
   };
 
-  if (showSplash) {
-    return <SplashScreen />;
-  }
-
   return (
     <div style={{ 
       minHeight: '100vh', 
-      background: 'linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%)',
+      background: '#141B34',
       display: 'flex',
+      flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
       padding: '20px'
     }}>
+      {/* Logo do EAC fora do box */}
+      <div style={{ 
+        textAlign: 'center', 
+        marginBottom: '40px' 
+      }}>
+        <img 
+          src="/logo-eac.svg" 
+          alt="Encontro de Adolescentes com Cristo" 
+          style={{ 
+            maxWidth: '280px', 
+            height: 'auto',
+          }} 
+        />
+      </div>
+
+      {/* Box branco com formulário */}
       <div style={{ 
         width: '100%', 
         maxWidth: '360px',

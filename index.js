@@ -23,11 +23,11 @@ const reflexoesRoutes = require('./backend/routes/reflexoes');
 const tipoCirculoRoutes = require('./backend/routes/tipo_circulo');
 const usuariosFotoRoutes = require('./backend/routes/usuarios_foto');
 
-// Servir arquivos estáticos do Frontend Admin em /admin
-app.use('/admin', express.static(path.join(__dirname, 'frontend/dist')));
-
 // Servir arquivos estáticos do PWA na raiz
 app.use(express.static(path.join(__dirname, 'pwa/dist')));
+
+// Servir arquivos estáticos do Frontend Admin em /admin
+app.use('/admin', express.static(path.join(__dirname, 'frontend/dist')));
 
 // API Routes
 app.use('/api/usuarios', usuariosRoutes);
@@ -69,12 +69,16 @@ app.get('/api/test-db', (req, res) => {
   });
 });
 
-// Rota específica para o admin (SPA routing)
+// Rota específica para o admin - DEVE vir ANTES da rota catch-all
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend/dist/index.html'));
+});
+
 app.get('/admin/*', (req, res) => {
   res.sendFile(path.join(__dirname, 'frontend/dist/index.html'));
 });
 
-// Todas as outras rotas servem o PWA (SPA routing)
+// Todas as outras rotas servem o PWA (SPA routing) - DEVE ser a ÚLTIMA
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'pwa/dist/index.html'));
 });
