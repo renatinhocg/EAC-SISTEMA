@@ -84,9 +84,9 @@ const ChecklistForm = () => {
         </Form.Item>
         <Form.Item name="tipo" label="Tipo" rules={[{ required: true, message: 'Selecione o tipo' }]}>        
           <Select>
-            <Select.Option value="pré-encontro">Pré-encontro</Select.Option>
-            <Select.Option value="durante o encontro">Durante o encontro</Select.Option>
-            <Select.Option value="pós-encontro">Pós-encontro</Select.Option>
+            <Select.Option value="Pré">Pré</Select.Option>
+            <Select.Option value="Durante">Durante</Select.Option>
+            <Select.Option value="Pós">Pós</Select.Option>
           </Select>
         </Form.Item>
         <Form.Item name="equipe_ids" label="Equipes">

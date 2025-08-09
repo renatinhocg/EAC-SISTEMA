@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Modal } from 'antd';
-import { DownloadOutlined, CloseOutlined, MobileOutlined } from '@ant-design/icons';
+import { DownloadOutlined, CloseOutlined, MobileOutlined, ShareAltOutlined, AppleOutlined } from '@ant-design/icons';
 
 interface InstallPWAModalProps {
   onClose?: () => void;
@@ -99,13 +99,32 @@ const InstallPWAModal: React.FC<InstallPWAModalProps> = ({ onClose }) => {
     >
       <div className="text-center p-4">
         <div className="mb-4">
-          <MobileOutlined 
-            style={{ 
-              fontSize: '48px', 
-              color: '#1890ff',
-              animation: 'pulse 2s infinite'
-            }} 
-          />
+          {isIOS ? (
+            <div className="flex items-center justify-center gap-2">
+              <AppleOutlined 
+                style={{ 
+                  fontSize: '42px', 
+                  color: '#1890ff',
+                  animation: 'pulse 2s infinite'
+                }} 
+              />
+              <ShareAltOutlined 
+                style={{ 
+                  fontSize: '32px', 
+                  color: '#52c41a',
+                  animation: 'pulse 2s infinite 0.5s'
+                }} 
+              />
+            </div>
+          ) : (
+            <MobileOutlined 
+              style={{ 
+                fontSize: '48px', 
+                color: '#1890ff',
+                animation: 'pulse 2s infinite'
+              }} 
+            />
+          )}
         </div>
         
         <h3 className="text-xl font-bold mb-2">
@@ -117,14 +136,26 @@ const InstallPWAModal: React.FC<InstallPWAModalProps> = ({ onClose }) => {
         </p>
 
         {isIOS ? (
-          <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-            <p className="text-sm text-gray-700 mb-2">
-              Para instalar no iOS:
-            </p>
-            <ol className="text-sm text-left space-y-1">
-              <li>1. Toque no ícone de compartilhar</li>
-              <li>2. Role para baixo e toque em "Adicionar à Tela de Início"</li>
-              <li>3. Toque em "Adicionar"</li>
+          <div className="mb-4 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border border-blue-200">
+            <div className="flex items-center gap-2 mb-3">
+              <AppleOutlined style={{ fontSize: '20px', color: '#1890ff' }} />
+              <p className="text-sm font-semibold text-gray-700 mb-0">
+                Para instalar no iOS:
+              </p>
+            </div>
+            <ol className="text-sm text-left space-y-2">
+              <li className="flex items-center gap-2">
+                <ShareAltOutlined style={{ color: '#52c41a', fontSize: '16px' }} />
+                <span>1. Toque no ícone de <strong>compartilhar</strong> (⬆️)</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <span>📱</span>
+                <span>2. Role para baixo e toque em <strong>"Adicionar à Tela de Início"</strong></span>
+              </li>
+              <li className="flex items-center gap-2">
+                <span>✅</span>
+                <span>3. Toque em <strong>"Adicionar"</strong></span>
+              </li>
             </ol>
           </div>
         ) : (

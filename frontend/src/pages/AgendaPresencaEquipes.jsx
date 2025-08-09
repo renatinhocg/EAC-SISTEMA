@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Drawer, Spin, Select, Button, message } from 'antd';
+import { Drawer, Spin, Select, Button, message, Card, Row, Col, Progress, Typography } from 'antd';
 import { getApiUrl } from '../config/api';
+
+const { Title, Text } = Typography;
 
 const STATUS_OPTIONS = [
   { value: 1, label: 'Presente' },
@@ -45,14 +47,16 @@ const AgendaPresencaEquipes = () => {
             id: eq.id,
             nome: eq.nome,
             funcao: eq.funcao || eq.tipo || '',
-            presenca: percent
+            presenca: percent,
+            descricao: eq.descricao || ''
           };
         } catch {
           return {
             id: eq.id,
             nome: eq.nome,
             funcao: eq.funcao || eq.tipo || '',
-            presenca: 0
+            presenca: 0,
+            descricao: eq.descricao || ''
           };
         }
       }));
@@ -134,218 +138,72 @@ const AgendaPresencaEquipes = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#1a1f3a' }}>
-      {/* Header com foto e notificações */}
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        padding: '20px 24px',
-        background: '#1a1f3a'
-      }}>
-        <div></div> {/* Espaço vazio à esquerda */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          {/* Ícone de notificação */}
-          <div style={{
-            width: 40,
-            height: 40,
-            borderRadius: '50%',
-            background: '#fff',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer'
-          }}>
-            <span style={{ fontSize: 20 }}>🔔</span>
-          </div>
-          {/* Foto do usuário */}
-          <div style={{
-            width: 40,
-            height: 40,
-            borderRadius: '50%',
-            background: 'linear-gradient(135deg, #f357a8, #7b2ff2)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            overflow: 'hidden'
-          }}>
-            <img 
-              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face" 
-              alt="Usuário" 
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
-          </div>
-        </div>
-      </div>
+    <div style={{ padding: '24px' }}>
+      <Title level={2}>Presença</Title>
+      <Text type="secondary" style={{ marginBottom: 24, display: 'block' }}>
+        Selecione uma equipe e marque a presença dos adolescentes e tios
+      </Text>
+
+      {loading && <div>Carregando equipes...</div>}
+      {erro && !loading && <div style={{ color: '#ff4d4f', fontWeight: 600 }}>{erro}</div>}
+      {!loading && !erro && equipes.length === 0 && <div>Nenhuma equipe encontrada.</div>}
       
-      {/* Título */}
-      <div style={{ padding: '20px 24px 40px 24px' }}>
-        <h1 style={{ 
-          fontSize: '24pt', 
-          fontWeight: '600', 
-          color: '#fff', 
-          margin: 0,
-          marginBottom: 8
-        }}>
-          Presença
-        </h1>
-        <p style={{ 
-          color: '#a0a8b8', 
-          fontSize: 16, 
-          margin: 0,
-          lineHeight: 1.5
-        }}>
-          Selecione o evento e marque a presença dos adolescentes e tios
-        </p>
-      </div>
-      <div style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: 24,
-        justifyContent: 'center',
-        padding: '0 24px 32px 24px',
-        background: '#1a1f3a',
-      }}>
-        {loading && <div style={{ color: '#fff' }}>Carregando equipes...</div>}
-        {erro && !loading && <div style={{color: '#ff4d4f', fontWeight: 600}}>{erro}</div>}
-        {!loading && !erro && equipes.length === 0 && <div style={{ color: '#fff' }}>Nenhuma equipe encontrada.</div>}
+      <Row gutter={[16, 16]}>
         {equipes.map(eq => (
-          <div key={eq.id} style={{
-            background: '#0F1528',
-            borderRadius: 16,
-            width: 320,
-            padding: 24,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-start',
-            marginBottom: 24,
-            position: 'relative',
-            border: '1px solid rgba(255,255,255,0.1)'
-          }}>
-            {/* Nome da equipe */}
-            <div style={{ 
-              fontWeight: '600', 
-              fontSize: 18, 
-              color: '#fff', 
-              marginBottom: 8,
-              lineHeight: 1.3
-            }}>
-              {eq.nome}
-            </div>
-            
-            {/* Data */}
-            <div style={{ 
-              color: '#a0a8b8', 
-              fontSize: 14, 
-              marginBottom: 16,
-              lineHeight: 1.4
-            }}>
-              {eq.funcao}
-            </div>
-            
-            {/* Barra de progresso */}
-            <div style={{ width: '100%', marginBottom: 12 }}>
-              <div style={{ 
-                height: 6, 
-                background: 'rgba(255,255,255,0.1)', 
-                borderRadius: 3, 
-                overflow: 'hidden' 
-              }}>
-                <div style={{ 
-                  width: `${eq.presenca}%`, 
-                  height: '100%', 
-                  background: eq.presenca > 0 ? '#4dabf7' : 'rgba(255,255,255,0.1)',
-                  borderRadius: 3, 
-                  transition: 'width 0.3s' 
-                }} />
-              </div>
-            </div>
-            
-            {/* Porcentagem */}
-            <div style={{ 
-              color: '#fff', 
-              fontSize: 16, 
-              fontWeight: '500',
-              marginBottom: 16
-            }}>
-              {eq.presenca}%
-            </div>
-            
-            {/* Botão de acesso */}
-            <button style={{
-              width: '100%',
-              height: 36,
-              borderRadius: 8,
-              background: 'transparent',
-              color: '#4dabf7',
-              fontWeight: '500',
-              fontSize: 14,
-              border: '1px solid #4dabf7',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s'
-            }}
-              onClick={() => abrirDrawerEquipe(eq)}
-              onMouseEnter={(e) => {
-                e.target.style.background = '#4dabf7';
-                e.target.style.color = '#fff';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.background = 'transparent';
-                e.target.style.color = '#4dabf7';
-              }}
+          <Col key={eq.id} xs={24} sm={12} md={8} lg={6} xl={4}>
+            <Card
+              title={eq.nome}
+              extra={<Button type="primary" size="small" onClick={() => abrirDrawerEquipe(eq)}>Acessar</Button>}
+              style={{ height: '100%' }}
+              size="small"
             >
-              → 
-            </button>
-          </div>
+              <div style={{ marginBottom: 8 }}>
+                <Text type="secondary" style={{ fontSize: '12px' }}>{eq.funcao}</Text>
+              </div>
+              <div style={{ marginBottom: 8 }}>
+                <Text strong style={{ fontSize: '14px' }}>Presença: {eq.presenca}%</Text>
+              </div>
+              <Progress percent={eq.presenca} size="small" />
+            </Card>
+          </Col>
         ))}
-      </div>
+      </Row>
       <Drawer
         title={drawerEquipe ? `Equipe: ${drawerEquipe.nome}` : ''}
         placement="right"
-        width={480}
+        width={600}
         open={!!drawerEquipe}
         onClose={() => setDrawerEquipe(null)}
-        bodyStyle={{ padding: 0, background: '#1a1f3a' }}
-        headerStyle={{ background: '#1a1f3a', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#fff' }}
-        closable
-        styles={{
-          header: { color: '#fff' },
-          body: { background: '#1a1f3a' }
-        }}
       >
-        <div style={{ padding: 32, background: '#1a1f3a' }}>
-          {usuariosLoading ? <Spin style={{ color: '#fff' }} /> : (
+        <div style={{ padding: '0 16px' }}>
+          {usuariosLoading ? <Spin /> : (
             <>
-              <h3 style={{ fontWeight: 700, fontSize: 22, marginBottom: 24, color: '#fff' }}>Usuários da equipe</h3>
-              {usuarios.length === 0 && <div style={{ color: '#a0a8b8' }}>Nenhum usuário nesta equipe.</div>}
+              <Title level={4} style={{ marginBottom: 24 }}>Usuários da equipe</Title>
+              {usuarios.length === 0 && <Text type="secondary">Nenhum usuário nesta equipe.</Text>}
               {usuarios.map(usuario => (
-                <div key={usuario.id} style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  borderBottom: '1px solid rgba(255,255,255,0.1)',
-                  padding: '18px 0',
-                  gap: 12,
-                }}>
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontWeight: 600, fontSize: 18, color: '#fff', textTransform: 'capitalize' }}>{usuario.nome?.toLowerCase()}</span>
-                    <span style={{ fontSize: 14, color: '#a0a8b8', margin: 0, lineHeight: 1.2 }}>{usuario.funcao || usuario.tipo_usuario || ''}</span>
+                <Card key={usuario.id} size="small" style={{ marginBottom: 8 }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 12,
+                  }}>
+                    <div>
+                      <div><Text strong>{usuario.nome}</Text></div>
+                      <div><Text type="secondary" size="small">{usuario.funcao || usuario.tipo_usuario || ''}</Text></div>
+                    </div>
+                    <Select
+                      value={presencasEdit[usuario.id] ?? undefined}
+                      style={{ width: 140 }}
+                      onChange={val => handleSelectChange(usuario.id, val)}
+                      options={STATUS_OPTIONS}
+                      placeholder="Selecione"
+                    />
                   </div>
-                  <Select
-                    value={presencasEdit[usuario.id] ?? undefined}
-                    style={{ width: 140 }}
-                    onChange={val => handleSelectChange(usuario.id, val)}
-                    options={STATUS_OPTIONS}
-                    placeholder="Selecione"
-                  />
-                </div>
+                </Card>
               ))}
               {usuarios.length > 0 && (
-                <div style={{ textAlign: 'right', marginTop: 32 }}>
+                <div style={{ textAlign: 'right', marginTop: 24 }}>
                   <Button type="primary" onClick={salvarPresencas} loading={saving}>
                     Salvar Presenças
                   </Button>

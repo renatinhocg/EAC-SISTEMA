@@ -43,9 +43,9 @@ const Checklists = () => {
     { title: 'Título', dataIndex: 'titulo', key: 'titulo' },
     { title: 'Tipo', dataIndex: 'tipo', key: 'tipo',
       render: tipo => {
-        if (tipo === 'pré-encontro') return 'Pré-encontro';
-        if (tipo === 'durante o encontro') return 'Durante o encontro';
-        if (tipo === 'pós-encontro') return 'Pós-encontro';
+        if (tipo === 'Pré') return 'Pré';
+        if (tipo === 'Durante') return 'Durante';
+        if (tipo === 'Pós') return 'Pós';
         return tipo;
       }
     },

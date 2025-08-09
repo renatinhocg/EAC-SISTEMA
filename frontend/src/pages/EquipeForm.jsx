@@ -1,12 +1,42 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Form, Input, Button, Card, message } from 'antd';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getApiUrl } from '../config/api';
 
+// Configuração do React Quill
+const quillModules = {
+  toolbar: {
+    container: [
+      [{ 'header': [1, 2, 3, false] }],
+      [{ 'size': ['small', false, 'large', 'huge'] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'color': [] }, { 'background': [] }],
+      [{ 'align': [] }],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'indent': '-1'}, { 'indent': '+1' }],
+      ['blockquote'],
+      ['link'],
+      ['clean']
+    ]
+  }
+};
+
+const quillFormats = [
+  'header', 'size',
+  'bold', 'italic', 'underline', 'strike',
+  'color', 'background',
+  'align',
+  'list', 'bullet', 'indent',
+  'blockquote',
+  'link'
+];
+
 const EquipeForm = () => {
-  const descRef = useRef(null);
-  const sobreRef = useRef(null);
+  const [descricao, setDescricao] = useState('');
+  const [sobre, setSobre] = useState('');
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const { id } = useParams();
@@ -17,8 +47,8 @@ const EquipeForm = () => {
       axios.get(getApiUrl(`equipes/${id}`))
         .then(res => {
           form.setFieldsValue({ nome: res.data.nome, funcao: res.data.funcao });
-          if (descRef.current) descRef.current.innerHTML = res.data.descricao || '';
-          if (sobreRef.current) sobreRef.current.innerHTML = res.data.sobre || '';
+          setDescricao(res.data.descricao || '');
+          setSobre(res.data.sobre || '');
         })
         .catch(() => message.error('Erro ao carregar equipe'));
     }
@@ -28,8 +58,8 @@ const EquipeForm = () => {
     try {
       const payload = {
         ...values,
-        descricao: descRef.current?.innerHTML || '',
-        sobre: sobreRef.current?.innerHTML || ''
+        descricao: descricao,
+        sobre: sobre
       };
       if (isEdit) {
         await axios.put(getApiUrl(`equipes/${id}`), payload);
@@ -45,7 +75,7 @@ const EquipeForm = () => {
   };
 
   return (
-    <Card title={isEdit ? 'Editar Equipe' : 'Nova Equipe'} style={{ maxWidth: 600, margin: '0 auto' }}>
+    <Card title={isEdit ? 'Editar Equipe' : 'Nova Equipe'} style={{ maxWidth: 900, margin: '0 auto' }}>
       <Form
         form={form}
         layout="vertical"
@@ -56,20 +86,26 @@ const EquipeForm = () => {
           <Input />
         </Form.Item>
         <Form.Item label="Descrição">
-          <div style={{ marginBottom: 8 }}>
-            <Button size="small" onClick={() => document.execCommand('bold')}>B</Button>
-            <Button size="small" onClick={() => document.execCommand('italic')}>I</Button>
-            <Button size="small" onClick={() => document.execCommand('underline')}>U</Button>
-          </div>
-          <div ref={descRef} contentEditable style={{ minHeight: 120, border: '1px solid #d9d9d9', padding: 8, borderRadius: 4 }} />
+          <ReactQuill
+            theme="snow"
+            value={descricao}
+            onChange={setDescricao}
+            modules={quillModules}
+            formats={quillFormats}
+            placeholder="Digite a descrição da equipe..."
+            style={{ minHeight: '200px' }}
+          />
         </Form.Item>
         <Form.Item label="Sobre">
-          <div style={{ marginBottom: 8 }}>
-            <Button size="small" onClick={() => document.execCommand('bold')}>B</Button>
-            <Button size="small" onClick={() => document.execCommand('italic')}>I</Button>
-            <Button size="small" onClick={() => document.execCommand('underline')}>U</Button>
-          </div>
-          <div ref={sobreRef} contentEditable style={{ minHeight: 120, border: '1px solid #d9d9d9', padding: 8, borderRadius: 4 }} />
+          <ReactQuill
+            theme="snow"
+            value={sobre}
+            onChange={setSobre}
+            modules={quillModules}
+            formats={quillFormats}
+            placeholder="Digite informações sobre a equipe..."
+            style={{ minHeight: '200px' }}
+          />
         </Form.Item>
         <Form.Item name="funcao" label="Função">
           <Input />

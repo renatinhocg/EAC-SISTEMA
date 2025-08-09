@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { message, Spin, Avatar } from 'antd';
+import React, { useEffect, useState, useCallback } from 'react';
+import { message, Spin, Avatar, Checkbox, Tabs } from 'antd';
 import { BellOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
@@ -18,19 +18,57 @@ type ChecklistByTipo = {
 };
 
 const tipos = [
-  { key: 'pré-encontro', label: 'Pré-encontro' },
-  { key: 'durante o encontro', label: 'Durante o encontro' },
-  { key: 'pós-encontro', label: 'Pós-encontro' }
+  { key: 'Pré', label: 'Pré' },
+  { key: 'Durante', label: 'Durante' },
+  { key: 'Pós', label: 'Pós' }
 ];
 
 const Checklist: React.FC = () => {
   const [itemsByTipo, setItemsByTipo] = useState<ChecklistByTipo>({});
   const [loading, setLoading] = useState(false);
-  const [expandedTipo, setExpandedTipo] = useState<string | null>(null);
+  const [checkedItems, setCheckedItems] = useState<Set<number>>(new Set());
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  // Função para carregar checks salvos no localStorage
+  const loadCheckedItems = useCallback(() => {
+    try {
+      const saved = localStorage.getItem(`checklist-checks-${user?.id}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setCheckedItems(new Set(parsed));
+      }
+    } catch (error) {
+      console.error('Erro ao carregar checks:', error);
+    }
+  }, [user?.id]);
+
+  // Função para salvar checks no localStorage
+  const saveCheckedItems = (newCheckedItems: Set<number>) => {
+    try {
+      localStorage.setItem(`checklist-checks-${user?.id}`, JSON.stringify(Array.from(newCheckedItems)));
+    } catch (error) {
+      console.error('Erro ao salvar checks:', error);
+    }
+  };
+
+  // Função para toggle do checkbox
+  const handleCheckToggle = (itemId: number) => {
+    const newCheckedItems = new Set(checkedItems);
+    if (newCheckedItems.has(itemId)) {
+      newCheckedItems.delete(itemId);
+    } else {
+      newCheckedItems.add(itemId);
+    }
+    setCheckedItems(newCheckedItems);
+    saveCheckedItems(newCheckedItems);
+  };
+
   useEffect(() => {
+    if (user?.id) {
+      loadCheckedItems();
+    }
+    
     setLoading(true);
     api.get('/checklists')
       .then(res => {
@@ -54,7 +92,7 @@ const Checklist: React.FC = () => {
       })
       .catch(() => message.error('Erro ao carregar checklist'))
       .finally(() => setLoading(false));
-  }, [user?.equipe?.id]);
+  }, [user?.equipe?.id, user?.id, loadCheckedItems]);
 
   return (
     <div style={{ 
@@ -64,6 +102,32 @@ const Checklist: React.FC = () => {
       color: 'white',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
     }}>
+      {/* CSS customizado para as abas */}
+      <style>
+        {`
+          .ant-tabs .ant-tabs-tab {
+            color: rgba(255, 255, 255, 0.7) !important;
+            font-weight: 500 !important;
+          }
+          .ant-tabs .ant-tabs-tab-active {
+            color: #fff !important;
+          }
+          .ant-tabs .ant-tabs-ink-bar {
+            background: #1890ff !important;
+          }
+          .ant-tabs .ant-tabs-content-holder {
+            background: transparent !important;
+          }
+          .ant-checkbox .ant-checkbox-inner {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-color: rgba(255, 255, 255, 0.3) !important;
+          }
+          .ant-checkbox-checked .ant-checkbox-inner {
+            background: #1890ff !important;
+            border-color: #1890ff !important;
+          }
+        `}
+      </style>
       {/* Header igual ao da Home */}
       <div style={{ 
         display: 'flex', 
@@ -109,109 +173,96 @@ const Checklist: React.FC = () => {
           display: 'flex', 
           justifyContent: 'center', 
           alignItems: 'center', 
-          height: '200px' 
+          height: '200px' ,
+          fontSize:'20px'
         }}>
           <Spin size="large" />
         </div>
       ) : (
-        <div style={{ display: 'grid', gap: '16px' }}>
-          {tipos.map(tipo => {
-            const isExpanded = expandedTipo === tipo.key;
-            const items = itemsByTipo[tipo.key] || [];
-            
-            return (
-              <div
-                key={tipo.key}
-                style={{ 
-                  background: '#0F1528',
-                  borderRadius: '16px',
-                  padding: '20px',
-                  transition: 'all 0.3s ease'
-                }}
-              >
-                <div 
-                  onClick={() => setExpandedTipo(isExpanded ? null : tipo.key)}
-                  style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'center',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <div style={{ fontSize: '16px', fontWeight: '600', color: '#fff' }}>
-                    {tipo.label}
-                  </div>
-                  <div style={{ 
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    fontSize: '20px',
-                    transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
-                    transition: 'transform 0.3s ease'
-                  }}>
-                    ›
-                  </div>
-                </div>
-                <div style={{ 
-                  fontSize: '14px', 
-                  color: 'rgba(255, 255, 255, 0.7)', 
-                  marginTop: '4px' 
-                }}>
-                  {items.length} itens
-                </div>
-
-                {/* Lista expandida de itens */}
-                {isExpanded && (
-                  <div style={{ 
-                    marginTop: '16px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '12px'
-                  }}>
-                    {items.length === 0 ? (
+        <Tabs
+          defaultActiveKey="Pré"
+          centered
+          items={tipos.map(tipo => ({
+            key: tipo.key,
+            label: tipo.label,
+            children: (
+              <div style={{ 
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '20px',
+                paddingTop: '16px'
+              }}>
+                {(() => {
+                  const items = itemsByTipo[tipo.key] || [];
+                  
+                  if (items.length === 0) {
+                    return (
                       <div style={{ 
                         color: 'rgba(255, 255, 255, 0.5)',
                         fontStyle: 'italic',
                         textAlign: 'center',
-                        padding: '20px'
+                        padding: '40px 20px',
+                        background: '#0F1528',
+                        borderRadius: '12px',
                       }}>
                         Nenhum item encontrado para esta categoria
                       </div>
-                    ) : (
-                      items.map(item => (
-                        <div
-                          key={item.id}
-                          style={{
-                            background: 'rgba(255, 255, 255, 0.05)',
-                            borderRadius: '12px',
-                            padding: '16px',
-                            border: '1px solid rgba(255, 255, 255, 0.1)'
-                          }}
-                        >
-                          <div style={{
-                            fontSize: '15px',
-                            fontWeight: '500',
-                            color: '#fff',
-                            marginBottom: '8px'
-                          }}>
-                            {item.titulo}
-                          </div>
-                          {item.descricao && (
-                            <div style={{
-                              fontSize: '14px',
-                              color: 'rgba(255, 255, 255, 0.7)',
-                              lineHeight: '1.4'
-                            }}>
-                              {item.descricao}
-                            </div>
-                          )}
+                    );
+                  }
+                  
+                  return items.map(item => (
+                    <div
+                      key={item.id}
+                      style={{
+                        background: '#0F1528',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '12px'
+                      }}
+                    >
+                      <Checkbox
+                        checked={checkedItems.has(item.id)}
+                        onChange={() => handleCheckToggle(item.id)}
+                        style={{
+                          marginTop: '2px'
+                        }}
+                      />
+                      <div style={{ flex: 1 }}>
+                        <div style={{
+                          fontSize: '20px',
+                          fontWeight: '700',
+                          color: checkedItems.has(item.id) ? 'rgba(255, 255, 255, 0.6)' : '#fff',
+                          marginBottom: '8px',
+                          textDecoration: checkedItems.has(item.id) ? 'line-through' : 'none'
+                        }}>
+                          {item.titulo}
                         </div>
-                      ))
-                    )}
-                  </div>
-                )}
+                        {item.descricao && (
+                          <div style={{
+                            fontSize: '14px',
+                            color: checkedItems.has(item.id) ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.7)',
+                            lineHeight: '1.4'
+                          }}>
+                            {item.descricao}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ));
+                })()}
               </div>
-            );
-          })}
-        </div>
+            )
+          }))}
+          tabBarStyle={{
+            backgroundColor: 'transparent',
+            marginBottom: '0',
+           
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            color: '#fff'
+          }}
+        />
       )}
     </div>
   );
