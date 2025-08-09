@@ -2,13 +2,12 @@ import axios from 'axios';
 
 // Configuração da API 
 const getBaseURL = () => {
-  // Se estiver em produção, usa a URL do environment ou fallback
-  if (import.meta.env.PROD) {
-    return import.meta.env.VITE_API_URL || 'https://eac-pwa-project-production.up.railway.app/api';
+  // Usa API local em desenvolvimento
+  if (import.meta.env.DEV) {
+    return 'http://localhost:3000/api';
   }
-  
-  // Se estiver em desenvolvimento
-  return 'http://localhost:3001';
+  // Railway em produção
+  return 'https://eac-pwa-project-production.up.railway.app/api';
 };
 
 const api = axios.create({

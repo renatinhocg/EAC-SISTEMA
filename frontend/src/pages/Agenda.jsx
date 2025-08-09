@@ -12,20 +12,37 @@ const Agenda = () => {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false); // Removido pois não está sendo usado
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [tableData, setTableData] = useState([]);
 
-  const fetchData = () => {
-    setLoading(true);
-    axios.get(getApiUrl('agendas'))
-      .then(res => { setData(res.data); setFilteredData(res.data); })
-      .catch(() => message.error('Erro ao carregar eventos'))
-      .finally(() => setLoading(false));
+  // Função para ordenar eventos por data e hora
+  const ordenarEventos = (eventos) => {
+    return [...eventos].sort((a, b) => {
+      // Considera formato ISO ou yyyy-mm-dd
+      const dataA = new Date(a.data);
+      const dataB = new Date(b.data);
+      if (dataA - dataB !== 0) return dataA - dataB;
+      // hora_inicio pode ser null
+      if (a.hora_inicio && b.hora_inicio) {
+        return a.hora_inicio.localeCompare(b.hora_inicio);
+      }
+      return 0;
+    });
   };
 
-  useEffect(() => { fetchData(); }, []);
+  const fetchData = () => {
+    axios.get(getApiUrl('agendas'))
+      .then(res => {
+        const ordenados = ordenarEventos(res.data);
+        setData(ordenados);
+        setFilteredData(ordenados);
+      })
+      .catch(() => message.error('Erro ao carregar eventos'));
+  };
+
+  useEffect(() => { fetchData(); }, []); // fetchData não depende de variáveis externas
 
   useEffect(() => {
     setTableData(filteredData);
@@ -34,7 +51,7 @@ const Agenda = () => {
   const filterData = (search) => {
     let list = [...data];
     if (search) list = list.filter(item => item.titulo.toLowerCase().includes(search.toLowerCase()));
-    setFilteredData(list);
+    setFilteredData(ordenarEventos(list));
   };
 
   const handleSearch = value => { filterData(value); };
@@ -44,17 +61,29 @@ const Agenda = () => {
   const handleCreate = () => navigate('/agendas/novo');
   const handleEdit = record => navigate(`/agendas/${record.id}/editar`);
   const handleDelete = id => {
-    axios.delete(getApiUrl('agendas/${id}'))
+    axios.delete(getApiUrl(`agendas/${id}`))
       .then(() => { message.success('Evento deletado'); fetchData(); })
       .catch(() => message.error('Erro ao deletar evento'));
   };
 
-  const onDragEnd = result => {
+  const onDragEnd = async result => {
     if (!result.destination) return;
     const items = Array.from(tableData);
     const [reordered] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reordered);
     setTableData(items);
+
+    // Monta o array de ordem para enviar ao backend
+    const ordem = items.map((item, idx) => ({ id: item.id, ordem: idx + 1 }));
+    try {
+      await axios.patch(getApiUrl('agendas/ordem'), { ordem });
+      // Atualiza também o data/filteredData para refletir a ordem salva
+      setData(items);
+      setFilteredData(items);
+      message.success('Ordem salva!');
+    } catch (err) {
+      message.error('Erro ao salvar ordem');
+    }
   };
 
   return (
@@ -100,16 +129,20 @@ const Agenda = () => {
                         <td>{item.local}</td>
                         <td>{item.descricao}</td>
                         <td>
-                          <Space>
-                            <Button icon={<EyeOutlined />} onClick={() => handleView(item)} />
-                            <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(item)} />
-                            <Button type="default" onClick={() => navigate(`/agendas/${item.id}/presenca`)}>
-                              Presença
-                            </Button>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                            <div style={{ display: 'flex', gap: 8 }}>
+                              <Button icon={<EyeOutlined />} onClick={() => handleView(item)} />
+                              <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(item)} />
+                              {item.presenca_ativa ? (
+                                <Button type="default" onClick={() => navigate(`/agendas/${item.id}/presenca`)}>
+                                  Presença
+                                </Button>
+                              ) : null}
+                            </div>
                             <Popconfirm title="Tem certeza?" onConfirm={() => handleDelete(item.id)} okText="Sim" cancelText="Não">
                               <Button type="link" icon={<DeleteOutlined />} danger />
                             </Popconfirm>
-                          </Space>
+                          </div>
                         </td>
                       </tr>
                     )}

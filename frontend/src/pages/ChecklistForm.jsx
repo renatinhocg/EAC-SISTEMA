@@ -5,8 +5,17 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { getApiUrl } from '../config/api';
 
 const ChecklistForm = () => {
+  // Captura erros globais de promise não tratada
+  useEffect(() => {
+    const handler = (event) => {
+      console.error('[ChecklistForm] UnhandledRejection:', event.reason);
+    };
+    window.addEventListener('unhandledrejection', handler);
+    return () => window.removeEventListener('unhandledrejection', handler);
+  }, []);
   const [form] = Form.useForm();
   const [equipes, setEquipes] = useState([]);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = Boolean(id);
@@ -27,6 +36,13 @@ const ChecklistForm = () => {
   }, [id, isEdit, form]);
 
   const onFinish = async values => {
+    console.log('[ChecklistForm] onFinish chamado', values);
+    setLoading(true);
+    // Timeout de segurança para loading travado
+    const loadingTimeout = setTimeout(() => {
+      setLoading(false);
+      message.error('Tempo limite atingido. Verifique sua conexão ou o backend.');
+    }, 10000);
     try {
       const payload = {
         titulo: values.titulo,
@@ -34,17 +50,29 @@ const ChecklistForm = () => {
         tipo: values.tipo,
         equipe_ids: values.equipe_ids || []
       };
+      console.log('[ChecklistForm] Enviando payload:', payload);
       if (isEdit) {
-        await axios.put(getApiUrl(`checklists/${id}`), payload);
+        console.log('[ChecklistForm] Antes do await axios.put');
+        const resp = await axios.put(getApiUrl(`checklists/${id}`), payload);
+        console.log('[ChecklistForm] Depois do await axios.put', resp);
         message.success('Checklist atualizada com sucesso');
       } else {
-        await axios.post(getApiUrl('checklists'), payload);
+        console.log('[ChecklistForm] Antes do await axios.post');
+        const resp = await axios.post(getApiUrl('checklists'), payload);
+        console.log('[ChecklistForm] Depois do await axios.post', resp);
         message.success('Checklist criada com sucesso');
       }
+      clearTimeout(loadingTimeout);
       navigate('/checklists');
     } catch (err) {
-      console.error('Erro ao salvar checklist:', err);
+      clearTimeout(loadingTimeout);
+      console.error('[ChecklistForm] Erro ao salvar checklist:', err);
+      if (err && err.response) {
+        console.error('[ChecklistForm] Erro response data:', err.response.data);
+      }
       message.error('Erro ao salvar checklist');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -70,10 +98,10 @@ const ChecklistForm = () => {
           <Input.TextArea rows={4} />
         </Form.Item>
         <Form.Item>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading={loading} disabled={loading}>
             {isEdit ? 'Atualizar' : 'Criar'}
           </Button>
-          <Button style={{ marginLeft: 8 }} onClick={() => navigate('/checklists')}>
+          <Button style={{ marginLeft: 8 }} onClick={() => navigate('/checklists')} disabled={loading}>
             Cancelar
           </Button>
         </Form.Item>

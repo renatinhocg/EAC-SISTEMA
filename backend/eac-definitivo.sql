@@ -35,7 +35,6 @@ CREATE TABLE usuario (
 ) ENGINE=InnoDB;
 
 -- Cria tabela de equipe
-CREATE TABLE equipe (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
     descricao TEXT,
@@ -45,6 +44,7 @@ CREATE TABLE equipe (
 
 -- Cria tabela de checklist
 CREATE TABLE checklist (
+CREATE TABLE agenda (
     id INT AUTO_INCREMENT PRIMARY KEY,
     titulo VARCHAR(100) NOT NULL,
     descricao TEXT

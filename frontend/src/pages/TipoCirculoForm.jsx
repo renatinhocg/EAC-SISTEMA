@@ -12,7 +12,7 @@ const TipoCirculoForm = () => {
 
   useEffect(() => {
     if (isEdit) {
-      axios.get(getApiUrl('tipo_circulo/${id}'))
+      axios.get(getApiUrl(`tipo_circulo/${id}`))
         .then(res => form.setFieldsValue(res.data))
         .catch(() => message.error('Erro ao carregar tipo de círculo'));
     }
@@ -21,7 +21,7 @@ const TipoCirculoForm = () => {
   const onFinish = async (values) => {
     try {
       if (isEdit) {
-        await axios.put(getApiUrl('tipo_circulo/${id}'), values);
+        await axios.put(getApiUrl(`tipo_circulo/${id}`), values);
         message.success('Tipo de círculo atualizado com sucesso');
       } else {
         await axios.post(getApiUrl('tipo_circulo'), values);

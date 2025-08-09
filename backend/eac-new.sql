@@ -21,7 +21,6 @@ CREATE TABLE usuario (
   FOREIGN KEY (tipo_circulo_id) REFERENCES tipo_circulo(id)
 );
 
-CREATE TABLE equipe (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
     descricao TEXT,
@@ -31,6 +30,7 @@ CREATE TABLE equipe (
 
 CREATE TABLE checklist (
     id INT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE agenda (
     titulo VARCHAR(100) NOT NULL,
     descricao TEXT
 );

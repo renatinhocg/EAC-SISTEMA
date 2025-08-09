@@ -1,0 +1,41 @@
+# Ignorar diretórios de desenvolvimento
+node_modules/
+.git/
+.vscode/
+
+# Ignorar arquivos de desenvolvimento do frontend e PWA
+frontend/node_modules/
+frontend/src/
+frontend/public/
+frontend/vite.config.js
+frontend/tsconfig.json
+frontend/package.json
+frontend/package-lock.json
+
+pwa/node_modules/
+pwa/src/
+pwa/public/
+pwa/vite.config.js
+pwa/tsconfig.json
+pwa/package.json
+pwa/package-lock.json
+
+# Manter apenas os builds
+!frontend/dist/
+!pwa/dist/
+
+# Arquivos temporários
+*.log
+*.tmp
+.env.local
+.env.development
+.env.test
+
+# Scripts de desenvolvimento
+build-production.js
+criar_*.js
+migrar_*.js
+popular_*.js
+testar_*.js
+verificar_*.js
+*.sql

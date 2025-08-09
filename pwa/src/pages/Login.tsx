@@ -1,10 +1,8 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { Form, Input, Button, Typography, Alert } from 'antd';
+import { Form, Input, Button } from 'antd';
 import { AuthContext } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios, { type AxiosError } from 'axios';
-
-const { Title } = Typography;
 
 interface LocationState { from?: { pathname: string } }
 
@@ -66,40 +64,130 @@ const Login: React.FC = () => {
   }
 
   return (
-    <div style={{ maxWidth: 360, margin: '100px auto', padding: '0 16px' }}>
-      <Title level={2}>Login</Title>
-      {error && (
-        <Alert 
-          message="Erro no Login" 
-          description={error} 
-          type="error" 
-          showIcon 
-          style={{ marginBottom: 16 }} 
-          closable
-          onClose={() => setError(null)}
-        />
-      )}
-      <Form name="login" onFinish={onFinish} layout="vertical" onValuesChange={handleFormChange}>
-        <Form.Item
-          label="Email"
-          name="email"
-          rules={[{ required: true, type: 'email', message: 'Informe um email válido' }]}
+    <div style={{ 
+      minHeight: '100vh', 
+      background: 'linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '20px'
+    }}>
+      <div style={{ 
+        width: '100%', 
+        maxWidth: '360px',
+        background: 'white',
+        borderRadius: '20px',
+        padding: '32px 24px',
+        boxShadow: '0 20px 50px rgba(0,0,0,0.1)'
+      }}>
+        <div style={{ 
+          textAlign: 'center', 
+          marginBottom: '32px' 
+        }}>
+          <div style={{ 
+            fontSize: '28px', 
+            fontWeight: '700', 
+            color: '#1f2937',
+            marginBottom: '8px'
+          }}>
+            Login
+          </div>
+          <div style={{ 
+            fontSize: '14px', 
+            color: '#6b7280'
+          }}>
+            Entre com suas credenciais
+          </div>
+        </div>
+
+        {error && (
+          <div style={{
+            background: '#fef2f2',
+            border: '1px solid #fecaca',
+            borderRadius: '12px',
+            padding: '16px',
+            marginBottom: '20px'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              color: '#dc2626',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}>
+              <span>⚠️</span>
+              Erro no Login
+            </div>
+            <div style={{
+              color: '#7f1d1d',
+              fontSize: '13px',
+              marginTop: '4px'
+            }}>
+              {error}
+            </div>
+          </div>
+        )}
+        
+        <Form 
+          name="login" 
+          onFinish={onFinish} 
+          layout="vertical" 
+          onValuesChange={handleFormChange}
+          style={{ width: '100%' }}
         >
-          <Input />
-        </Form.Item>
-        <Form.Item
-          label="Senha"
-          name="senha"
-          rules={[{ required: true, message: 'Informe a senha' }]}
-        >
-          <Input.Password />
-        </Form.Item>
-        <Form.Item>
-          <Button type="primary" htmlType="submit" loading={loading} block>
-            Entrar
-          </Button>
-        </Form.Item>
-      </Form>
+          <Form.Item
+            label={<span style={{ color: '#374151', fontWeight: '500' }}>Email</span>}
+            name="email"
+            rules={[{ required: true, type: 'email', message: 'Informe um email válido' }]}
+            style={{ marginBottom: '20px' }}
+          >
+            <Input 
+              placeholder="garcom@email.com"
+              style={{ 
+                height: '48px',
+                borderRadius: '12px',
+                fontSize: '16px'
+              }}
+            />
+          </Form.Item>
+          
+          <Form.Item
+            label={<span style={{ color: '#374151', fontWeight: '500' }}>Senha</span>}
+            name="senha"
+            rules={[{ required: true, message: 'Informe a senha' }]}
+            style={{ marginBottom: '24px' }}
+          >
+            <Input.Password 
+              placeholder="••••"
+              style={{ 
+                height: '48px',
+                borderRadius: '12px',
+                fontSize: '16px'
+              }}
+            />
+          </Form.Item>
+          
+          <Form.Item>
+            <Button 
+              type="primary" 
+              htmlType="submit" 
+              loading={loading} 
+              block
+              style={{
+                height: '48px',
+                borderRadius: '12px',
+                background: '#2563eb',
+                border: 'none',
+                fontSize: '16px',
+                fontWeight: '600'
+              }}
+            >
+              Entrar
+            </Button>
+          </Form.Item>
+        </Form>
+      </div>
     </div>
   );
 };

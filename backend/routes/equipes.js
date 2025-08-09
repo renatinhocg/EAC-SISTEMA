@@ -77,14 +77,38 @@ router.delete('/:id', (req, res) => {
 
 // Listar usuários de uma equipe
 router.get('/:id/usuarios', (req, res) => {
+  console.log(`🔍 GET /equipes/${req.params.id}/usuarios - Buscando usuários da equipe`);
   db.query(
     'SELECT * FROM usuario WHERE equipe_id = ?',
     [req.params.id],
     (err, results) => {
-      if (err) return res.status(500).json({ error: err });
+      if (err) {
+        console.error('❌ Erro ao buscar usuários da equipe:', err);
+        return res.status(500).json({ error: err });
+      }
+      console.log(`✅ Encontrados ${results.length} usuários na equipe ${req.params.id}`);
       res.json(results);
     }
   );
+});
+
+// Buscar membros de uma equipeS
+router.get('/:id/membros', (req, res) => {
+  console.log(`🔍 Buscando membros da equipe ${req.params.id}`);
+  const sql = `
+    SELECT u.id, u.nome, u.foto, u.tipo_usuario, u.email, u.telefone
+    FROM usuario u
+    WHERE u.equipe_id = $1
+    ORDER BY u.nome
+  `;
+  db.query(sql, [req.params.id], (err, results) => {
+    if (err) {
+      console.error('❌ Erro ao buscar membros:', err);
+      return res.status(500).json({ error: err });
+    }
+    console.log(`✅ Membros encontrados para equipe ${req.params.id}:`, results);
+    res.json(results);
+  });
 });
 
 module.exports = router;

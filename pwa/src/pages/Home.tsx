@@ -1,208 +1,355 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Row, Col, Card, Typography, Button, Modal } from 'antd';
+import { Avatar } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { PlayCircleOutlined, DownloadOutlined, ShareAltOutlined, PlusOutlined } from '@ant-design/icons';
+import { BellOutlined } from '@ant-design/icons';
 import { AuthContext } from '../contexts/AuthContext';
+import api from '../services/api';
 
-const { Title, Paragraph } = Typography;
+interface TeamMember {
+  id: number;
+  nome: string;
+  foto: string | null;
+  tipo_usuario: string;
+}
 
 const Home: React.FC = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-  // Adiciona estado para instalação do PWA
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [showInstall, setShowInstall] = useState(false);
-  const [showInstallModal, setShowInstallModal] = useState(false);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
 
-  // Detecta iOS (Safari) para mostrar instrução manual
-  const [isIOS, setIsIOS] = useState(false);
+  // Carregar membros da equipe
   useEffect(() => {
-    const ua = window.navigator.userAgent.toLowerCase();
-    setIsIOS(/iphone|ipad|ipod/.test(ua) && /safari/.test(ua));
-  }, []);
-
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const evt = e as BeforeInstallPromptEvent;
-      evt.preventDefault();
-      setDeferredPrompt(evt);
-      setShowInstall(true);
-      
-      // Mostra o modal automaticamente após 2 segundos se for Android/Chrome
-      setTimeout(() => {
-        if (!isIOS) {
-          setShowInstallModal(true);
+    const loadTeamMembers = async () => {
+      if (user?.equipe?.id) {
+        try {
+          console.log('🔍 Carregando membros da equipe:', user.equipe.id);
+          const response = await api.get(`/equipes/${user.equipe.id}/membros`);
+          console.log('✅ Membros carregados:', response.data);
+          setTeamMembers(response.data || []);
+        } catch (error) {
+          console.error('❌ Erro ao carregar membros da equipe:', error);
+          setTeamMembers([]);
         }
-      }, 2000);
-    };
-    window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, [isIOS]);
-
-  const handleInstallClick = async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        setShowInstall(false);
-        setShowInstallModal(false);
       }
-      setDeferredPrompt(null);
-    }
-  };
+    };
+    loadTeamMembers();
+  }, [user?.equipe]);
 
-  const handleShowIOSModal = () => {
-    setShowInstallModal(true);
-  };
+  // Debug do usuário
+  useEffect(() => {
+    console.log('👤 Dados do usuário logado:', user);
+    console.log('📷 Foto do usuário:', user?.foto);
+  }, [user]);
+
+  if (!user) {
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        background: '#2d3748',
+        color: 'white'
+      }}>
+        Carregando...
+      </div>
+    );
+  }
 
   return (
-    <div>
-      {/* Modal para instalação do PWA */}
-      <Modal
-        title={
-          <div style={{ textAlign: 'center' }}>
-            <DownloadOutlined style={{ fontSize: 24, color: '#1890ff', marginBottom: 8 }} />
-            <div>Instalar App</div>
-          </div>
-        }
-        open={showInstallModal}
-        onCancel={() => setShowInstallModal(false)}
-        footer={null}
-        centered
-        width={320}
-      >
-        <div style={{ textAlign: 'center', padding: '20px 0' }}>
-          {isIOS ? (
-            <div>
-              <ShareAltOutlined style={{ fontSize: 48, color: '#1890ff', marginBottom: 16 }} />
-              <Paragraph style={{ fontSize: 16, marginBottom: 16 }}>
-                Para instalar este app no seu iPhone:
-              </Paragraph>
-              <Paragraph style={{ color: '#666' }}>
-                1. Toque no ícone <ShareAltOutlined style={{ color: '#1890ff' }} /> (compartilhar) na barra inferior<br/>
-                2. Selecione <PlusOutlined style={{ color: '#1890ff' }} /> "Adicionar à Tela de Início"<br/>
-                3. Toque em "Adicionar"
-              </Paragraph>
-            </div>
-          ) : (
-            <div>
-              <DownloadOutlined style={{ fontSize: 48, color: '#1890ff', marginBottom: 16 }} />
-              <Paragraph style={{ fontSize: 16, marginBottom: 16 }}>
-                Instale nosso app para uma melhor experiência!
-              </Paragraph>
-              <Paragraph style={{ color: '#666', marginBottom: 20 }}>
-                Acesso rápido, notificações e funcionamento offline
-              </Paragraph>
-              <Button 
-                type="primary" 
-                size="large" 
-                onClick={handleInstallClick}
-                style={{ width: '100%', height: 48, fontSize: 16 }}
-              >
-                <DownloadOutlined /> Instalar Agora
-              </Button>
-            </div>
-          )}
-        </div>
-      </Modal>
+    <>
+      <div style={{ 
+        minHeight: '100vh', 
 
-      {/* Botão flutuante para mostrar modal de instalação */}
-      {(showInstall || isIOS) && (
-        <>
-          <style>{`
-            @keyframes pulse {
-              0% { transform: scale(1); }
-              50% { transform: scale(1.05); }
-              100% { transform: scale(1); }
-            }
-          `}</style>
-          <div style={{ 
-            position: 'fixed', 
-            top: 16, 
-            right: 16, 
-            zIndex: 1000,
-            animation: 'pulse 2s infinite'
+        padding: '20px 16px 90px 16px',
+        color: 'white',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+      }}>
+      {/* Header com saudação e notificação */}
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'space-between', 
+        marginBottom: '24px' 
+      }}>
+        <div>
+          <div style={{ fontSize: '16px', color: 'rgba(255, 255, 255, 0.7)' }}>
+            Olá,
+          </div>
+          <div style={{ fontSize: '24px', fontWeight: '600' }}>
+            {user?.nome?.split(' ')[0] || 'Usuário'}
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '40px',
+            padding: 0,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
           }}>
-            <Button 
-              type="primary" 
-              shape="round"
-              icon={<DownloadOutlined />}
-              onClick={isIOS ? handleShowIOSModal : () => setShowInstallModal(true)}
+            <BellOutlined 
+              onClick={() => navigate('/notificacoes')}
+              style={{ fontSize: '24px', color: '#2E3D63', padding:'0 16px', cursor: 'pointer' }} 
+            />
+            <Avatar
+              src={
+                user?.foto && user.foto.trim() !== ''
+                  ? `http://localhost:3000/uploads/usuarios/${user.foto}`
+                  : 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face'
+              }
+              size={48}
+              onClick={() => navigate('/perfil')}
+              style={{ cursor: 'pointer' }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Card da equipe */}
+      <div style={{ 
+        background: '#09112C',
+        borderRadius: '16px',
+        padding: '16px',
+        marginBottom: '20px',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            background: 'rgba(255, 255, 255, 0.2)',
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '20px'
+          }}>
+            🍽️
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: '18px', fontWeight: '600', marginBottom: '4px' }}>
+              {user?.equipe?.nome || 'Garçom'}
+            </div>
+            <div style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.7)', lineHeight: '1.4' }}>
+              A equipe de garçons é responsável pelo atendimento aos encontristas, portanto deve sempre se comportar de maneira adequada.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Banner amarelo com imagem */}
+      <div style={{
+        background: 'linear-gradient(135deg, #f6d55c 0%, #fbbf24 100%)',
+        borderRadius: '16px',
+        padding: '0',
+        marginBottom: '20px',
+        position: 'relative',
+        overflow: 'hidden',
+        height: '120px'
+      }}>
+        <img 
+          src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&h=120&fit=crop&crop=center"
+          alt="Banner da equipe"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            borderRadius: '16px'
+          }}
+        />
+      </div>
+
+      {/* Sua equipe */}
+      <div style={{ marginBottom: '20px' }}>
+        <h3 style={{ 
+          fontSize: '18px', 
+          fontWeight: '600', 
+          marginBottom: '16px', 
+          color: 'white' 
+        }}>
+          Sua equipe
+        </h3>
+        <div style={{ 
+          display: 'flex', 
+          gap: '12px',
+          overflowX: 'auto',
+          overflowY: 'hidden',
+          paddingBottom: '4px',
+          margin: '0 -16px',
+          paddingLeft: '16px',
+          paddingRight: '16px'
+        }}>
+          {Array.isArray(teamMembers) && teamMembers.length > 0 ? teamMembers.slice(0, 4).map((member, index) => (
+            <div
+              key={member.id}
               style={{
-                boxShadow: '0 4px 12px rgba(24, 144, 255, 0.4)',
-                border: 'none'
+                background: 'white',
+                borderRadius: '12px',
+                padding: '16px 12px',
+                textAlign: 'center',
+                minWidth: '80px',
+                color: '#1a202c'
               }}
             >
-              Instalar App
-            </Button>
-          </div>
-        </>
-      )}
-
-      <Title level={3}>Olá {user?.nome || 'Usuário'},</Title>
-      <Row gutter={[16, 16]}>
-        <Col span={24}>
-          <Card
-            onClick={() => navigate('/loja')}
-            style={{ backgroundColor: '#ff146c', color: '#fff', cursor: 'pointer', borderRadius: 8 }}
-            bodyStyle={{ padding: '24px' }}
-          >
-            <Title level={2} style={{ color: '#fff' }}>LOJA DO EAC</Title>
-          </Card>
-        </Col>
-        <Col xs={24} md={8}>
-          <Card
-            onClick={() => navigate('/equipe')}
-            style={{ backgroundColor: '#2c325b', color: '#fff', cursor: 'pointer', borderRadius: 8 }}
-            bodyStyle={{ padding: '16px' }}
-          >
-            <Title level={4} style={{ color: '#fff' }}>A Equipe</Title>
-            <Paragraph style={{ color: '#fff' }}>Objetivo, caridade, gratidão. Leia sobre o propósito.</Paragraph>
-          </Card>
-        </Col>
-        <Col xs={24} md={8}>
-          <Card
-            onClick={() => navigate('/checklist')}
-            style={{ backgroundColor: '#2c325b', color: '#fff', cursor: 'pointer', borderRadius: 8 }}
-            bodyStyle={{ padding: '16px' }}
-          >
-            <Title level={4} style={{ color: '#fff' }}>Checklist</Title>
-            <Paragraph style={{ color: '#fff' }}>Checklist da sua equipe</Paragraph>
-          </Card>
-        </Col>
-        <Col xs={24} md={8}>
-          <Card
-            onClick={() => navigate('/presenca')}
-            style={{ backgroundColor: '#2c325b', color: '#fff', cursor: 'pointer', borderRadius: 8 }}
-            bodyStyle={{ padding: '16px' }}
-          >
-            <Title level={4} style={{ color: '#fff' }}>Presença</Title>
-          </Card>
-        </Col>
-      </Row>
-      <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-        <Col span={24}>
-          <Card
-            onClick={() => navigate('/reflexoes')}
-            style={{ backgroundColor: '#e6f7ff', cursor: 'pointer', borderRadius: 8 }}
-            bodyStyle={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px' }}
-          >
-            <div>
-              <Title level={5}>1ª preparatória</Title>
-              <Paragraph style={{ margin: 0 }}>reflexão sobre o ano jubilar</Paragraph>
+              <Avatar
+                src={
+                  member.foto && member.foto.trim() !== ''
+                    ? `http://localhost:3000/uploads/usuarios/${member.foto}`
+                    : `https://images.unsplash.com/photo-${1472099645785 + index}?w=48&h=48&fit=crop&crop=face`
+                }
+                size={48}
+                style={{ marginBottom: '8px' }}
+              />
+              <div style={{ 
+                fontSize: '12px', 
+                fontWeight: '600',
+                color: '#1a202c'
+              }}>
+                {member.nome.split(' ')[0]}
+              </div>
+              <div style={{ 
+                fontSize: '10px', 
+                color: '#666',
+                textTransform: 'capitalize'
+              }}>
+                {member.tipo_usuario}
+              </div>
             </div>
-            <PlayCircleOutlined style={{ fontSize: 24, color: '#1890ff' }} />
-          </Card>
-        </Col>
-      </Row>
-    </div>
+          )) : (
+            // Placeholder se não há membros carregados
+            [1, 2, 3, 4].map((index) => (
+              <div
+                key={index}
+                style={{
+                  background: 'white',
+                  borderRadius: '12px',
+                  padding: '16px 12px',
+                  textAlign: 'center',
+                  minWidth: '80px',
+                  color: '#1a202c'
+                }}
+              >
+                <Avatar
+                  src={`https://images.unsplash.com/photo-${1472099645785 + index}?w=48&h=48&fit=crop&crop=face`}
+                  size={48}
+                  style={{ marginBottom: '8px' }}
+                />
+                <div style={{ 
+                  fontSize: '12px', 
+                  fontWeight: '600',
+                  color: '#1a202c'
+                }}>
+                  Membro {index}
+                </div>
+                <div style={{ 
+                  fontSize: '10px', 
+                  color: '#666'
+                }}>
+                  Equipe
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Grid com cards */}
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: '1fr 1fr',
+        gap: '12px',
+        marginBottom: '20px'
+      }}>
+        {/* Card Pós-montagem */}
+        <div 
+          style={{ 
+            background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+            borderRadius: '16px',
+            padding: '20px',
+            cursor: 'pointer',
+            boxShadow: '0 4px 20px rgba(239, 68, 68, 0.3)',
+            gridColumn: '1 / -1'
+          }}
+          onClick={() => navigate('/pos-montagem')}
+        >
+          <div style={{ fontSize: '20px', fontWeight: '700', marginBottom: '8px' }}>
+            Pós-montagem
+          </div>
+          <div style={{ fontSize: '16px', fontWeight: '600', marginBottom: '2px' }}>
+            17.08.2025
+          </div>
+          <div style={{ fontSize: '16px', fontWeight: '600' }}>
+            17h
+          </div>
+        </div>
+
+        {/* Card Hambúrguer */}
+        <div style={{
+          background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)',
+          borderRadius: '16px',
+          padding: '16px',
+          cursor: 'pointer',
+          color: '#1a202c',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          <div style={{ 
+            fontSize: '12px', 
+            fontWeight: '600', 
+            marginBottom: '4px',
+            color: '#64748b'
+          }}>
+            Sábado
+          </div>
+          <div style={{ 
+            fontSize: '16px', 
+            fontWeight: '700',
+            marginBottom: '8px'
+          }}>
+            Hambúrguer
+          </div>
+          <div style={{ 
+            fontSize: '18px', 
+            fontWeight: '700',
+            color: '#f59e0b'
+          }}>
+            $35
+          </div>
+          <div style={{
+            position: 'absolute',
+            right: '8px',
+            top: '8px',
+            fontSize: '24px'
+          }}>
+            🍔
+          </div>
+        </div>
+
+        {/* Card em branco (placeholder) */}
+        <div style={{
+          background: 'rgba(255, 255, 255, 0.08)',
+          borderRadius: '16px',
+          padding: '16px',
+          cursor: 'pointer',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100px'
+        }}>
+          <div style={{ 
+            textAlign: 'center',
+            color: 'rgba(255, 255, 255, 0.5)'
+          }}>
+            <div style={{ fontSize: '24px', marginBottom: '8px' }}>📋</div>
+            <div style={{ fontSize: '12px' }}>Em breve</div>
+          </div>
+        </div>
+      </div>
+      </div>
+    </>
   );
 };
-
-// Adiciona a interface para o evento BeforeInstallPromptEvent
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; }>;
-}
 
 export default Home;

@@ -1,23 +1,22 @@
 import React from 'react'
-import { Layout } from 'antd'
-import {
-  HomeOutlined,
-  InfoCircleOutlined,
-  CheckSquareOutlined,
-  TeamOutlined,
-  FileTextOutlined,
-  CalendarOutlined
-} from '@ant-design/icons'
 import { useNavigate, useLocation } from 'react-router-dom'
+import {
+  Home,
+  Info,
+  CheckSquare,
+  Users,
+  FileText,
+  Calendar
+} from 'lucide-react'
 
 // Apenas 6 links principais
 const icons: { path: string; icon: React.ReactNode }[] = [
-  { path: '/', icon: <HomeOutlined /> },
-  { path: '/sobre', icon: <InfoCircleOutlined /> },
-  { path: '/checklist', icon: <CheckSquareOutlined /> },
-  { path: '/presenca', icon: <TeamOutlined /> },
-  { path: '/reflexoes', icon: <FileTextOutlined /> },
-  { path: '/calendario', icon: <CalendarOutlined /> }
+  { path: '/', icon: <Home /> },
+  { path: '/sobre', icon: <Info /> },
+  { path: '/checklist', icon: <CheckSquare /> },
+  { path: '/presenca', icon: <Users /> },
+  { path: '/reflexoes', icon: <FileText /> },
+  { path: '/calendario', icon: <Calendar /> }
 ]
 
 const BottomMenu: React.FC = () => {
@@ -25,48 +24,66 @@ const BottomMenu: React.FC = () => {
   const location = useLocation()
 
   return (
-    <Layout.Footer
+    <div
       style={{
         position: 'fixed',
-        bottom: 16,
+        bottom: '16px',
         left: '50%',
         transform: 'translateX(-50%)',
         width: 'calc(100% - 24px)',
-        maxWidth: 360,
-        height: 65,
-        backgroundColor: '#0345EF',
-        borderRadius: 16,
-        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        maxWidth: '360px',
+        height: '65px',
+        backgroundColor: 'white',
+        border: '1px solid #e0e0e0',
+        borderRadius: '16px',
+        boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
         display: 'flex',
-        padding: 0,
-        margin: 0,
-        overflow: 'hidden'
+        zIndex: 1000
       }}
     >
-      {icons.map(item => (
-        <div key={item.path} style={{ flex: 1, textAlign: 'center' }}>
-          <div
+      {icons.map(item => {
+        const active = location.pathname === item.path
+        return (
+          <button
+            key={item.path}
             onClick={() => navigate(item.path)}
             style={{
-              display: 'inline-flex',
+              flex: 1,
+              display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: 8,
-              width: 42,
-              height: 42,
-              margin:'12px 0 0 0',
-              borderRadius: 8,
-              backgroundColor: location.pathname === item.path ? '#0238C4' : 'transparent',
-              cursor: 'pointer',
-              color: location.pathname === item.path ? '#fff' : 'rgba(255,255,255,0.6)',
-              fontSize: 24
+              height: '100%',
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              margin: 0,
+              cursor: 'pointer'
             }}
           >
-            {item.icon}
-          </div>
-        </div>
-      ))}
-    </Layout.Footer>
+            <div
+              style={{
+                width: '40px',
+                height: '40px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '8px',
+                backgroundColor: active ? '#2563eb' : 'transparent',
+                transition: 'background-color 0.2s'
+              }}
+            >
+              <div style={{ 
+                color: active ? 'white' : '#6b7280',
+                width: '24px',
+                height: '24px'
+              }}>
+                {item.icon}
+              </div>
+            </div>
+          </button>
+        )
+      })}
+    </div>
   )
 }
 

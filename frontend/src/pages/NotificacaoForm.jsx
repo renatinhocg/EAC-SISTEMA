@@ -18,7 +18,7 @@ const NotificacaoForm = () => {
       .catch(() => {});
 
     if (isEdit) {
-      axios.get(getApiUrl('notificacoes/${id}'))
+      axios.get(getApiUrl(`notificacoes/${id}`))
         .then(res => {
           const { titulo, descricao, para_todos, equipe_id } = res.data;
           form.setFieldsValue({
@@ -41,7 +41,7 @@ const NotificacaoForm = () => {
         equipe_id: values.equipe_id ?? null
       };
       if (isEdit) {
-        await axios.put(getApiUrl('notificacoes/${id}'), payload);
+        await axios.put(getApiUrl(`notificacoes/${id}`), payload);
         message.success('Notificação atualizada com sucesso');
       } else {
         await axios.post(getApiUrl('notificacoes'), payload);

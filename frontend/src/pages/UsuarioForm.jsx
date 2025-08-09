@@ -4,6 +4,7 @@ import { UploadOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getApiUrl } from '../config/api';
+import { API_BASE_URL } from '../config/api';
 
 const UsuarioForm = () => {
   const [form] = Form.useForm();
@@ -27,19 +28,23 @@ const UsuarioForm = () => {
         setTeams(teamsRes.data);
         setTipoCirculos(tipoRes.data);
         if (isEdit) {
-          const userRes = await axios.get(getApiUrl('usuarios/${id}'));
+          const userRes = await axios.get(getApiUrl(`usuarios/${id}`));
           console.log('Dados de usuário recebidos para edição:', userRes.data);
-          // Converter equipe_id para number e preencher formulário
-          form.setFieldsValue({
-            ...userRes.data,
-            equipe_id: userRes.data.equipe_id != null ? Number(userRes.data.equipe_id) : null,
-          });
+          // Aguarda o carregamento das equipes antes de setar o valor
+          setTimeout(() => {
+            form.setFieldsValue({
+              ...userRes.data,
+              equipe_id: userRes.data.equipe_id ? Number(userRes.data.equipe_id) : null,
+            });
+          }, 100);
           if (userRes.data.foto) {
+            // Corrige: monta URL sem /api para arquivos estáticos
+            const staticUrl = `${API_BASE_URL.replace('/api', '')}/uploads/usuarios/${userRes.data.foto}`;
             setFileList([{
               uid: '-1',
               name: userRes.data.foto.split('/').pop(),
               status: 'done',
-              url: getApiUrl('${userRes.data.foto}')
+              url: staticUrl
             }]);
           }
         }
@@ -51,30 +56,62 @@ const UsuarioForm = () => {
   }, [id, isEdit, form]);
 
   const onFinish = async (values) => {
-    console.log('Dados para salvar usuário:', values);
+    const payload = { ...values };
+    if (payload.equipe_id) {
+      payload.equipe_id = Number(payload.equipe_id);
+    }
+    if (payload.tipo_circulo_id) {
+      payload.tipo_circulo_id = Number(payload.tipo_circulo_id);
+    }
+    console.log('Dados para salvar usuário:', payload);
     try {
-      // Cria ou atualiza usuário com equipe
-      const res = isEdit
-        ? await axios.put(getApiUrl('usuarios/${id}'), values)
-        : await axios.post(getApiUrl('usuarios'), values);
-      // A equipe é atualizada pelo endpoint PUT /usuarios/:id
-      // (sem necessidade de chamada adicional)
-      const savedId = isEdit ? id : res.data.id;
-      // Upload de foto se existir
-      // Se um arquivo novo foi selecionado, faz upload
-      if (fileList.length > 0 && fileList[0].originFileObj) {
-        const formData = new FormData();
-        formData.append('foto', fileList[0].originFileObj);
-        const fotoRes = await axios.post(
-          getApiUrl('usuarios/${savedId}/foto'),
-          formData,
-          { headers: { 'Content-Type': 'multipart/form-data' } }
-        );
-        // Atualiza localStorage para mostrar nova foto
-        const storedUser = JSON.parse(localStorage.getItem('user')) || {};
-        const updatedUser = { ...storedUser, foto: fotoRes.data.caminho };
-        localStorage.setItem('user', JSON.stringify(updatedUser));
+      if (isEdit) {
+        // Modo edição: usar rota antiga
+        const res = await axios.put(getApiUrl(`usuarios/${id}`), payload);
+        const savedId = id;
+        
+        // Upload de foto se existir
+        if (fileList.length > 0 && fileList[0].originFileObj) {
+          const formData = new FormData();
+          formData.append('foto', fileList[0].originFileObj);
+          const fotoRes = await axios.post(
+            getApiUrl(`usuarios/${savedId}/foto`),
+            formData,
+            { headers: { 'Content-Type': 'multipart/form-data' } }
+          );
+          // Atualiza localStorage para mostrar nova foto
+          const storedUser = JSON.parse(localStorage.getItem('user')) || {};
+          const updatedUser = { ...storedUser, foto: fotoRes.data.caminho };
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+        }
+      } else {
+        // Modo criação: criar usuário primeiro, depois fazer upload da foto
+        console.log('📝 Criando usuário SEM foto via rota normal');
+        const res = await axios.post(getApiUrl('usuarios'), values);
+        console.log('✅ Usuário criado:', res.data);
+        
+        const savedId = res.data.id;
+        
+        // Se tem foto, fazer upload separado (com tratamento de erro)
+        if (fileList.length > 0 && fileList[0].originFileObj) {
+          try {
+            const formData = new FormData();
+            formData.append('foto', fileList[0].originFileObj);
+            
+            console.log('📷 Fazendo upload da foto para usuário ID:', savedId);
+            const fotoRes = await axios.post(
+              getApiUrl(`usuarios/${savedId}/foto`),
+              formData,
+              { headers: { 'Content-Type': 'multipart/form-data' } }
+            );
+            console.log('✅ Foto uploaded:', fotoRes.data);
+          } catch (fotoError) {
+            console.error('❌ Erro no upload da foto:', fotoError);
+            message.warning('Usuário criado, mas houve erro no upload da foto. Você pode editar o usuário para adicionar a foto depois.');
+          }
+        }
       }
+      
       message.success(`Usuário ${isEdit ? 'atualizado' : 'criado'} com sucesso`);
       navigate('/usuarios');
     } catch {

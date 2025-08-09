@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Drawer, Spin, Select, Button, message } from 'antd';
 import { getApiUrl } from '../config/api';
@@ -37,9 +36,9 @@ const AgendaPresencaEquipes = () => {
       }
       const equipesComPresenca = await Promise.all(res.data.map(async eq => {
         try {
-          const usuariosRes = await axios.get(getApiUrl('equipes/${eq.id}/usuarios'));
+          const usuariosRes = await axios.get(getApiUrl(`equipes/${eq.id}/usuarios`));
           const total = usuariosRes.data.length;
-          const presencasRes = await axios.get(getApiUrl('presencas/evento/${agendaId}/equipe/${eq.id}'));
+          const presencasRes = await axios.get(getApiUrl(`presencas/evento/${agendaId}/equipe/${eq.id}`));
           const presentes = presencasRes.data.filter(p => p.presente === 1).length;
           const percent = total > 0 ? Math.round((presentes / total) * 100) : 0;
           return {
@@ -76,7 +75,7 @@ const AgendaPresencaEquipes = () => {
     setUsuariosLoading(true);
     try {
       // Busca usuários da equipe
-      const res = await axios.get(getApiUrl('equipes/${equipe.id}/usuarios'));
+      const res = await axios.get(getApiUrl(`equipes/${equipe.id}/usuarios`));
       console.log('DEBUG usuarios equipe', equipe.id, res.data);
       // Garante que o nome está presente e normalizado
       const usuariosFormatados = (res.data || [])
@@ -88,13 +87,13 @@ const AgendaPresencaEquipes = () => {
         .sort((a, b) => a.nome.localeCompare(b.nome)); // Ordena por nome A-Z
       setUsuarios(usuariosFormatados);
       // Corrige a rota para buscar presenças por evento e equipe
-      const presencasRes = await axios.get(getApiUrl('presencas/evento/${agendaId}/equipe/${equipe.id}'));
+      const presencasRes = await axios.get(getApiUrl(`presencas/evento/${agendaId}/equipe/${equipe.id}`));
       const map = {};
       presencasRes.data.forEach(p => {
         map[p.usuario_id] = p.presente !== null && p.presente !== undefined ? Number(p.presente) : undefined;
       });
       setPresencasEdit(map);
-    } catch (e) {
+    } catch {
       setUsuarios([]);
       setPresencasEdit({});
     } finally {
@@ -118,7 +117,7 @@ const AgendaPresencaEquipes = () => {
           else if (statusNum === 2 || statusNum === '2') statusStr = 'justificada';
           // Corrige a rota para salvar presença por evento e equipe
           return axios.post(
-            getApiUrl('presencas/evento/${agendaId}/equipe/${drawerEquipe.id}/usuario/${u.id}'),
+            getApiUrl(`presencas/evento/${agendaId}/equipe/${drawerEquipe.id}/usuario/${u.id}`),
             { status: statusStr }
           );
         })
@@ -135,95 +134,171 @@ const AgendaPresencaEquipes = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#fff' }}>
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 32, padding: '32px 0 0 32px', background: '#fff' }}>
-        <button
-          onClick={() => navigate(-1)}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: 28,
-            color: '#2d3954',
-            marginRight: 16,
-            padding: 0,
+    <div style={{ minHeight: '100vh', background: '#1a1f3a' }}>
+      {/* Header com foto e notificações */}
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        padding: '20px 24px',
+        background: '#1a1f3a'
+      }}>
+        <div></div> {/* Espaço vazio à esquerda */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          {/* Ícone de notificação */}
+          <div style={{
+            width: 40,
+            height: 40,
+            borderRadius: '50%',
+            background: '#fff',
             display: 'flex',
             alignItems: 'center',
-          }}
-          aria-label="Voltar"
-        >
-          <ArrowLeftOutlined />
-        </button>
-        <h2 style={{ fontWeight: 800, fontSize: 32, color: '#2d3954', margin: 0 }}>Presença por Equipe</h2>
+            justifyContent: 'center',
+            cursor: 'pointer'
+          }}>
+            <span style={{ fontSize: 20 }}>🔔</span>
+          </div>
+          {/* Foto do usuário */}
+          <div style={{
+            width: 40,
+            height: 40,
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #f357a8, #7b2ff2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden'
+          }}>
+            <img 
+              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face" 
+              alt="Usuário" 
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          </div>
+        </div>
+      </div>
+      
+      {/* Título */}
+      <div style={{ padding: '20px 24px 40px 24px' }}>
+        <h1 style={{ 
+          fontSize: '24pt', 
+          fontWeight: '600', 
+          color: '#fff', 
+          margin: 0,
+          marginBottom: 8
+        }}>
+          Presença
+        </h1>
+        <p style={{ 
+          color: '#a0a8b8', 
+          fontSize: 16, 
+          margin: 0,
+          lineHeight: 1.5
+        }}>
+          Selecione o evento e marque a presença dos adolescentes e tios
+        </p>
       </div>
       <div style={{
         display: 'flex',
         flexWrap: 'wrap',
-        gap: 32,
+        gap: 24,
         justifyContent: 'center',
-        padding: 32,
-        background: '#fff',
+        padding: '0 24px 32px 24px',
+        background: '#1a1f3a',
       }}>
-        {loading && <div>Carregando equipes...</div>}
-        {erro && !loading && <div style={{color: 'red', fontWeight: 600}}>{erro}</div>}
-        {!loading && !erro && equipes.length === 0 && <div>Nenhuma equipe encontrada.</div>}
+        {loading && <div style={{ color: '#fff' }}>Carregando equipes...</div>}
+        {erro && !loading && <div style={{color: '#ff4d4f', fontWeight: 600}}>{erro}</div>}
+        {!loading && !erro && equipes.length === 0 && <div style={{ color: '#fff' }}>Nenhuma equipe encontrada.</div>}
         {equipes.map(eq => (
           <div key={eq.id} style={{
-            background: '#fff',
-            borderRadius: 20,
-            boxShadow: '0 2px 8px #f0f1f2',
+            background: '#0F1528',
+            borderRadius: 16,
             width: 320,
-            padding: 32,
+            padding: 24,
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             marginBottom: 24,
-            position: 'relative', // Para posicionar a badge
+            position: 'relative',
+            border: '1px solid rgba(255,255,255,0.1)'
           }}>
-            <div style={{ fontSize: 32, color: '#1890ff', marginBottom: 8 }}>
-              <span role="img" aria-label="equipe">👥</span>
+            {/* Nome da equipe */}
+            <div style={{ 
+              fontWeight: '600', 
+              fontSize: 18, 
+              color: '#fff', 
+              marginBottom: 8,
+              lineHeight: 1.3
+            }}>
+              {eq.nome}
             </div>
-            <div style={{ fontWeight: 800, fontSize: 32, color: '#2d3954', marginBottom: 0 }}>{eq.nome}</div>
-            <div style={{ color: '#6b7a90', fontSize: 20, marginBottom: 16 }}>{eq.funcao}</div>
-            {/* Badge de porcentagem no canto superior direito */}
-            <div style={{
-              position: 'absolute',
-              top: 18,
-              right: 24,
-              background: '#006aff',
-              color: '#fff',
-              borderRadius: 12,
-              padding: '2px 12px',
-              fontWeight: 700,
-              fontSize: 16,
-              boxShadow: '0 2px 8px #e3e8f0',
-              zIndex: 2,
-            }}>{eq.presenca}%</div>
-            <div style={{ width: '100%', margin: '16px 0 0 0' }}>
-              <div style={{ height: 12, background: '#e3e8f0', borderRadius: 8, overflow: 'hidden' }}>
-                <div style={{ width: `${eq.presenca}%`, height: '100%', background: '#006aff', borderRadius: 8, transition: 'width 0.3s' }} />
+            
+            {/* Data */}
+            <div style={{ 
+              color: '#a0a8b8', 
+              fontSize: 14, 
+              marginBottom: 16,
+              lineHeight: 1.4
+            }}>
+              {eq.funcao}
+            </div>
+            
+            {/* Barra de progresso */}
+            <div style={{ width: '100%', marginBottom: 12 }}>
+              <div style={{ 
+                height: 6, 
+                background: 'rgba(255,255,255,0.1)', 
+                borderRadius: 3, 
+                overflow: 'hidden' 
+              }}>
+                <div style={{ 
+                  width: `${eq.presenca}%`, 
+                  height: '100%', 
+                  background: eq.presenca > 0 ? '#4dabf7' : 'rgba(255,255,255,0.1)',
+                  borderRadius: 3, 
+                  transition: 'width 0.3s' 
+                }} />
               </div>
-              <div style={{ textAlign: 'center', fontWeight: 500, color: '#2d3954', marginTop: 6, fontSize: 17 }}>{eq.presenca}% presença</div>
             </div>
+            
+            {/* Porcentagem */}
+            <div style={{ 
+              color: '#fff', 
+              fontSize: 16, 
+              fontWeight: '500',
+              marginBottom: 16
+            }}>
+              {eq.presenca}%
+            </div>
+            
+            {/* Botão de acesso */}
             <button style={{
-              marginTop: 32,
-              width: 200,
-              height: 44,
-              borderRadius: 22,
-              background: '#2d3954',
-              color: '#fff',
-              fontWeight: 700,
-              fontSize: 18,
-              border: 'none',
+              width: '100%',
+              height: 36,
+              borderRadius: 8,
+              background: 'transparent',
+              color: '#4dabf7',
+              fontWeight: '500',
+              fontSize: 14,
+              border: '1px solid #4dabf7',
               cursor: 'pointer',
-              boxShadow: '0 2px 8px #e3e8f0',
-              transition: 'background 0.2s',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              transition: 'all 0.2s'
             }}
               onClick={() => abrirDrawerEquipe(eq)}
-            >acessar</button>
+              onMouseEnter={(e) => {
+                e.target.style.background = '#4dabf7';
+                e.target.style.color = '#fff';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'transparent';
+                e.target.style.color = '#4dabf7';
+              }}
+            >
+              → 
+            </button>
           </div>
         ))}
       </div>
@@ -233,28 +308,32 @@ const AgendaPresencaEquipes = () => {
         width={480}
         open={!!drawerEquipe}
         onClose={() => setDrawerEquipe(null)}
-        bodyStyle={{ padding: 0, background: '#fff' }}
-        headerStyle={{ background: '#fff', borderBottom: '1px solid #f0f1f2' }}
+        bodyStyle={{ padding: 0, background: '#1a1f3a' }}
+        headerStyle={{ background: '#1a1f3a', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#fff' }}
         closable
+        styles={{
+          header: { color: '#fff' },
+          body: { background: '#1a1f3a' }
+        }}
       >
-        <div style={{ padding: 32 }}>
-          {usuariosLoading ? <Spin /> : (
+        <div style={{ padding: 32, background: '#1a1f3a' }}>
+          {usuariosLoading ? <Spin style={{ color: '#fff' }} /> : (
             <>
-              <h3 style={{ fontWeight: 700, fontSize: 22, marginBottom: 24 }}>Usuários da equipe</h3>
-              {usuarios.length === 0 && <div>Nenhum usuário nesta equipe.</div>}
+              <h3 style={{ fontWeight: 700, fontSize: 22, marginBottom: 24, color: '#fff' }}>Usuários da equipe</h3>
+              {usuarios.length === 0 && <div style={{ color: '#a0a8b8' }}>Nenhum usuário nesta equipe.</div>}
               {usuarios.map(usuario => (
                 <div key={usuario.id} style={{
                   display: 'flex',
                   flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  borderBottom: '1px solid #f0f1f2',
+                  borderBottom: '1px solid rgba(255,255,255,0.1)',
                   padding: '18px 0',
                   gap: 12,
                 }}>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontWeight: 600, fontSize: 18, color: '#222', textTransform: 'capitalize' }}>{usuario.nome?.toLowerCase()}</span>
-                    <span style={{ fontSize: 14, color: '#888', margin: 0, lineHeight: 1.2 }}>{usuario.funcao || usuario.tipo_usuario || ''}</span>
+                    <span style={{ fontWeight: 600, fontSize: 18, color: '#fff', textTransform: 'capitalize' }}>{usuario.nome?.toLowerCase()}</span>
+                    <span style={{ fontSize: 14, color: '#a0a8b8', margin: 0, lineHeight: 1.2 }}>{usuario.funcao || usuario.tipo_usuario || ''}</span>
                   </div>
                   <Select
                     value={presencasEdit[usuario.id] ?? undefined}

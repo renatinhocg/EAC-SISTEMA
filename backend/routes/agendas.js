@@ -8,7 +8,24 @@ router.get('/', (req, res) => {
     SELECT a.*, STRING_AGG(ae.equipe_id::text, ',') AS equipe_ids
     FROM agenda a
     LEFT JOIN agenda_equipes ae ON ae.agenda_id = a.id
-    GROUP BY a.id`;
+    GROUP BY a.id
+    ORDER BY a.ordem ASC, a.data ASC, a.hora_inicio ASC`;
+// Atualizar ordem dos eventos
+router.patch('/ordem', (req, res) => {
+  const { ordem } = req.body; // [{id: 1, ordem: 1}, ...]
+  if (!Array.isArray(ordem)) return res.status(400).json({ error: 'Formato inválido' });
+  const updates = ordem.map(ev =>
+    new Promise((resolve, reject) => {
+      db.query('UPDATE agenda SET ordem = ? WHERE id = ?', [ev.ordem, ev.id], (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    })
+  );
+  Promise.all(updates)
+    .then(() => res.json({ success: true }))
+    .catch(err => res.status(500).json({ error: err }));
+});
   db.query(sql, (err, results) => {
     if (err) return res.status(500).json({ error: err });
     const data = results.map(r => ({
@@ -87,15 +104,24 @@ router.put('/:id', (req, res) => {
       db.query('DELETE FROM agenda_equipes WHERE agenda_id = ?', [req.params.id], delErr => {
         if (delErr) console.error(delErr);
         if (Array.isArray(equipe_ids) && equipe_ids.length) {
-          const values = equipe_ids.map(id => [req.params.id, id]);
-          db.query(
-            'INSERT INTO agenda_equipes (agenda_id, equipe_id) VALUES ?',
-            [values],
-            insErr => {
-              if (insErr) console.error(insErr);
-              res.json({ id: parseInt(req.params.id) });
-            }
+          const insertPromises = equipe_ids.map(equipeId => 
+            new Promise((resolve, reject) => {
+              db.query(
+                'INSERT INTO agenda_equipes (agenda_id, equipe_id) VALUES (?, ?)',
+                [req.params.id, equipeId],
+                (err2) => {
+                  if (err2) reject(err2);
+                  else resolve();
+                }
+              );
+            })
           );
+          Promise.all(insertPromises)
+            .then(() => res.json({ id: parseInt(req.params.id) }))
+            .catch(err2 => {
+              console.error(err2);
+              res.status(500).json({ error: err2 });
+            });
         } else {
           res.json({ id: parseInt(req.params.id) });
         }

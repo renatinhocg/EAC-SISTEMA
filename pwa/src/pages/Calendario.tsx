@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Typography, Spin, message } from 'antd';
-import { CalendarOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { Spin, message, Avatar } from 'antd';
+import { CalendarOutlined, ClockCircleOutlined, BellOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-
-const { Title, Text } = Typography;
+import { useAuth } from '../hooks/useAuth';
 
 interface AgendaItem { 
   id: number; 
@@ -16,6 +16,8 @@ interface AgendaItem {
 const Calendario: React.FC = () => {
   const [items, setItems] = useState<AgendaItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     setLoading(true);
@@ -62,61 +64,111 @@ const Calendario: React.FC = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', padding: '24px 16px' }}>
-      <div style={{ maxWidth: 420, margin: '0 auto' }}>
-        <Title level={2} style={{ marginBottom: 8, textAlign: 'left' }}>Calendário</Title>
-        <Text type="secondary" style={{ display: 'block', marginBottom: 24 }}>
-          Veja os próximos eventos e compromissos
-        </Text>
-        
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: 40 }}>
-            <Spin size="large" />
+    <div style={{ 
+      minHeight: '100vh', 
+      background: '#141B34',
+      padding: '10px 16px 90px 16px',
+      color: 'white',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    }}>
+      {/* Header igual ao da Home */}
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'space-between', 
+        marginBottom: '24px' 
+      }}>
+        <div>
+          <div style={{ fontSize: '24px', fontWeight: '600', marginTop: '10px' }}>
+            Calendário
           </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {items.map((item, index) => (
-              <Card
-                key={item.id}
-                style={{
-                  borderRadius: 12,
-                  border: index === 0 ? '2px solid #1890ff' : '1px solid #f0f0f0',
-                  boxShadow: index === 0 ? '0 4px 12px rgba(24, 144, 255, 0.15)' : '0 2px 8px rgba(0,0,0,0.06)'
-                }}
-                bodyStyle={{ padding: 16 }}
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <Text strong style={{ fontSize: 16, color: '#262626' }}>
-                    {item.titulo}
-                  </Text>
-                  
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <CalendarOutlined style={{ color: '#1890ff', fontSize: 14 }} />
-                    <Text style={{ color: '#595959', fontSize: 14 }}>
-                      {formatDate(item.data)}
-                    </Text>
-                  </div>
-                  
-                  {formatTime(item.hora_inicio, item.hora_fim) && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <ClockCircleOutlined style={{ color: '#52c41a', fontSize: 14 }} />
-                      <Text style={{ color: '#595959', fontSize: 14 }}>
-                        {formatTime(item.hora_inicio, item.hora_fim)}
-                      </Text>
-                    </div>
-                  )}
-                </div>
-              </Card>
-            ))}
-            
-            {items.length === 0 && (
-              <Card style={{ textAlign: 'center', padding: 20, borderRadius: 12 }}>
-                <Text type="secondary">Nenhum evento agendado</Text>
-              </Card>
-            )}
+        </div>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop:'16px' }}>
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '40px',
+            padding: 0,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            <BellOutlined 
+              onClick={() => navigate('/notificacoes')}
+              style={{ fontSize: '24px', color: '#2E3D63', padding:'0 16px', cursor: 'pointer' }} 
+            />
+            <Avatar
+              src={
+                user?.foto && user.foto.trim() !== ''
+                  ? `http://localhost:3000/uploads/usuarios/${user.foto}`
+                  : 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face'
+              }
+              size={48}
+              onClick={() => navigate('/perfil')}
+              style={{ cursor: 'pointer' }}
+            />
           </div>
-        )}
+        </div>
       </div>
+        
+      {loading ? (
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          height: '200px' 
+        }}>
+          <Spin size="large" />
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {items.map((item) => (
+            <div
+              key={item.id}
+              style={{
+                background: '#0F1528',
+                borderRadius: '16px',
+                padding: '20px',
+              }}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ fontSize: '16px', fontWeight: '600', color: '#fff' }}>
+                  {item.titulo}
+                </div>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <CalendarOutlined style={{ color: '#1890ff', fontSize: '14px' }} />
+                  <div style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px' }}>
+                    {formatDate(item.data)}
+                  </div>
+                </div>
+                
+                {formatTime(item.hora_inicio, item.hora_fim) && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <ClockCircleOutlined style={{ color: '#52c41a', fontSize: '14px' }} />
+                    <div style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px' }}>
+                      {formatTime(item.hora_inicio, item.hora_fim)}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+          
+          {items.length === 0 && (
+            <div style={{ 
+              background: '#0F1528',
+              borderRadius: '16px',
+              padding: '40px',
+              textAlign: 'center',
+              border: '1px solid rgba(255, 255, 255, 0.1)'
+            }}>
+              <div style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                Nenhum evento agendado
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

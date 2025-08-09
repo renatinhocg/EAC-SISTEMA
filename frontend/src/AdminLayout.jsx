@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Layout, Menu, Avatar, Typography, Input, Dropdown } from 'antd';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { getApiUrl } from './config/api';
+import { API_BASE_URL } from './config/api';
 import {
   UserOutlined,
   TeamOutlined,
@@ -52,7 +53,6 @@ const AdminLayout = ({ user, onLogout }) => {
         collapsible collapsed={collapsed} onCollapse={setCollapsed} width={240}
         style={{ position: 'relative', background: '#fff', boxShadow: '2px 0 8px #f0f1f2' }}
       >
-        {/* Título e busca removidos conforme solicitado */}
         <div style={{ padding: collapsed ? 16 : 24, textAlign: 'center' }}>
           {!collapsed && <Title level={3} style={{ margin: 0 }}>EAC</Title>}
         </div>
@@ -60,26 +60,11 @@ const AdminLayout = ({ user, onLogout }) => {
           {!collapsed && <Text strong>Overview</Text>}
           <Menu mode="inline" selectedKeys={[location.pathname.replace('/', '') || 'dashboard']} style={{ border: 'none', marginTop: 8 }} items={menuItems} />
         </div>
-        <div style={{ padding: collapsed ? 0 : '0 24px', marginTop: 24 }}>
-          {!collapsed && <Text strong>Friends</Text>}
-          <Menu
-            mode="inline"
-            style={{ border: 'none', marginTop: 8 }}
-            items={[
-              { key: 'friend1', icon: <UserOutlined />, label: 'Bagas Mahpie', disabled: true },
-              { key: 'friend2', icon: <UserOutlined />, label: 'Sir Dandy', disabled: true },
-              { key: 'friend3', icon: <UserOutlined />, label: 'Jhon Tosan', disabled: true }
-            ]}
-          />
-        </div>
         <div style={{ position: 'absolute', bottom: 0, width: '100%' }}>
           <Menu
             mode="inline"
             style={{ border: 'none' }}
-            items={[
-              { key: 'settings', icon: <SettingOutlined />, label: 'Setting' },
-              { key: 'logout', icon: <LogoutOutlined />, label: 'Logout', onClick: onLogout }
-            ]}
+            items={[{ key: 'logout', icon: <LogoutOutlined />, label: 'Logout', onClick: onLogout }]}
           />
         </div>
       </Sider>
@@ -93,7 +78,7 @@ const AdminLayout = ({ user, onLogout }) => {
             <Dropdown overlay={avatarMenu} trigger={['click']} placement="bottomRight">
               <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
                 <Avatar
-                  src={user?.foto ? getApiUrl('${user.foto}') : undefined}
+                  src={user?.foto ? `${API_BASE_URL.replace('/api', '')}/uploads/usuarios/${user.foto}` : undefined}
                   icon={!user?.foto && <UserOutlined />}
                 />
                 <Text style={{ marginLeft: 8, textTransform: 'capitalize' }}>{user?.tipo_usuario}</Text>

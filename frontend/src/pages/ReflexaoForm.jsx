@@ -22,7 +22,7 @@ const ReflexaoForm = () => {
       .catch(() => {});
 
     if (isEdit) {
-      axios.get(getApiUrl('reflexoes/${id}'))
+      axios.get(getApiUrl(`reflexoes/${id}`))
         .then(res => {
           form.setFieldsValue({
             texto: res.data.texto,
@@ -76,7 +76,7 @@ const ReflexaoForm = () => {
       }
       if (isEdit) {
         await axios.put(
-          getApiUrl('reflexoes/${id}'),
+          getApiUrl(`reflexoes/${id}`),
           dataToSend,
           fileList.length > 0 ? { headers: { 'Content-Type': 'multipart/form-data' } } : {}
         );

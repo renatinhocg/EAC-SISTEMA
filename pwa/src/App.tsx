@@ -8,6 +8,7 @@ import Notificacoes from './pages/Notificacoes'
 import Sobre from './pages/Sobre'
 import Checklist from './pages/Checklist'
 import Presenca from './pages/Presenca'
+import PresencaDetalhe from './pages/PresencaDetalhe'
 import Reflexoes from './pages/Reflexoes'
 import ReflexaoDetalhe from './pages/ReflexaoDetalhe'
 import Calendario from './pages/Calendario'
@@ -25,6 +26,7 @@ function App() {
         <Route path="/sobre" element={<Sobre />} />
         <Route path="/checklist" element={<Checklist />} />
         <Route path="/presenca" element={<Presenca />} />
+        <Route path="/presenca-detalhe/:eventoId" element={<PresencaDetalhe />} />
         <Route path="/reflexoes" element={<Reflexoes />} />
         <Route path="/reflexoes/:id" element={<ReflexaoDetalhe />} />
         <Route path="/calendario" element={<Calendario />} />

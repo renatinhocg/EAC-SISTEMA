@@ -41,7 +41,7 @@ const Reflexoes = () => {
   const handleCreate = () => navigate('/reflexoes/novo');
   const handleEdit = record => navigate(`/reflexoes/${record.id}/editar`);
   const handleDelete = id => {
-    axios.delete(getApiUrl('reflexoes/${id}'))
+    axios.delete(getApiUrl(`reflexoes/${id}`))
       .then(() => { message.success('Reflexão deletada'); loadReflexoes(); })
       .catch(() => message.error('Erro ao deletar reflexão'));
   };
@@ -49,7 +49,7 @@ const Reflexoes = () => {
   const columns = [
     { title: 'Texto', dataIndex: 'texto', key: 'texto' },
     { title: 'Usuário', dataIndex: 'usuario_nome', key: 'usuario_nome' },
-    { title: 'Evento', dataIndex: 'agenda_titulo', key: 'agenda_titulo' },
+    { title: 'Evento', dataIndex: 'agenda_nome', key: 'agenda_nome' },
     {
       title: 'Equipe',
       dataIndex: 'equipes_nomes',

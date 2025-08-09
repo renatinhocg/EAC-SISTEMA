@@ -13,7 +13,7 @@ const AgendaForm = () => {
 
   useEffect(() => {
     if (isEdit) {
-      axios.get(getApiUrl('agendas/${id}'))
+      axios.get(getApiUrl(`agendas/${id}`))
         .then(res => {
           const { titulo, descricao, local, equipe_ids, presenca_ativa, data, hora_inicio, hora_fim } = res.data;
           form.setFieldsValue({
@@ -50,7 +50,7 @@ const AgendaForm = () => {
       console.log('Enviando payload agenda:', payload);
       if (isEdit) {
         await axios.put(
-          getApiUrl('agendas/${id}'),
+getApiUrl(`agendas/${id}`),
           payload
         );
         message.success('Evento atualizado com sucesso');
