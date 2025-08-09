@@ -1,26 +1,130 @@
-# Projeto Admin + App PWA + Backend
+# EAC PWA - Sistema de Gestão para Escola de Aperfeiçoamento de Cabos
 
-Este repositório contém:
-- `frontend/`: Aplicação React + Vite (Admin e App PWA)
-- `backend/`: API Node.js (Express) conectada ao MySQL
+🚀 **EM PRODUÇÃO**: https://app.eacpnsa.com.br
 
-## Como rodar o projeto
+Sistema completo com PWA para usuários e interface administrativa, conectado ao PostgreSQL no Railway.
 
-### Frontend
-1. Entre na pasta `frontend`
-2. Instale as dependências: `npm install`
-3. Rode o projeto: `npm run dev`
+## 🎯 URLs de Produção
+
+- **PWA Principal**: https://app.eacpnsa.com.br/
+- **Admin Interface**: https://app.eacpnsa.com.br/admin
+- **API Backend**: https://app.eacpnsa.com.br/api
+
+## 📱 Estrutura do Projeto
+
+```
+EAC-PWA/
+├── backend/           # API REST (Node.js + Express)
+│   ├── controllers/   # Lógica de negócio
+│   ├── models/        # Modelos de dados
+│   ├── routes/        # Rotas da API
+│   └── middleware/    # Middlewares (auth, upload)
+├── frontend/dist/     # Interface Admin (build)
+├── pwa/dist/         # PWA App (build)
+├── Dockerfile        # Container para deploy
+├── package.json      # Configurações principais
+└── .railwayignore   # Deploy config
+```
+
+## 🛠️ Tecnologias
+
+### Frontend/PWA
+- React 18 + TypeScript
+- Vite (build)
+- Ant Design (UI)
+- Tailwind CSS (styling)
+- PWA (offline-first)
 
 ### Backend
-1. Entre na pasta `backend`
-2. Instale as dependências: `npm install`
-3. Configure o arquivo `.env` com os dados do MySQL
-4. Rode o backend: `node index.js` (ou `npm start` se configurar o script)
+- Node.js + Express
+- PostgreSQL (Railway)
+- JWT Authentication
+- Multer (uploads)
+- bcrypt (passwords)
 
-## Estrutura sugerida
-- Admin e App PWA juntos no frontend, separados por rotas ou pastas.
-- Backend expõe API REST para autenticação, notificações, calendário, equipes, usuários, checklist, reflexões e presença.
+## 🚀 Deploy
 
-## Observações
-- O banco de dados pode ser criado localmente no MySQL Workbench e depois migrado para o Hostinger.
-- Siga o diagrama enviado para criar as rotas e entidades.
+### Produção (Railway)
+```bash
+# Deploy automático
+railway up
+
+# Ver logs
+railway logs
+
+# Status dos serviços
+railway status
+```
+
+### Desenvolvimento Local
+
+1. **Instalar dependências**:
+```bash
+npm install
+```
+
+2. **Executar em desenvolvimento**:
+```bash
+# Backend
+npm run start:backend
+
+# Frontend
+npm run start:frontend
+
+# PWA
+npm run start:pwa
+```
+
+### URLs Locais
+- Frontend: http://localhost:5173
+- PWA: http://localhost:5174
+- Backend: http://localhost:3000
+
+## 📋 Funcionalidades
+
+### PWA (Usuários)
+- ✅ Autenticação JWT
+- ✅ Dashboard personalizado
+- ✅ Gestão de presença
+- ✅ Checklist por equipe
+- ✅ Reflexões e anotações
+- ✅ Calendário de eventos
+- ✅ Notificações
+- ✅ Perfil com upload de foto
+- ✅ Funciona offline
+
+### Admin (Gestores)
+- ✅ Gestão de usuários
+- ✅ Controle de equipes
+- ✅ Dashboard completo
+- ✅ Relatórios
+- ✅ Configurações
+
+## 🔐 Acesso de Teste
+
+### PWA
+- **URL**: https://app.eacpnsa.com.br/
+- **User**: `user@teste.com` / Senha: `123456`
+
+### Admin
+- **URL**: https://app.eacpnsa.com.br/admin
+- **Admin**: `admin@teste.com` / Senha: `123456`
+
+## 📊 Banco de Dados
+
+### PostgreSQL (Railway)
+- **Host**: Railway (automático)
+- **Tabelas**: usuarios, equipes, presencas, checklist, reflexoes, agenda, notificacoes
+- **Backup**: Automático pelo Railway
+
+## 🧹 Estrutura Limpa
+
+✅ Removidos 66+ arquivos de desenvolvimento
+✅ Mantidos apenas arquivos essenciais
+✅ Deploy otimizado (Docker)
+✅ Documentação atualizada
+
+---
+
+**Última atualização**: Agosto 2025
+**Status**: ✅ Produção Ativa
