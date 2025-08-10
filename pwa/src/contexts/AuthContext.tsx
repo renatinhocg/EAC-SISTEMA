@@ -15,6 +15,7 @@ interface User {
 interface AuthContextProps {
   token: string | null;
   user: User | null;
+  loading: boolean;
   login: (email: string, senha: string) => Promise<void>;
   logout: () => void;
   updateUser: (user: User) => void;
@@ -25,6 +26,7 @@ export const AuthContext = createContext<AuthContextProps>({} as AuthContextProp
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null)
   const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token')
@@ -34,6 +36,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setUser(JSON.parse(storedUser))
       api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`
     }
+    setLoading(false)
   }, [])
 
   const login = async (email: string, senha: string) => {
@@ -60,7 +63,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }
 
   return (
-    <AuthContext.Provider value={{ token, user, login, logout, updateUser }}>
+    <AuthContext.Provider value={{ token, user, loading, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   )

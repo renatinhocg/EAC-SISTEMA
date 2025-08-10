@@ -4,12 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import { CalendarOutlined, EyeOutlined, BellOutlined } from '@ant-design/icons';
 import api from '../services/api';
 import { useAuth } from '../hooks/useAuth';
+import { getUserAvatarUrl } from '../utils/imageUtils';
 
 interface ReflexaoItem { 
   id: number; 
   titulo: string; 
   data: string; 
-  agenda_titulo?: string; 
+  agenda_nome?: string; 
+  agenda_data?: string;
 }
 
 const Reflexoes: React.FC = () => {
@@ -21,7 +23,10 @@ const Reflexoes: React.FC = () => {
   useEffect(() => {
     setLoading(true);
     api.get('/reflexoes')
-      .then(res => setItems(res.data))
+      .then(res => {
+        console.log('Reflexões carregadas:', res.data);
+        setItems(res.data);
+      })
       .catch(() => message.error('Erro ao carregar reflexões'))
       .finally(() => setLoading(false));
   }, []);
@@ -33,7 +38,9 @@ const Reflexoes: React.FC = () => {
       let date;
       
       if (dateString.includes('-')) {
-        date = new Date(dateString + (dateString.includes('T') ? '' : 'T00:00:00'));
+        // Para datas que vêm do banco (formato YYYY-MM-DD), usar UTC para evitar timezone
+        const parts = dateString.split('T')[0].split('-');
+        date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
       } else {
         date = new Date(dateString);
       }
@@ -85,11 +92,7 @@ const Reflexoes: React.FC = () => {
               style={{ fontSize: '24px', color: '#2E3D63', padding:'0 16px', cursor: 'pointer' }} 
             />
             <Avatar
-              src={
-                user?.foto && user.foto.trim() !== ''
-                  ? `http://localhost:3000/uploads/usuarios/${user.foto}`
-                  : 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face'
-              }
+              src={getUserAvatarUrl(user?.foto)}
               size={48}
               onClick={() => navigate('/perfil')}
               style={{ cursor: 'pointer' }}
@@ -126,13 +129,13 @@ const Reflexoes: React.FC = () => {
               }}>
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <div style={{ fontSize: '16px', fontWeight: '600', color: '#fff' }}>
-                    {item.agenda_titulo || item.titulo || 'Reflexão'}
+                    {item.agenda_nome || item.titulo || 'Reflexão'}
                   </div>
                   
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <CalendarOutlined style={{ color: '#52c41a', fontSize: '14px' }} />
                     <div style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px' }}>
-                      {formatDate(item.data)}
+                      {formatDate(item.agenda_data && item.agenda_data.trim() !== '' ? item.agenda_data : item.data)}
                     </div>
                   </div>
                 </div>

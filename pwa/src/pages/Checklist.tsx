@@ -4,6 +4,7 @@ import { BellOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../hooks/useAuth';
+import { getUserAvatarUrl } from '../utils/imageUtils';
 
 interface ChecklistItem { 
   id: number; 
@@ -105,26 +106,84 @@ const Checklist: React.FC = () => {
       {/* CSS customizado para as abas */}
       <style>
         {`
-          .ant-tabs .ant-tabs-tab {
-            color: rgba(255, 255, 255, 0.7) !important;
-            font-weight: 500 !important;
+          /* Container das abas */
+          .ant-tabs .ant-tabs-nav {
+            margin-bottom: 24px !important;
           }
+          
+          .ant-tabs .ant-tabs-nav-list {
+            display: flex !important;
+            gap: 4px !important;
+            width: 100% !important;
+            background: rgba(0, 0, 0, 0.2) !important;
+            border-radius: 12px !important;
+            padding: 4px !important;
+          }
+          
+          /* Estilo das abas individuais */
+          .ant-tabs .ant-tabs-tab {
+            flex: 1 !important;
+            background: transparent !important;
+            color: #ffffff !important;
+            font-weight: 500 !important;
+            font-size: 16px !important;
+            border-radius: 8px !important;
+            padding: 10px 16px !important;
+            margin: 0 !important;
+            border: none !important;
+            text-align: center !important;
+            transition: all 0.2s ease !important;
+          }
+          
+          /* Aba ativa */
           .ant-tabs .ant-tabs-tab-active {
+            background: #0345EF !important;
             color: #fff !important;
           }
-          .ant-tabs .ant-tabs-ink-bar {
-            background: #1890ff !important;
+          
+          /* Garante cor branca no texto da aba ativa */
+          .ant-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
+            color: #fff !important;
           }
+          
+          /* Remover o indicador padrão */
+          .ant-tabs .ant-tabs-ink-bar {
+            display: none !important;
+          }
+          
+          /* Container do conteúdo */
           .ant-tabs .ant-tabs-content-holder {
             background: transparent !important;
           }
+          
+          /* Estilos dos checkboxes */
           .ant-checkbox .ant-checkbox-inner {
             background: rgba(255, 255, 255, 0.1) !important;
             border-color: rgba(255, 255, 255, 0.3) !important;
           }
           .ant-checkbox-checked .ant-checkbox-inner {
-            background: #1890ff !important;
-            border-color: #1890ff !important;
+            background: #0345EF !important;
+            border-color: #0345EF !important;
+          }
+          
+          /* Estilos para conteúdo HTML do Quill */
+          .ql-align-justify {
+            text-align: justify !important;
+          }
+          .ql-align-center {
+            text-align: center !important;
+          }
+          .ql-align-right {
+            text-align: right !important;
+          }
+          p {
+            margin: 0 0 8px 0 !important;
+          }
+          strong {
+            font-weight: bold !important;
+          }
+          em {
+            font-style: italic !important;
           }
         `}
       </style>
@@ -155,10 +214,9 @@ const Checklist: React.FC = () => {
               style={{ fontSize: '24px', color: '#2E3D63', padding:'0 16px', cursor: 'pointer' }} 
             />
             <Avatar
-              src={
-                user?.foto && user.foto.trim() !== ''
-                  ? `http://localhost:3000/uploads/usuarios/${user.foto}`
-                  : 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face'
+              src={user?.foto && user.foto.trim() !== '' 
+                ? getUserAvatarUrl(user.foto)
+                : 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face'
               }
               size={48}
               onClick={() => navigate('/perfil')}
@@ -189,7 +247,8 @@ const Checklist: React.FC = () => {
               <div style={{ 
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '20px',
+                fontSize:'20px',
+                gap: '8px',
                 paddingTop: '16px'
               }}>
                 {(() => {
@@ -216,7 +275,7 @@ const Checklist: React.FC = () => {
                       style={{
                         background: '#0F1528',
                         borderRadius: '12px',
-                        padding: '16px',
+                        padding: '20px',
                         display: 'flex',
                         alignItems: 'flex-start',
                         gap: '12px'
@@ -240,13 +299,41 @@ const Checklist: React.FC = () => {
                           {item.titulo}
                         </div>
                         {item.descricao && (
-                          <div style={{
-                            fontSize: '14px',
-                            color: checkedItems.has(item.id) ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.7)',
-                            lineHeight: '1.4'
-                          }}>
-                            {item.descricao}
-                          </div>
+                          <div 
+                            style={{
+                              fontSize: '14px',
+                              color: checkedItems.has(item.id) ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.7)',
+                              lineHeight: '1.4'
+                            }}
+                            dangerouslySetInnerHTML={{ 
+                              __html: (() => {
+                                console.log('Descrição original:', item.descricao);
+                                let decoded = item.descricao;
+                                
+                                // Tentar decodificar múltiplas vezes se necessário
+                                try {
+                                  // Primeiro, tentar decodificar HTML entities
+                                  const textarea = document.createElement('textarea');
+                                  textarea.innerHTML = decoded;
+                                  decoded = textarea.value;
+                                  
+                                  // Se ainda tem códigos HTML, decodificar manualmente
+                                  decoded = decoded
+                                    .replace(/&lt;/g, '<')
+                                    .replace(/&gt;/g, '>')
+                                    .replace(/&quot;/g, '"')
+                                    .replace(/&#39;/g, "'")
+                                    .replace(/&amp;/g, '&');
+                                    
+                                  console.log('Descrição decodificada:', decoded);
+                                  return decoded;
+                                } catch (e) {
+                                  console.error('Erro ao decodificar:', e);
+                                  return item.descricao;
+                                }
+                              })()
+                            }}
+                          />
                         )}
                       </div>
                     </div>
@@ -258,8 +345,6 @@ const Checklist: React.FC = () => {
           tabBarStyle={{
             backgroundColor: 'transparent',
             marginBottom: '0',
-           
-            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
             color: '#fff'
           }}
         />

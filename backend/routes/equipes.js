@@ -1,6 +1,32 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
+const multer = require('multer');
+const path = require('path');
+
+// Configurar multer para upload de imagens de equipes
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, '../uploads/equipes/'));
+  },
+  filename: (req, file, cb) => {
+    const timestamp = Date.now();
+    const extension = path.extname(file.originalname);
+    cb(null, timestamp + extension);
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB max
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Apenas arquivos de imagem são permitidos!'));
+    }
+  }
+});
 
 // Listar todas as equipes (com filtro por coordenador, se informado)
 router.get('/', (req, res) => {
@@ -32,39 +58,55 @@ router.get('/:id', (req, res) => {
 });
 
 // Criar nova equipe
-router.post('/', (req, res) => {
+router.post('/', upload.single('imagem'), (req, res) => {
   const { nome, descricao, sobre, funcao } = req.body;
+  const imagem = req.file ? req.file.filename : null;
+  
   console.log('POST /equipes payload:', req.body);
+  console.log('POST /equipes imagem:', imagem);
+  
   db.query(
-    'INSERT INTO equipe (nome, descricao, sobre, funcao) VALUES (?, ?, ?, ?)',
-    [nome, descricao, sobre, funcao],
+    'INSERT INTO equipe (nome, descricao, sobre, funcao, imagem) VALUES (?, ?, ?, ?, ?)',
+    [nome, descricao, sobre, funcao, imagem],
     (err, result) => {
       if (err) {
         console.error('Erro ao inserir equipe:', err);
         return res.status(500).json({ error: err.sqlMessage || err });
       }
       console.log('Equipe criada com ID:', result.insertId);
-      res.status(201).json({ id: result.insertId, nome, descricao, sobre, funcao });
+      res.status(201).json({ id: result.insertId, nome, descricao, sobre, funcao, imagem });
     }
   );
 });
 
 // Editar equipe
-router.put('/:id', (req, res) => {
+router.put('/:id', upload.single('imagem'), (req, res) => {
   const { nome, descricao, sobre, funcao } = req.body;
+  const imagem = req.file ? req.file.filename : null;
+  
   console.log(`PUT /equipes/${req.params.id} payload:`, req.body);
-  db.query(
-    'UPDATE equipe SET nome = ?, descricao = ?, sobre = ?, funcao = ? WHERE id = ?',
-    [nome, descricao, sobre, funcao, req.params.id],
-    (err, result) => {
-      if (err) {
-        console.error('Erro ao atualizar equipe:', err);
-        return res.status(500).json({ error: err.sqlMessage || err });
-      }
-      console.log('Equipe atualizada ID:', req.params.id);
-      res.json({ id: req.params.id, nome, descricao, sobre, funcao });
+  console.log(`PUT /equipes/${req.params.id} imagem:`, imagem);
+  
+  let sql, params;
+  
+  if (imagem) {
+    // Se há nova imagem, atualizar tudo incluindo imagem
+    sql = 'UPDATE equipe SET nome = ?, descricao = ?, sobre = ?, funcao = ?, imagem = ? WHERE id = ?';
+    params = [nome, descricao, sobre, funcao, imagem, req.params.id];
+  } else {
+    // Se não há nova imagem, manter a existente
+    sql = 'UPDATE equipe SET nome = ?, descricao = ?, sobre = ?, funcao = ? WHERE id = ?';
+    params = [nome, descricao, sobre, funcao, req.params.id];
+  }
+  
+  db.query(sql, params, (err, result) => {
+    if (err) {
+      console.error('Erro ao atualizar equipe:', err);
+      return res.status(500).json({ error: err.sqlMessage || err });
     }
-  );
+    console.log('Equipe atualizada ID:', req.params.id);
+    res.json({ id: req.params.id, nome, descricao, sobre, funcao, imagem });
+  });
 });
 
 // Deletar equipe

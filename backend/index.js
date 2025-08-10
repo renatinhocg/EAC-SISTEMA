@@ -80,8 +80,8 @@ app.use('/api/reflexoes', reflexoesRouter);
 app.use('/api/presencas', presencasRouter);
 app.use('/api/tipo_circulo', tipoCirculoRouter);
 
-// Servir uploads como estáticos
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Servir uploads como estáticos dentro do prefixo /api
+app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Servir arquivos estáticos do frontend e PWA
 app.use('/admin', express.static(path.join(__dirname, '../frontend/dist')));

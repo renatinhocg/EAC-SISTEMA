@@ -4,6 +4,7 @@ import { CalendarOutlined, ClockCircleOutlined, BellOutlined } from '@ant-design
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../hooks/useAuth';
+import { getUserAvatarUrl } from '../utils/imageUtils';
 
 interface AgendaItem { 
   id: number; 
@@ -35,8 +36,9 @@ const Calendario: React.FC = () => {
       let date;
       
       if (dateString.includes('-')) {
-        // Formato YYYY-MM-DD ou YYYY-MM-DD HH:mm:ss
-        date = new Date(dateString + (dateString.includes('T') ? '' : 'T00:00:00'));
+        // Para datas que vêm do banco (formato YYYY-MM-DD), usar UTC para evitar timezone
+        const parts = dateString.split('T')[0].split('-');
+        date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
       } else {
         // Outros formatos
         date = new Date(dateString);
@@ -97,10 +99,9 @@ const Calendario: React.FC = () => {
               style={{ fontSize: '24px', color: '#2E3D63', padding:'0 16px', cursor: 'pointer' }} 
             />
             <Avatar
-              src={
-                user?.foto && user.foto.trim() !== ''
-                  ? `http://localhost:3000/uploads/usuarios/${user.foto}`
-                  : 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face'
+              src={user?.foto && user.foto.trim() !== '' 
+                ? getUserAvatarUrl(user.foto)
+                : 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face'
               }
               size={48}
               onClick={() => navigate('/perfil')}
@@ -131,7 +132,7 @@ const Calendario: React.FC = () => {
               }}
             >
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ fontSize: '16px', fontWeight: '600', color: '#fff' }}>
+                <div style={{ fontSize: '20px', fontWeight: '600', color: '#fff' }}>
                   {item.titulo}
                 </div>
                 
@@ -160,7 +161,6 @@ const Calendario: React.FC = () => {
               borderRadius: '16px',
               padding: '40px',
               textAlign: 'center',
-              border: '1px solid rgba(255, 255, 255, 0.1)'
             }}>
               <div style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                 Nenhum evento agendado

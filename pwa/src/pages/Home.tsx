@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { BellOutlined } from '@ant-design/icons';
 import { AuthContext } from '../contexts/AuthContext';
 import api from '../services/api';
+import { getUserAvatarUrl } from '../utils/imageUtils';
 
 interface TeamMember {
   id: number;
@@ -12,27 +13,44 @@ interface TeamMember {
   tipo_usuario: string;
 }
 
+interface Team {
+  id: number;
+  nome: string;
+  descricao: string;
+  imagem?: string;
+}
+
 const Home: React.FC = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [teamDetails, setTeamDetails] = useState<Team | null>(null);
 
-  // Carregar membros da equipe
+  // Carregar membros da equipe e detalhes
   useEffect(() => {
-    const loadTeamMembers = async () => {
+    const loadTeamData = async () => {
       if (user?.equipe?.id) {
         try {
-          console.log('🔍 Carregando membros da equipe:', user.equipe.id);
-          const response = await api.get(`/equipes/${user.equipe.id}/membros`);
-          console.log('✅ Membros carregados:', response.data);
-          setTeamMembers(response.data || []);
+          console.log('🔍 Carregando dados da equipe:', user.equipe.id);
+          
+          // Carregar membros da equipe
+          const membersResponse = await api.get(`/equipes/${user.equipe.id}/membros`);
+          console.log('✅ Membros carregados:', membersResponse.data);
+          setTeamMembers(membersResponse.data || []);
+          
+          // Carregar detalhes da equipe
+          const teamResponse = await api.get(`/equipes/${user.equipe.id}`);
+          console.log('✅ Detalhes da equipe carregados:', teamResponse.data);
+          setTeamDetails(teamResponse.data || null);
+          
         } catch (error) {
-          console.error('❌ Erro ao carregar membros da equipe:', error);
+          console.error('❌ Erro ao carregar dados da equipe:', error);
           setTeamMembers([]);
+          setTeamDetails(null);
         }
       }
     };
-    loadTeamMembers();
+    loadTeamData();
   }, [user?.equipe]);
 
   // Debug do usuário
@@ -94,11 +112,7 @@ const Home: React.FC = () => {
               style={{ fontSize: '24px', color: '#2E3D63', padding:'0 16px', cursor: 'pointer' }} 
             />
             <Avatar
-              src={
-                user?.foto && user.foto.trim() !== ''
-                  ? `http://localhost:3000/uploads/usuarios/${user.foto}`
-                  : 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face'
-              }
+              src={getUserAvatarUrl(user?.foto)}
               size={48}
               onClick={() => navigate('/perfil')}
               style={{ cursor: 'pointer' }}
@@ -118,21 +132,33 @@ const Home: React.FC = () => {
           <div style={{
             width: '40px',
             height: '40px',
-            background: 'rgba(255, 255, 255, 0.2)',
-            borderRadius: '8px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '20px'
+            fontSize: '20px',
+            overflow: 'hidden'
           }}>
-            🍽️
+            {teamDetails?.imagem ? (
+              <img 
+                src={`http://localhost:3000/uploads/equipes/${teamDetails.imagem}`}
+                alt={teamDetails.nome}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  borderRadius: '6px'
+                }}
+              />
+            ) : (
+              '🍽️'
+            )}
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: '18px', fontWeight: '600', marginBottom: '4px' }}>
               {user?.equipe?.nome || 'Garçom'}
             </div>
             <div style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.7)', lineHeight: '1.4' }}>
-              A equipe de garçons é responsável pelo atendimento aos encontristas, portanto deve sempre se comportar de maneira adequada.
+              <div dangerouslySetInnerHTML={{ __html: teamDetails?.descricao || 'A equipe de garçons é responsável pelo atendimento aos encontristas, portanto deve sempre se comportar de maneira adequada.'}} />
             </div>
           </div>
         </div>
@@ -195,7 +221,7 @@ const Home: React.FC = () => {
               <Avatar
                 src={
                   member.foto && member.foto.trim() !== ''
-                    ? `http://localhost:3000/uploads/usuarios/${member.foto}`
+                    ? getUserAvatarUrl(member.foto)
                     : `https://images.unsplash.com/photo-${1472099645785 + index}?w=48&h=48&fit=crop&crop=face`
                 }
                 size={48}

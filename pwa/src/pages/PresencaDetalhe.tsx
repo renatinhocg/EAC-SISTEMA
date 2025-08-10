@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../hooks/useAuth';
+import { getUserAvatarUrl } from '../utils/imageUtils';
 
 const { Title } = Typography;
 
@@ -239,7 +240,9 @@ const PresencaDetalhe: React.FC = () => {
 
   const formatDate = (dateStr: string) => {
     if (!dateStr) return '';
-    const date = new Date(dateStr);
+    // Corrigir timezone para evitar dia anterior
+    const parts = dateStr.split('T')[0].split('-');
+    const date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
     return date.toLocaleDateString('pt-BR', { 
       day: '2-digit', 
       month: '2-digit',
@@ -384,10 +387,9 @@ const PresencaDetalhe: React.FC = () => {
                 marginBottom: '12px'
               }}>
                 <Avatar
-                  src={
-                    usuario.foto && usuario.foto.trim() !== ''
-                      ? `http://localhost:3000/uploads/usuarios/${usuario.foto}`
-                      : undefined
+                  src={usuario.foto && usuario.foto.trim() !== '' 
+                    ? getUserAvatarUrl(usuario.foto)
+                    : undefined
                   }
                   size={40}
                   style={{ 

@@ -4,6 +4,7 @@ import { BellOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import api from '../services/api';
+import { getUserAvatarUrl } from '../utils/imageUtils';
 
 const Sobre: React.FC = () => {
   const { user } = useContext(AuthContext);
@@ -85,10 +86,9 @@ const Sobre: React.FC = () => {
               style={{ fontSize: '24px', color: '#2E3D63', padding:'0 16px', cursor: 'pointer' }} 
             />
             <Avatar
-              src={
-                user?.foto && user.foto.trim() !== ''
-                  ? `http://localhost:3000/uploads/usuarios/${user.foto}`
-                  : 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face'
+              src={user?.foto && user.foto.trim() !== '' 
+                ? getUserAvatarUrl(user.foto)
+                : 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face'
               }
               size={48}
               onClick={() => navigate('/perfil')}

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { BellOutlined, CameraOutlined, LogoutOutlined } from '@ant-design/icons';
 import api from '../services/api';
 import { AuthContext } from '../contexts/AuthContext';
+import { getUserAvatarUrl } from '../utils/imageUtils';
 
 const Perfil: React.FC = () => {
   const { user, updateUser, logout } = useContext(AuthContext);
@@ -119,10 +120,9 @@ const Perfil: React.FC = () => {
             onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
           >
             <img 
-              src={
-                user?.foto && user.foto.trim() !== ''
-                  ? `http://localhost:3000/uploads/usuarios/${user.foto}?t=${Date.now()}`
-                  : 'https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=120&h=120&fit=crop&crop=face'
+              src={user?.foto && user.foto.trim() !== '' 
+                ? `${getUserAvatarUrl(user.foto)}?t=${Date.now()}`
+                : 'https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=120&h=120&fit=crop&crop=face'
               }
               alt="Foto do Perfil" 
               style={{ 

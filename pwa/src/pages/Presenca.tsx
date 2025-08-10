@@ -5,6 +5,7 @@ import { ArrowRight } from 'lucide-react';
 import { BellOutlined } from '@ant-design/icons';
 import api from '../services/api';
 import { useAuth } from '../hooks/useAuth';
+import { getUserAvatarUrl } from '../utils/imageUtils';
 
 interface PresencaItem {
   id: number;
@@ -134,7 +135,9 @@ const Presenca: React.FC = () => {
 
   const formatDate = (dateStr: string) => {
     if (!dateStr) return '';
-    const date = new Date(dateStr);
+    // Corrigir timezone para evitar dia anterior
+    const parts = dateStr.split('T')[0].split('-');
+    const date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
     return date.toLocaleDateString('pt-BR', { 
       day: '2-digit', 
       month: '2-digit',
@@ -183,10 +186,9 @@ const Presenca: React.FC = () => {
               style={{ fontSize: '24px', color: '#2E3D63', padding:'0 16px', cursor: 'pointer' }} 
             />
             <Avatar
-              src={
-                user?.foto && user.foto.trim() !== ''
-                  ? `http://localhost:3000/uploads/usuarios/${user.foto}`
-                  : 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face'
+              src={user?.foto && user.foto.trim() !== '' 
+                ? getUserAvatarUrl(user.foto)
+                : 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face'
               }
               size={48}
               onClick={() => navigate('/perfil')}

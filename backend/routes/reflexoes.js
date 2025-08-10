@@ -39,6 +39,7 @@ router.get('/', (req, res) => {
       r.data,
       r.agenda_id,
       a.titulo as agenda_nome,
+      a.data as agenda_data,
       u.nome as usuario_nome,
       COALESCE(STRING_AGG(e.nome, ', ' ORDER BY e.nome), '') as equipes_nomes,
       COALESCE(STRING_AGG(e.id::text, ',' ORDER BY e.nome), '') as equipes_ids
@@ -47,7 +48,7 @@ router.get('/', (req, res) => {
         LEFT JOIN agenda a ON r.agenda_id = a.id
     LEFT JOIN reflexao_equipe re ON r.id = re.reflexao_id
     LEFT JOIN equipe e ON re.equipe_id = e.id
-    GROUP BY r.id, r.texto, r.usuario_id, r.anexo, r.data, r.agenda_id, a.titulo, u.nome 
+    GROUP BY r.id, r.texto, r.usuario_id, r.anexo, r.data, r.agenda_id, a.titulo, a.data, u.nome 
     ORDER BY r.data DESC
   `;
   
@@ -59,6 +60,7 @@ router.get('/', (req, res) => {
       return res.status(500).json({ error: err.message || err });
     }
     console.log('[GET /reflexoes] Query executada com sucesso, resultados:', results.length);
+    console.log('[GET /reflexoes] Primeira reflexão (debug):', results[0]);
     res.json(results);
     console.log('[GET /reflexoes] FINALIZADO');
   });
@@ -70,9 +72,10 @@ router.get('/:id', (req, res) => {
   const reflexaoId = req.params.id;
   // Busca a reflexão principal
   db.query(
-    `SELECT r.id, r.texto, r.usuario_id, r.anexo, r.data, r.agenda_id, u.nome as usuario_nome
+    `SELECT r.id, r.texto, r.usuario_id, r.anexo, r.data, r.agenda_id, u.nome as usuario_nome, a.titulo as agenda_nome, a.data as agenda_data
      FROM reflexao r
      JOIN usuario u ON r.usuario_id = u.id
+     LEFT JOIN agenda a ON r.agenda_id = a.id
      WHERE r.id = $1`,
     [reflexaoId],
     (err, results) => {
@@ -97,6 +100,7 @@ router.get('/:id', (req, res) => {
           reflexao.equipe_id = equipes.map(e => e.id);
           // Log para debug do retorno
           console.log('[GET /reflexoes/:id] Reflexao encontrada:', reflexao);
+          console.log('[GET /reflexoes/:id] agenda_data:', reflexao.agenda_data);
           res.json({
             id: reflexao.id,
             texto: reflexao.texto,
@@ -105,6 +109,8 @@ router.get('/:id', (req, res) => {
             anexo: reflexao.anexo,
             data: reflexao.data,
             agenda_id: reflexao.agenda_id || null,
+            agenda_nome: reflexao.agenda_nome || null,
+            agenda_data: reflexao.agenda_data || null,
             equipes: reflexao.equipes,
             equipe_id: reflexao.equipe_id
           });
@@ -121,7 +127,7 @@ router.post('/', upload.single('anexo'), (req, res) => {
   console.log('[POST /reflexoes] req.body:', req.body);
   const { texto, usuario_id, agenda_id } = req.body;
   const equipe_id = getEquipeIdsFromBody(req.body);
-  const anexoPath = req.file ? path.posix.join('uploads','reflexoes', req.file.filename) : null;
+  const anexoPath = req.file ? req.file.filename : null;
   const agendaIdInt = agenda_id ? Number(agenda_id) : null;
   db.query(
     anexoPath
@@ -181,7 +187,7 @@ router.put('/:id', upload.single('anexo'), (req, res) => {
   const { texto, usuario_id, agenda_id } = req.body;
   const equipe_id = getEquipeIdsFromBody(req.body);
   const agendaIdInt = agenda_id ? Number(agenda_id) : null;
-  const anexoPath = req.file ? path.posix.join('uploads','reflexoes', req.file.filename) : null;
+  const anexoPath = req.file ? req.file.filename : null;
   console.log('[PUT /reflexoes/:id] id recebido:', req.params.id);
   console.log('[PUT /reflexoes/:id] equipe_id recebido:', equipe_id);
   db.query(
@@ -248,6 +254,34 @@ router.delete('/:id', (req, res) => {
   db.query('DELETE FROM reflexao WHERE id = $1', [req.params.id], err => {
     if (err) return res.status(500).json({ error: err });
     res.json({ success: true });
+  });
+});
+
+// Rota específica para download de anexos
+router.get('/download/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(__dirname, '..', 'uploads', 'reflexoes', filename);
+  
+  console.log('[GET /reflexoes/download/:filename] Tentando baixar:', filePath);
+  
+  // Verificar se o arquivo existe
+  if (!fs.existsSync(filePath)) {
+    console.error('[GET /reflexoes/download/:filename] Arquivo não encontrado:', filePath);
+    return res.status(404).json({ error: 'Arquivo não encontrado' });
+  }
+  
+  // Definir headers para forçar download
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  res.setHeader('Content-Type', 'application/octet-stream');
+  
+  // Enviar arquivo
+  res.sendFile(filePath, (err) => {
+    if (err) {
+      console.error('[GET /reflexoes/download/:filename] Erro ao enviar arquivo:', err);
+      res.status(500).json({ error: 'Erro ao baixar arquivo' });
+    } else {
+      console.log('[GET /reflexoes/download/:filename] Arquivo enviado com sucesso:', filename);
+    }
   });
 });
 

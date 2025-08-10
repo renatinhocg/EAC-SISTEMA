@@ -8,9 +8,25 @@ const SplashScreen: React.FC = () => {
       alignItems: 'center',
       justifyContent: 'center',
       height: '100vh',
-      background: '#fff',
+      background: '#141B34', // Cor de fundo igual ao tema do app
     }}>
-      <img src="/vite.svg" alt="Logo" style={{ maxWidth: 180, marginBottom: 24 }} />
+      <img 
+        src="/logo-splash.png" 
+        alt="Logo EAC" 
+        style={{ 
+          maxWidth: 387, 
+          marginBottom: 24,
+   
+        }} 
+      />
+      <div style={{
+        color: '#fff',
+        fontSize: '18px',
+        fontWeight: '600',
+        marginTop: '20px'
+      }}>
+        EAC
+      </div>
     </div>
   );
 };

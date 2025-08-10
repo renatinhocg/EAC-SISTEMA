@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Input, Button, Card, message } from 'antd';
+import { Form, Input, Button, Card, message, Upload } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import axios from 'axios';
@@ -37,6 +38,7 @@ const quillFormats = [
 const EquipeForm = () => {
   const [descricao, setDescricao] = useState('');
   const [sobre, setSobre] = useState('');
+  const [fileList, setFileList] = useState([]);
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const { id } = useParams();
@@ -49,6 +51,16 @@ const EquipeForm = () => {
           form.setFieldsValue({ nome: res.data.nome, funcao: res.data.funcao });
           setDescricao(res.data.descricao || '');
           setSobre(res.data.sobre || '');
+          
+          // Se há imagem, adicionar à lista de arquivos
+          if (res.data.imagem) {
+            setFileList([{
+              uid: '-1',
+              name: res.data.imagem,
+              status: 'done',
+              url: getApiUrl(`uploads/equipes/${res.data.imagem}`)
+            }]);
+          }
         })
         .catch(() => message.error('Erro ao carregar equipe'));
     }
@@ -56,22 +68,48 @@ const EquipeForm = () => {
 
   const onFinish = async (values) => {
     try {
-      const payload = {
-        ...values,
-        descricao: descricao,
-        sobre: sobre
-      };
+      const formData = new FormData();
+      formData.append('nome', values.nome);
+      formData.append('funcao', values.funcao);
+      formData.append('descricao', descricao);
+      formData.append('sobre', sobre);
+      
+      // Adicionar imagem se foi selecionada
+      if (fileList.length > 0 && fileList[0].originFileObj) {
+        formData.append('imagem', fileList[0].originFileObj);
+      }
+      
       if (isEdit) {
-        await axios.put(getApiUrl(`equipes/${id}`), payload);
+        await axios.put(getApiUrl(`equipes/${id}`), formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
         message.success('Equipe atualizada com sucesso');
       } else {
-        await axios.post(getApiUrl('equipes'), payload);
+        await axios.post(getApiUrl('equipes'), formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
         message.success('Equipe criada com sucesso');
       }
       navigate('/equipes');
     } catch {
       message.error('Erro ao salvar equipe');
     }
+  };
+
+  const handleUploadChange = ({ fileList: newFileList }) => {
+    setFileList(newFileList);
+  };
+
+  const beforeUpload = (file) => {
+    const isImage = file.type.startsWith('image/');
+    if (!isImage) {
+      message.error('Você só pode fazer upload de imagens!');
+    }
+    const isLt2M = file.size / 1024 / 1024 < 2;
+    if (!isLt2M) {
+      message.error('A imagem deve ter menos de 2MB!');
+    }
+    return false; // Impede upload automático
   };
 
   return (
@@ -85,6 +123,25 @@ const EquipeForm = () => {
         <Form.Item name="nome" label="Nome" rules={[{ required: true, message: 'Informe o nome' }]}>        
           <Input />
         </Form.Item>
+        
+        <Form.Item label="Ícone da Equipe">
+          <Upload
+            fileList={fileList}
+            onChange={handleUploadChange}
+            beforeUpload={beforeUpload}
+            maxCount={1}
+            listType="picture"
+            accept="image/*"
+          >
+            <Button icon={<UploadOutlined />}>
+              Selecionar Ícone
+            </Button>
+          </Upload>
+          <div style={{ marginTop: '8px', color: '#666', fontSize: '12px' }}>
+            Formatos aceitos: JPG, PNG, SVG. Tamanho máximo: 2MB
+          </div>
+        </Form.Item>
+        
         <Form.Item label="Descrição">
           <ReactQuill
             theme="snow"
