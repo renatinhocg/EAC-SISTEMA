@@ -17,11 +17,12 @@ export const getImageUrl = (imagePath: string): string => {
 
 // Função específica para avatares de usuários
 export const getUserAvatarUrl = (userPhoto?: string): string => {
-  if (!userPhoto || userPhoto.trim() === '') {
-    return 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face';
+  // Se não houver foto, retorna sempre o mesmo placeholder padrão
+  if (!userPhoto || userPhoto.trim() === '' || userPhoto === 'null' || userPhoto === 'undefined') {
+    return '/default-avatar.svg';
   }
-  
-  // Tanto em desenvolvimento quanto em produção, usa /uploads/usuarios/
+  // Adiciona cache busting para evitar imagem antiga após upload
   const baseUrl = import.meta.env.DEV ? 'http://localhost:3000' : '';
-  return `${baseUrl}/uploads/usuarios/${userPhoto}`;
+  const bust = `t=${Date.now()}`;
+  return `${baseUrl}/uploads/usuarios/${userPhoto}${userPhoto.includes('?') ? '&' : '?'}${bust}`;
 };

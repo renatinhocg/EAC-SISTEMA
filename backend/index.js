@@ -10,6 +10,21 @@ const authenticateToken = require('./middleware/authenticateToken');
 
 const app = express();
 
+
+// Configuração CORS específica (deve vir antes de qualquer rota ou middleware)
+app.use(cors({
+  origin: [
+    'https://eac-app-production.up.railway.app',
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:5175',
+    'http://localhost:3000'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
 
 // ==================== ROTAS DA API - PRIMEIRA PRIORIDADE ====================
@@ -41,7 +56,7 @@ app.get('/api/pagamentos/usuarios', async (req, res) => {
   console.log('👥 GET /api/pagamentos/usuarios - Listando usuários com status de pagamento');
   
   try {
-    const query = \`
+  const query = `
       SELECT 
         u.id as usuario_id,
         u.nome,
@@ -64,24 +79,25 @@ app.get('/api/pagamentos/usuarios', async (req, res) => {
       LEFT JOIN pagamento p ON u.id = p.usuario_id
       LEFT JOIN equipe e ON u.equipe_id = e.id
       ORDER BY u.nome ASC
-    \`;
+    `;
     
     db.query(query, (err, result) => {
       if (err) {
-        console.error('❌ Erro ao buscar usuários:', err);
+        console.error('Erro ao buscar usuários:', err);
         return res.status(500).json({ error: err.message });
       }
-      
+
       const usuarios = Array.isArray(result) ? result : result.rows || [];
-      
+
       // Processa os dados para garantir que status_pagamento seja mapeado corretamente
       const usuariosProcessados = usuarios.map(usuario => ({
         ...usuario,
         status_pagamento: usuario.status || 'sem_pagamento',
         equipe_nome: usuario.equipe_nome || 'Não informado'
       }));
-      
-      console.log(\`✅ Encontrados \${usuarios.length} usuários\`);
+
+      // Log simples, sem acento grave ou emoji
+      console.log('[OK] Encontrados ' + usuarios.length + ' usuarios');
       res.json(usuariosProcessados);
     });
   } catch (error) {
@@ -91,21 +107,14 @@ app.get('/api/pagamentos/usuarios', async (req, res) => {
 });
 
 // Log de todas as requisições para debug
+
 app.use((req, res, next) => {
-  console.log(\`🌐 \${new Date().toISOString()} - \${req.method} \${req.url}\`);
+  console.log('[REQ] ' + new Date().toISOString() + ' - ' + req.method + ' ' + req.url);
   if (req.body && Object.keys(req.body).length > 0) {
     console.log('   Body:', req.body);
   }
   next();
-});ors = require('cors');
-const path = require('path');
-const multer = require('multer');
-const fs = require('fs');
-
-// Middleware de autenticação
-const authenticateToken = require('./middleware/authenticateToken');
-
-const app = express();
+});
 
 // Configurar multer para upload de fotos
 const storage = multer.diskStorage({
@@ -162,7 +171,7 @@ app.use(express.json());
 
 // Log de todas as requisições para debug
 app.use((req, res, next) => {
-  console.log(`🌐 ${new Date().toISOString()} - ${req.method} ${req.url}`);
+  console.log('[REQ] ' + new Date().toISOString() + ' - ' + req.method + ' ' + req.url);
   if (req.body && Object.keys(req.body).length > 0) {
     console.log('   Body:', req.body);
   }
@@ -170,7 +179,7 @@ app.use((req, res, next) => {
 });
 
 // ==================== ROTAS DE PAGAMENTOS ====================
-const db = require('./db');
+
 
 // Rota de teste para verificar se está funcionando
 app.get('/api/health', (req, res) => {
@@ -226,10 +235,10 @@ app.get('/api/pagamentos/usuarios', async (req, res) => {
         equipe_nome: usuario.equipe_nome || 'Não informado'
       }));
       
-      console.log(`✅ Encontrados ${usuarios.length} usuários`);
-      console.log('🔍 [DEBUG] Primeiro usuário RAW:', usuarios[0]);
-      console.log('🔍 [DEBUG] Primeiro usuário PROCESSADO:', usuariosProcessados[0]);
-      console.log('🔍 [DEBUG] Campos disponíveis:', usuarios[0] ? Object.keys(usuarios[0]) : 'Nenhum usuário');
+  console.log('[OK] Encontrados ' + usuarios.length + ' usuários');
+      console.log('[DEBUG] Primeiro usuário RAW:', usuarios[0]);
+      console.log('[DEBUG] Primeiro usuário PROCESSADO:', usuariosProcessados[0]);
+      console.log('[DEBUG] Campos disponíveis:', usuarios[0] ? Object.keys(usuarios[0]) : 'Nenhum usuário');
       
       res.json(usuariosProcessados);
     });
@@ -256,15 +265,11 @@ app.get('/api/pagamentos/estatisticas', async (req, res) => {
     
     db.query(query, (err, result) => {
       if (err) {
-        console.error('❌ Erro ao buscar estatísticas:', err);
+        console.error('Erro ao buscar estatísticas:', err);
         return res.status(500).json({ error: err.message });
       }
-      
-      const stats = Array.isArray(result) ? result[0] : result.rows?.[0] || {};
-      const total = parseInt(stats.total || 0);
-      const aprovados = parseInt(stats.aprovados || 0);
-      const percentual_pagos = total > 0 ? ((aprovados / total) * 100).toFixed(2) : '0.00';
-      
+      const stats = Array.isArray(result) ? result[0] : result.rows[0] || {};
+      const percentual_pagos = stats.total && stats.aprovados ? ((parseInt(stats.aprovados) / parseInt(stats.total)) * 100).toFixed(2) : '0.00';
       const estatisticas = {
         total: stats.total || '0',
         aprovados: stats.aprovados || '0',
@@ -273,12 +278,11 @@ app.get('/api/pagamentos/estatisticas', async (req, res) => {
         rejeitados: stats.rejeitados || '0',
         percentual_pagos
       };
-      
-      console.log('✅ Estatísticas:', estatisticas);
+      console.log('[OK] Estatísticas:', estatisticas);
       res.json(estatisticas);
     });
   } catch (error) {
-    console.error('❌ Erro interno:', error);
+    console.error('Erro interno:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -552,7 +556,6 @@ app.post('/api/usuarios-com-foto', upload.single('foto'), (req, res) => {
   const hashedSenha = senha ? bcrypt.hashSync(senha, 8) : bcrypt.hashSync('123456', 8);
   
   // Inserir no banco
-  const db = require('./db');
   db.query(
     `INSERT INTO usuario (nome, telefone, email, instagram, tipo_usuario, tipo_circulo_id, eac_que_fez, foto, senha)
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,

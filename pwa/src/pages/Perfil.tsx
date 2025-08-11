@@ -45,8 +45,14 @@ const Perfil: React.FC = () => {
       });
 
       if (response.data.success && user) {
-        // Atualizar dados do usuário no contexto
-        updateUser({ ...user, foto: response.data.foto });
+        // Após upload, buscar usuário atualizado do backend para garantir campo foto correto
+        const userResponse = await api.get(`/usuarios/${user.id}`);
+        if (userResponse.data) {
+          updateUser({ ...user, ...userResponse.data });
+        } else {
+          // fallback: atualiza só o campo foto
+          updateUser({ ...user, foto: response.data.foto });
+        }
         message.success('Foto atualizada com sucesso!');
       }
     } catch (error) {

@@ -10,6 +10,7 @@ const Pagamentos = () => {
   const [loading, setLoading] = useState(false);
   const [equipes, setEquipes] = useState([]);
   const [filtroEquipe, setFiltroEquipe] = useState('');
+  const [filtroStatus, setFiltroStatus] = useState('');
   const [busca, setBusca] = useState('');
   const [estatisticas, setEstatisticas] = useState({
     total: 0,
@@ -37,6 +38,14 @@ const Pagamentos = () => {
         );
       }
 
+      // Filtro por status
+      if (filtroStatus) {
+        dadosFiltrados = dadosFiltrados.filter(item => {
+          const status = item.status_pagamento || item.status || item.pagamento_status || '';
+          return status === filtroStatus;
+        });
+      }
+
       // Filtro por busca de nome
       if (busca.trim()) {
         dadosFiltrados = dadosFiltrados.filter(item =>
@@ -44,11 +53,18 @@ const Pagamentos = () => {
         );
       }
 
+      // Ordenar por data_envio (mais antigo primeiro)
+      dadosFiltrados.sort((a, b) => {
+        if (!a.data_envio) return 1;
+        if (!b.data_envio) return -1;
+        return new Date(a.data_envio) - new Date(b.data_envio);
+      });
+
       setPagamentosFiltrados(dadosFiltrados);
     };
 
     aplicarFiltros();
-  }, [pagamentos, filtroEquipe, busca]);
+  }, [pagamentos, filtroEquipe, filtroStatus, busca]);
 
   const fetchEquipes = async () => {
     try {
@@ -66,6 +82,7 @@ const Pagamentos = () => {
 
   const limparFiltros = () => {
     setFiltroEquipe('');
+    setFiltroStatus('');
     setBusca('');
   };
 
@@ -354,7 +371,7 @@ const Pagamentos = () => {
       {/* Filtros */}
       <Card style={{ marginBottom: 24 }}>
         <Row gutter={16} align="middle">
-          <Col span={8}>
+          <Col span={6}>
             <div style={{ marginBottom: 8 }}>
               <label style={{ fontWeight: 500 }}>Filtrar por Equipe:</label>
             </div>
@@ -373,7 +390,24 @@ const Pagamentos = () => {
               ))}
             </Select>
           </Col>
-          <Col span={8}>
+          <Col span={6}>
+            <div style={{ marginBottom: 8 }}>
+              <label style={{ fontWeight: 500 }}>Filtrar por Status:</label>
+            </div>
+            <Select
+              style={{ width: '100%' }}
+              placeholder="Selecione o status"
+              allowClear
+              value={filtroStatus}
+              onChange={setFiltroStatus}
+            >
+              <Select.Option value="aprovado">Aprovado</Select.Option>
+              <Select.Option value="pendente">Pendente</Select.Option>
+              <Select.Option value="aguardando_aprovacao">Aguardando Aprovação</Select.Option>
+              <Select.Option value="rejeitado">Rejeitado</Select.Option>
+            </Select>
+          </Col>
+          <Col span={6}>
             <div style={{ marginBottom: 8 }}>
               <label style={{ fontWeight: 500 }}>Buscar por Nome:</label>
             </div>
@@ -385,7 +419,7 @@ const Pagamentos = () => {
               allowClear
             />
           </Col>
-          <Col span={8}>
+          <Col span={6}>
             <div style={{ marginBottom: 8 }}>
               <label style={{ fontWeight: 500, opacity: 0 }}>Ações:</label>
             </div>

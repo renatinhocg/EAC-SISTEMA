@@ -1,3 +1,6 @@
+
+
+
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -12,20 +15,31 @@ const STATUS_OPTIONS = [
   { value: 2, label: 'Justificada' },
 ];
 
-// Página zerada para recomeçar do zero
 const AgendaPresencaEquipes = () => {
   const [equipes, setEquipes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState('');
-  const [drawerEquipe, setDrawerEquipe] = useState(null); // equipe selecionada
+  const [drawerEquipe, setDrawerEquipe] = useState(null);
   const [usuarios, setUsuarios] = useState([]);
   const [usuariosLoading, setUsuariosLoading] = useState(false);
   const [presencasEdit, setPresencasEdit] = useState({});
   const [saving, setSaving] = useState(false);
+  const [agendaTitulo, setAgendaTitulo] = useState('');
   const navigate = useNavigate();
   const { agendaId } = useParams();
 
-  // Função para buscar equipes e atualizar porcentagem de presença
+  useEffect(() => {
+    if (!agendaId) {
+      setAgendaTitulo('Evento não selecionado');
+      return;
+    }
+    axios.get(getApiUrl(`agendas/${agendaId}`))
+      .then(res => {
+        setAgendaTitulo(res.data?.titulo || 'Evento sem título');
+      })
+      .catch(() => setAgendaTitulo('Evento não encontrado'));
+  }, [agendaId]);
+
   const fetchEquipes = async () => {
     setLoading(true);
     setErro('');
@@ -78,19 +92,15 @@ const AgendaPresencaEquipes = () => {
     setDrawerEquipe(equipe);
     setUsuariosLoading(true);
     try {
-      // Busca usuários da equipe
       const res = await axios.get(getApiUrl(`equipes/${equipe.id}/usuarios`));
-      console.log('DEBUG usuarios equipe', equipe.id, res.data);
-      // Garante que o nome está presente e normalizado
       const usuariosFormatados = (res.data || [])
         .map(u => ({
           ...u,
           nome: u.nome || u.NOME || u.nome_usuario || '',
           funcao: u.funcao || u.tipo_usuario || u.funcao_usuario || '',
         }))
-        .sort((a, b) => a.nome.localeCompare(b.nome)); // Ordena por nome A-Z
+        .sort((a, b) => a.nome.localeCompare(b.nome));
       setUsuarios(usuariosFormatados);
-      // Corrige a rota para buscar presenças por evento e equipe
       const presencasRes = await axios.get(getApiUrl(`presencas/evento/${agendaId}/equipe/${equipe.id}`));
       const map = {};
       presencasRes.data.forEach(p => {
@@ -113,23 +123,14 @@ const AgendaPresencaEquipes = () => {
     if (!drawerEquipe) return;
     setSaving(true);
     try {
-      await Promise.all(
-        usuarios.map(u => {
-          const statusNum = presencasEdit[u.id] !== undefined ? presencasEdit[u.id] : 0;
-          let statusStr = 'falta';
-          if (statusNum === 1 || statusNum === '1') statusStr = 'ok';
-          else if (statusNum === 2 || statusNum === '2') statusStr = 'justificada';
-          // Corrige a rota para salvar presença por evento e equipe
-          return axios.post(
-            getApiUrl(`presencas/evento/${agendaId}/equipe/${drawerEquipe.id}/usuario/${u.id}`),
-            { status: statusStr }
-          );
-        })
-      );
+      await axios.post(getApiUrl(`presencas/salvar`), {
+        presencas: presencasEdit,
+        agendaId,
+        equipeId: drawerEquipe.id
+      });
       message.success('Presenças salvas com sucesso!');
       setDrawerEquipe(null);
-      fetchEquipes(); // Atualiza porcentagem após salvar
-      navigate('/presenca-equipes'); // Volta para tela inicial após salvar
+      fetchEquipes();
     } catch {
       message.error('Erro ao salvar presenças.');
     } finally {
@@ -138,80 +139,62 @@ const AgendaPresencaEquipes = () => {
   };
 
   return (
-    <div style={{ padding: '24px' }}>
-      <Title level={2}>Presença</Title>
-      <Text type="secondary" style={{ marginBottom: 24, display: 'block' }}>
-        Selecione uma equipe e marque a presença dos adolescentes e tios
-      </Text>
-
-      {loading && <div>Carregando equipes...</div>}
-      {erro && !loading && <div style={{ color: '#ff4d4f', fontWeight: 600 }}>{erro}</div>}
-      {!loading && !erro && equipes.length === 0 && <div>Nenhuma equipe encontrada.</div>}
-      
-      <Row gutter={[16, 16]}>
-        {equipes.map(eq => (
-          <Col key={eq.id} xs={24} sm={12} md={8} lg={6} xl={4}>
-            <Card
-              title={eq.nome}
-              extra={<Button type="primary" size="small" onClick={() => abrirDrawerEquipe(eq)}>Acessar</Button>}
-              style={{ height: '100%' }}
-              size="small"
-            >
-              <div style={{ marginBottom: 8 }}>
-                <Text type="secondary" style={{ fontSize: '12px' }}>{eq.funcao}</Text>
-              </div>
-              <div style={{ marginBottom: 8 }}>
-                <Text strong style={{ fontSize: '14px' }}>Presença: {eq.presenca}%</Text>
-              </div>
-              <Progress percent={eq.presenca} size="small" />
-            </Card>
-          </Col>
-        ))}
-      </Row>
-      <Drawer
-        title={drawerEquipe ? `Equipe: ${drawerEquipe.nome}` : ''}
-        placement="right"
-        width={600}
-        open={!!drawerEquipe}
-        onClose={() => setDrawerEquipe(null)}
-      >
-        <div style={{ padding: '0 16px' }}>
-          {usuariosLoading ? <Spin /> : (
-            <>
-              <Title level={4} style={{ marginBottom: 24 }}>Usuários da equipe</Title>
-              {usuarios.length === 0 && <Text type="secondary">Nenhum usuário nesta equipe.</Text>}
-              {usuarios.map(usuario => (
-                <Card key={usuario.id} size="small" style={{ marginBottom: 8 }}>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 12,
-                  }}>
-                    <div>
-                      <div><Text strong>{usuario.nome}</Text></div>
-                      <div><Text type="secondary" size="small">{usuario.funcao || usuario.tipo_usuario || ''}</Text></div>
-                    </div>
-                    <Select
-                      value={presencasEdit[usuario.id] ?? undefined}
-                      style={{ width: 140 }}
-                      onChange={val => handleSelectChange(usuario.id, val)}
-                      options={STATUS_OPTIONS}
-                      placeholder="Selecione"
-                    />
-                  </div>
-                </Card>
-              ))}
-              {usuarios.length > 0 && (
-                <div style={{ textAlign: 'right', marginTop: 24 }}>
-                  <Button type="primary" onClick={salvarPresencas} loading={saving}>
-                    Salvar Presenças
-                  </Button>
+    <div>
+      <h1>Presença: <span style={{ color: '#722ed1' }}>{agendaTitulo}</span></h1>
+      {loading ? (
+        <Spin />
+      ) : erro ? (
+        <div style={{ color: 'red', margin: 24 }}>{erro}</div>
+      ) : (
+        <Row gutter={[16, 16]}>
+          {equipes.map(equipe => (
+            <Col key={equipe.id} xs={24} sm={12} md={8} lg={6} xl={6}>
+              <Card
+                title={equipe.nome}
+                extra={<Button type="primary" onClick={() => abrirDrawerEquipe(equipe)}>Acessar</Button>}
+                style={{ minHeight: 180 }}
+              >
+                <div style={{ fontWeight: 500, marginBottom: 8 }}>
+                  Presença: {equipe.presenca}%
                 </div>
-              )}
-            </>
-          )}
-        </div>
+                <Progress percent={equipe.presenca} size="small" status={equipe.presenca === 100 ? 'success' : 'normal'} />
+              </Card>
+            </Col>
+          ))}
+        </Row>
+      )}
+
+      <Drawer
+        title={drawerEquipe ? `Presença - ${drawerEquipe.nome}` : 'Presença'}
+        placement="right"
+        width={480}
+        onClose={() => setDrawerEquipe(null)}
+        open={!!drawerEquipe}
+      >
+        {usuariosLoading ? (
+          <Spin />
+        ) : (
+          <>
+            {usuarios.map(u => (
+              <div key={u.id} style={{ marginBottom: 16 }}>
+                <Text strong>{u.nome}</Text>
+                <Select
+                  value={presencasEdit[u.id] !== undefined ? presencasEdit[u.id] : 0}
+                  onChange={value => handleSelectChange(u.id, value)}
+                  style={{ width: 160, marginLeft: 16 }}
+                  options={STATUS_OPTIONS}
+                />
+              </div>
+            ))}
+            {usuarios.length > 0 && (
+              <div style={{ textAlign: 'right', marginTop: 24 }}>
+                <Button type="primary" onClick={salvarPresencas} loading={saving}>
+                  Salvar Presenças
+                </Button>
+              </div>
+            )}
+          </>
+        )}
       </Drawer>
     </div>
   );
