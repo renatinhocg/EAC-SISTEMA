@@ -154,9 +154,29 @@ app.get('/api/pagamentos/estatisticas', async (req, res) => {
 // ===== ARQUIVOS ESTÁTICOS - ÚLTIMA PRIORIDADE =====
 console.log('📁 CONFIGURANDO ARQUIVOS ESTÁTICOS...');
 
-// Servir uploads
+// Servir uploads (caminho absoluto para garantir)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// DEBUG: Verificar se diretório de uploads existe
+const uploadsPath = path.join(__dirname, 'uploads');
+console.log('🔍 VERIFICANDO UPLOADS:', uploadsPath);
+try {
+  const fs = require('fs');
+  const uploadsExists = fs.existsSync(uploadsPath);
+  console.log('📂 Diretório uploads existe:', uploadsExists);
+  if (uploadsExists) {
+    const usuariosPath = path.join(uploadsPath, 'usuarios');
+    const usuariosExists = fs.existsSync(usuariosPath);
+    console.log('📂 Diretório usuarios existe:', usuariosExists);
+    if (usuariosExists) {
+      const files = fs.readdirSync(usuariosPath);
+      console.log('📸 Fotos encontradas:', files.length, files.slice(0, 3));
+    }
+  }
+} catch (err) {
+  console.error('❌ Erro ao verificar uploads:', err.message);
+}
 
 // Admin
 app.use('/admin', express.static(path.join(__dirname, '../frontend/dist')));
