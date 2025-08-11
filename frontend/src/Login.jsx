@@ -52,6 +52,7 @@ const Login = ({ onLogin }) => {
             <a href="#" style={{ fontSize: 12 }}>Forgot Password?</a>
           </div>
         </Card>
+        versão 1.0
       </div>
     </div>
   );

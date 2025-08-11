@@ -1,5 +1,8 @@
 // Configuração da API
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 
+  (import.meta.env.PROD 
+    ? 'https://eac-pwa-project-production.up.railway.app/api' 
+    : 'http://localhost:3001/api');
 
 // Função para obter a URL completa da API
 const getApiUrl = (endpoint) => {

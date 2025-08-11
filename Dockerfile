@@ -28,5 +28,5 @@ EXPOSE 3000
 # Set environment to production
 ENV NODE_ENV=production
 
-# Start the test server
-CMD ["node", "backend/test-server.js"]
+# Start the application
+CMD ["npm", "start"]
