@@ -4,7 +4,7 @@ import axios from 'axios';
 const getBaseURL = () => {
   // Usa API local em desenvolvimento
   if (import.meta.env.DEV) {
-    return 'http://localhost:3000/api';
+    return 'http://localhost:3001/api'; // Corrigido para porta 3001
   }
   // Railway em produção
   return 'https://eac-pwa-project-production.up.railway.app/api';

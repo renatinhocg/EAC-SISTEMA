@@ -9,7 +9,7 @@ export const getImageUrl = (imagePath: string): string => {
   
   // URL base da API - sempre usa /uploads direto (não /api/uploads)
   const baseUrl = import.meta.env.DEV 
-    ? 'http://localhost:3000' 
+    ? 'http://localhost:3001' // Corrigido para porta 3001
     : '';
     
   return `${baseUrl}/${imagePath}`;
@@ -22,7 +22,7 @@ export const getUserAvatarUrl = (userPhoto?: string): string => {
     return '/default-avatar.svg';
   }
   // Adiciona cache busting para evitar imagem antiga após upload
-  const baseUrl = import.meta.env.DEV ? 'http://localhost:3000' : '';
+  const baseUrl = import.meta.env.DEV ? 'http://localhost:3001' : '';
   const bust = `t=${Date.now()}`;
   return `${baseUrl}/uploads/usuarios/${userPhoto}${userPhoto.includes('?') ? '&' : '?'}${bust}`;
 };
