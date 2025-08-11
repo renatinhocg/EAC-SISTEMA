@@ -17,6 +17,8 @@ app.use(express.json());
 
 // ===== ROTAS DA API - PRIMEIRA PRIORIDADE =====
 const db = require('./db');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 console.log('🔥 CONFIGURANDO ROTAS DA API...');
 
@@ -28,6 +30,70 @@ app.get('/api/health', (req, res) => {
     version: 'CLEAN-VERSION-2025-08-11',
     timestamp: new Date().toISOString()
   });
+});
+
+// LOGIN - ROTA ESSENCIAL
+app.post('/api/usuarios/login', async (req, res) => {
+  console.log('🔐 POST /api/usuarios/login');
+  const { email, senha } = req.body;
+  
+  if (!email || !senha) {
+    return res.status(400).json({ error: 'Email e senha são obrigatórios' });
+  }
+  
+  try {
+    db.query(
+      `SELECT u.*, e.id as e_id, e.nome as equipe_nome 
+       FROM usuario u 
+       LEFT JOIN equipe e ON u.equipe_id = e.id 
+       WHERE u.email = $1`,
+      [email],
+      async (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        
+        const usuarios = Array.isArray(results) ? results : results.rows || [];
+        if (usuarios.length === 0) return res.status(401).json({ error: 'Usuário não encontrado' });
+        
+        const user = usuarios[0];
+        
+        // Verificar senha com bcrypt
+        try {
+          const isValidPassword = await bcrypt.compare(senha, user.senha);
+          if (!isValidPassword) {
+            return res.status(401).json({ error: 'Senha incorreta' });
+          }
+        } catch (error) {
+          return res.status(500).json({ error: 'Erro ao verificar senha' });
+        }
+        
+        const token = jwt.sign(
+          { id: user.id, email: user.email, nome: user.nome, tipo_usuario: user.tipo_usuario },
+          process.env.JWT_SECRET || 'secret-key',
+          { expiresIn: '24h' }
+        );
+        
+        console.log('✅ Login realizado:', user.nome, user.tipo_usuario);
+        
+        res.json({
+          token,
+          user: {
+            id: user.id,
+            nome: user.nome,
+            email: user.email,
+            tipo_usuario: user.tipo_usuario,
+            foto: user.foto,
+            equipe: user.equipe_nome ? {
+              id: user.e_id,
+              nome: user.equipe_nome
+            } : null
+          }
+        });
+      }
+    );
+  } catch (error) {
+    console.error('❌ Erro interno no login:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Pagamentos usuarios
