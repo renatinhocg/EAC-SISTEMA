@@ -1,5 +1,16 @@
 require('dotenv').config();
-const express = require('express')app.use(express.json());
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+const multer = require('multer');
+const fs = require('fs');
+
+// Middleware de autenticação
+const authenticateToken = require('./middleware/authenticateToken');
+
+const app = express();
+
+app.use(express.json());
 
 // ==================== ROTAS DA API - PRIMEIRA PRIORIDADE ====================
 // Importar rotas (conexão com DB é feita pelo db.js) - PRIMEIRO IMPORTAR
