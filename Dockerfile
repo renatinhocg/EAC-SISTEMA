@@ -1,6 +1,9 @@
 # Use Node.js official image
 FROM node:18-alpine
 
+# Force rebuild - change this number to force cache invalidation
+ENV CACHE_BUST=2025-08-11-v3
+
 # Set working directory
 WORKDIR /app
 
@@ -28,5 +31,5 @@ EXPOSE 3000
 # Set environment to production
 ENV NODE_ENV=production
 
-# Start the application
-CMD ["npm", "start"]
+# Start the clean server
+CMD ["node", "backend/clean-server.js"]
