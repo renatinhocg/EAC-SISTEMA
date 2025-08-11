@@ -32,13 +32,13 @@ const Login = ({ onLogin }) => {
         <Card style={{ width: 360, boxShadow: '0 2px 8px #f0f1f2', borderRadius: 12, border: 'none' }} bodyStyle={{ padding: 32 }}>
           <div style={{ marginBottom: 32 }}>
             <Title level={2} style={{ marginBottom: 0 }}>Log In</Title>
-            <Text type="secondary">Entre com seu e-mail e senha para acessar o painel.</Text>
+            <Text type="secondary">Entre com seu usuário e senha para acessar o painel.</Text>
           </div>
           <Form name="login" layout="vertical" onFinish={onFinish}>
-            <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Digite seu e-mail!' }]}> 
-              <Input type="email" autoComplete="email" size="large" />
+            <Form.Item name="username" label="Usuário" rules={[{ required: true, message: 'Digite seu usuário!' }]}> 
+              <Input autoComplete="username" size="large" />
             </Form.Item>
-            <Form.Item name="senha" label="Password" rules={[{ required: true, message: 'Digite sua senha!' }]}> 
+            <Form.Item name="senha" label="Senha" rules={[{ required: true, message: 'Digite sua senha!' }]}> 
               <Input.Password autoComplete="current-password" size="large" />
             </Form.Item>
             <Form.Item>

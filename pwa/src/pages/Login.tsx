@@ -17,11 +17,11 @@ const Login: React.FC = () => {
   const state = location.state as LocationState;
   const from = state?.from?.pathname ?? '/';
 
-  const onFinish = async (values: { email: string; senha: string }) => {
+  const onFinish = async (values: { username: string; senha: string }) => {
     setError(null);
     setLoading(true);
     try {
-      await login(values.email, values.senha);
+      await login(values.username, values.senha);
       navigate(from, { replace: true });
     } catch (err) {
       if (axios.isAxiosError(err)) {
@@ -142,13 +142,13 @@ const Login: React.FC = () => {
           style={{ width: '100%' }}
         >
           <Form.Item
-            label={<span style={{ color: '#374151', fontWeight: '500' }}>Email</span>}
-            name="email"
-            rules={[{ required: true, type: 'email', message: 'Informe um email válido' }]}
+            label={<span style={{ color: '#374151', fontWeight: '500' }}>Usuário</span>}
+            name="username"
+            rules={[{ required: true, message: 'Informe o usuário' }]}
             style={{ marginBottom: '20px' }}
           >
             <Input 
-              placeholder="garcom@email.com"
+              placeholder="renato.coelho"
               style={{ 
                 height: '48px',
                 borderRadius: '12px',
@@ -192,7 +192,7 @@ const Login: React.FC = () => {
             </Button>
           </Form.Item>
         </Form>
-        versão 2.2
+        versão 2.3
       </div>
     </div>
   );

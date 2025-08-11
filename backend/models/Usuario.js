@@ -1,8 +1,9 @@
 // Modelo de Usuário
 class Usuario {
-  constructor({ id, nome, telefone, email, instagram, tipo_usuario, tipo_circulo, eac_que_fez, foto, senha }) {
+  constructor({ id, nome, username, telefone, email, instagram, tipo_usuario, tipo_circulo, eac_que_fez, foto, senha }) {
     this.id = id;
     this.nome = nome;
+    this.username = username;
     this.telefone = telefone;
     this.email = email;
     this.instagram = instagram;

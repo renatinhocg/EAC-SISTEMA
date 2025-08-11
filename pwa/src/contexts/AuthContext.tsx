@@ -16,7 +16,7 @@ interface AuthContextProps {
   token: string | null;
   user: User | null;
   loading: boolean;
-  login: (email: string, senha: string) => Promise<void>;
+  login: (username: string, senha: string) => Promise<void>;
   logout: () => void;
   updateUser: (user: User) => void;
 }
@@ -39,8 +39,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setLoading(false)
   }, [])
 
-  const login = async (email: string, senha: string) => {
-    const response = await api.post('/usuarios/login', { email, senha })
+  const login = async (username: string, senha: string) => {
+    const response = await api.post('/usuarios/login', { username, senha })
     const { token: newToken, user: newUser } = response.data
     setToken(newToken)
     setUser(newUser)
