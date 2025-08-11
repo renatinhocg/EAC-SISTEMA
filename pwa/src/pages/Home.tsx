@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { BellOutlined } from '@ant-design/icons';
 import { AuthContext } from '../contexts/AuthContext';
 import api from '../services/api';
-import { getUserAvatarUrl } from '../utils/imageUtils';
+import { getUserAvatarUrl, getImageUrl } from '../utils/imageUtils';
 
 interface TeamMember {
   id: number;
@@ -145,7 +145,7 @@ const Home: React.FC = () => {
           }}>
             {teamDetails?.imagem ? (
               <img 
-                src={`http://localhost:3000/uploads/equipes/${teamDetails.imagem}`}
+                src={getImageUrl(`uploads/equipes/${teamDetails.imagem}`)}
                 alt={teamDetails.nome}
                 style={{
                   width: '100%',
