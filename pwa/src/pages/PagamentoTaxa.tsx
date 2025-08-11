@@ -108,18 +108,26 @@ const PagamentoTaxa: React.FC = () => {
 
     const formData = new FormData();
     const file = fileList[0].originFileObj;
-    if (file) {
+    if (file && user?.id) {
       formData.append('comprovante', file);
       formData.append('valor', '25');
+      formData.append('usuario_id', user.id.toString());
     } else {
-      message.error('Erro ao processar o arquivo!');
+      message.error(!file ? 'Erro ao processar o arquivo!' : 'Usuário não identificado!');
       setLoading(false);
       return;
     }
 
     try {
       console.log('🔑 Token disponível:', localStorage.getItem('token') ? 'SIM' : 'NÃO');
-      console.log('📤 Enviando comprovante...');
+      console.log('� Usuário ID:', user?.id);
+      console.log('�📤 Enviando comprovante...');
+      
+      // Debug dos dados do FormData
+      console.log('📋 Dados sendo enviados:');
+      for (const [key, value] of formData.entries()) {
+        console.log(`  ${key}:`, value instanceof File ? `Arquivo: ${value.name}` : value);
+      }
       
       // Simular progresso do upload
       const progressInterval = setInterval(() => {
@@ -147,9 +155,25 @@ const PagamentoTaxa: React.FC = () => {
       });
 
       setFileList([]);
-    } catch (error: unknown) {
-      console.error('Erro ao enviar comprovante:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Erro ao enviar comprovante';
+    } catch (error: any) {
+      console.error('❌ Erro ao enviar comprovante:', error);
+      
+      let errorMessage = 'Erro ao enviar comprovante';
+      
+      if (error.response) {
+        // Erro da API
+        console.error('📊 Status:', error.response.status);
+        console.error('📝 Dados:', error.response.data);
+        errorMessage = error.response.data?.error || `Erro ${error.response.status}: ${error.response.statusText}`;
+      } else if (error.request) {
+        // Erro de rede
+        console.error('🌐 Erro de rede:', error.request);
+        errorMessage = 'Erro de conexão. Verifique sua internet.';
+      } else {
+        // Outro erro
+        errorMessage = error.message || 'Erro desconhecido';
+      }
+      
       message.error(errorMessage);
     } finally {
       setLoading(false);

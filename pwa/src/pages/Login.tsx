@@ -192,7 +192,7 @@ const Login: React.FC = () => {
             </Button>
           </Form.Item>
         </Form>
-        versão 2.1
+        versão 2.2
       </div>
     </div>
   );
