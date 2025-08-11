@@ -1,6 +1,92 @@
 require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
+const express = require('express')app.use(express.json());
+
+// ==================== ROTAS DA API - PRIMEIRA PRIORIDADE ====================
+// Importar rotas (conexão com DB é feita pelo db.js) - PRIMEIRO IMPORTAR
+const usuariosRouter = require('./routes/usuarios');
+const equipesRouter = require('./routes/equipes');
+const notificacoesRouter = require('./routes/notificacoes');
+const agendasRouter = require('./routes/agendas');
+const checklistsRouter = require('./routes/checklists');
+const reflexoesRouter = require('./routes/reflexoes');
+const presencasRouter = require('./routes/presencas');
+const usuariosFotoRouter = require('./routes/usuarios_foto');
+const tipoCirculoRouter = require('./routes/tipo_circulo');
+const db = require('./db');
+
+// ROTAS DE API - CONFIGURAR ANTES DE QUALQUER MIDDLEWARE
+app.use('/api/usuarios', usuariosRouter);
+app.use('/api/usuarios', usuariosFotoRouter);
+app.use('/api/equipes', equipesRouter);
+app.use('/api/notificacoes', notificacoesRouter);
+app.use('/api/agendas', agendasRouter);
+app.use('/api/checklists', checklistsRouter);
+app.use('/api/reflexoes', reflexoesRouter);
+app.use('/api/presencas', presencasRouter);
+app.use('/api/tipo_circulo', tipoCirculoRouter);
+
+// GET /api/pagamentos/usuarios - Listar usuários com status de pagamento (incluindo equipe)
+app.get('/api/pagamentos/usuarios', async (req, res) => {
+  console.log('👥 GET /api/pagamentos/usuarios - Listando usuários com status de pagamento');
+  
+  try {
+    const query = \`
+      SELECT 
+        u.id as usuario_id,
+        u.nome,
+        u.email,
+        u.telefone,
+        u.foto,
+        u.tipo_usuario,
+        p.id,
+        p.comprovante,
+        p.valor,
+        p.status,
+        p.data_envio,
+        p.data_aprovacao,
+        p.observacoes,
+        p.created_at,
+        p.updated_at,
+        u.equipe_id,
+        e.nome as equipe_nome
+      FROM usuario u
+      LEFT JOIN pagamento p ON u.id = p.usuario_id
+      LEFT JOIN equipe e ON u.equipe_id = e.id
+      ORDER BY u.nome ASC
+    \`;
+    
+    db.query(query, (err, result) => {
+      if (err) {
+        console.error('❌ Erro ao buscar usuários:', err);
+        return res.status(500).json({ error: err.message });
+      }
+      
+      const usuarios = Array.isArray(result) ? result : result.rows || [];
+      
+      // Processa os dados para garantir que status_pagamento seja mapeado corretamente
+      const usuariosProcessados = usuarios.map(usuario => ({
+        ...usuario,
+        status_pagamento: usuario.status || 'sem_pagamento',
+        equipe_nome: usuario.equipe_nome || 'Não informado'
+      }));
+      
+      console.log(\`✅ Encontrados \${usuarios.length} usuários\`);
+      res.json(usuariosProcessados);
+    });
+  } catch (error) {
+    console.error('❌ Erro interno:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Log de todas as requisições para debug
+app.use((req, res, next) => {
+  console.log(\`🌐 \${new Date().toISOString()} - \${req.method} \${req.url}\`);
+  if (req.body && Object.keys(req.body).length > 0) {
+    console.log('   Body:', req.body);
+  }
+  next();
+});ors = require('cors');
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
@@ -72,36 +158,17 @@ app.use((req, res, next) => {
   next();
 });
 
-// Importar rotas (conexão com DB é feita pelo db.js) - PRIMEIRO IMPORTAR
-const usuariosRouter = require('./routes/usuarios');
-const equipesRouter = require('./routes/equipes');
-const notificacoesRouter = require('./routes/notificacoes');
-const agendasRouter = require('./routes/agendas');
-const checklistsRouter = require('./routes/checklists');
-const reflexoesRouter = require('./routes/reflexoes');
-const presencasRouter = require('./routes/presencas');
-const usuariosFotoRouter = require('./routes/usuarios_foto');
-const tipoCirculoRouter = require('./routes/tipo_circulo');
-
 // ==================== ROTAS DE PAGAMENTOS ====================
 const db = require('./db');
 
-
-
-// ROTAS DE API - AGORA PODEMOS USAR OS ROUTERS IMPORTADOS
-app.use('/api/usuarios', usuariosRouter);
-app.use('/api/usuarios', usuariosFotoRouter);
-app.use('/api/equipes', equipesRouter);
-app.use('/api/notificacoes', notificacoesRouter);
-app.use('/api/agendas', (req, res, next) => {
-  console.log(`[agendas] ${req.method} ${req.url} - body:`, req.body);
-  next();
+// Rota de teste para verificar se está funcionando
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    message: 'API funcionando!', 
+    version: '2025-08-11-ROTAS-CORRIGIDAS',
+    timestamp: new Date().toISOString()
+  });
 });
-app.use('/api/agendas', agendasRouter);
-app.use('/api/checklists', checklistsRouter);
-app.use('/api/reflexoes', reflexoesRouter);
-app.use('/api/presencas', presencasRouter);
-app.use('/api/tipo_circulo', tipoCirculoRouter);
 
 // GET /api/pagamentos/usuarios - Listar usuários com status de pagamento (incluindo equipe)
 app.get('/api/pagamentos/usuarios', async (req, res) => {
@@ -528,6 +595,8 @@ app.get('*', (req, res) => {
 
 const PORT = process.env.PORT || 3001;
 console.log('🚀 Iniciando servidor na porta', PORT);
+console.log('🔥 VERSÃO DO SERVIDOR: 2025-08-11-ROTAS-API-CORRIGIDAS');
 app.listen(PORT, () => {
   console.log(`🌟 Servidor Full Stack rodando na porta ${PORT} - API funcionando!`);
+  console.log('🔥 ROTAS DA API DEVEM ESTAR FUNCIONANDO AGORA!');
 });
