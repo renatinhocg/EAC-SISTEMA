@@ -7,10 +7,10 @@ export const getImageUrl = (imagePath: string): string => {
     return imagePath;
   }
   
-  // URL base da API (com /api para uploads também)
+  // URL base da API - sempre usa /uploads direto (não /api/uploads)
   const baseUrl = import.meta.env.DEV 
-    ? 'http://localhost:3000/api' 
-    : 'https://eac-pwa-project-production.up.railway.app/api';
+    ? 'http://localhost:3000' 
+    : '';
     
   return `${baseUrl}/${imagePath}`;
 };
@@ -21,11 +21,7 @@ export const getUserAvatarUrl = (userPhoto?: string): string => {
     return 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face';
   }
   
-  // Em desenvolvimento, usa a API do backend
-  if (import.meta.env.DEV) {
-    return `http://localhost:3000/api/uploads/usuarios/${userPhoto}`;
-  }
-  
-  // Em produção, usa as imagens da pasta public (servidas pelo frontend)
-  return `/uploads/usuarios/${userPhoto}`;
+  // Tanto em desenvolvimento quanto em produção, usa /uploads/usuarios/
+  const baseUrl = import.meta.env.DEV ? 'http://localhost:3000' : '';
+  return `${baseUrl}/uploads/usuarios/${userPhoto}`;
 };
