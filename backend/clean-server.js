@@ -86,6 +86,10 @@ app.get('/api/pagamentos/usuarios', async (req, res) => {
 // ===== ARQUIVOS ESTÁTICOS - ÚLTIMA PRIORIDADE =====
 console.log('📁 CONFIGURANDO ARQUIVOS ESTÁTICOS...');
 
+// Servir uploads
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Admin
 app.use('/admin', express.static(path.join(__dirname, '../frontend/dist')));
 
