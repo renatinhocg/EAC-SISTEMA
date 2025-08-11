@@ -515,6 +515,7 @@ app.get('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3001;
+console.log('🚀 Iniciando servidor na porta', PORT);
 app.listen(PORT, () => {
-  console.log(`Servidor Full Stack rodando na porta ${PORT}`);
+  console.log(`🌟 Servidor Full Stack rodando na porta ${PORT} - API funcionando!`);
 });
