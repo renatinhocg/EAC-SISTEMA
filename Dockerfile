@@ -22,6 +22,9 @@ COPY backend/ ./backend/
 COPY frontend/dist/ ./frontend/dist/
 COPY pwa/dist/ ./pwa/dist/
 
+# Copy uploads directory (user photos and files)
+COPY backend/uploads/ ./backend/uploads/
+
 # Copy main application files
 COPY index.js ./
 

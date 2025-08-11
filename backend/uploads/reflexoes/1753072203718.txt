@@ -1,0 +1,13 @@
+- Contrato para unicesuma com valor 8.250 (10% adicionado), enviar para Janaira e Nick
+
+- Broker de pagamento
+	- Existe uma tela seguindo os padroes do lift construido pelo time do 3.0 para pagamentos
+	- A ideia é criar uma baseado nessa onde vão vir parametros do usuário para pagamento, assim, dessa forma conseguiria pagar vindo de qualquer lugar, email, sms...
+	- Essa ideia, acho que por segurança é ruim, para cartão, pix e boleto não.
+	- Primeiramente a Caroline vai falar com o Ge (ux do time 3.0) para avaliar de eles fazerem, caso não consigam atender o prazo, será feito pela gente
+	- O prazo de desenvolvimento e estar pronto em junho, pois o salesfoce entra em julho
+
+- Betunel
+	- Entendi que é um APP para acompanhamento de entregas
+	- o Desktop não va iacompanhar a entrega? apenas tabela?
+	- Dentro da estrutura do comercial?

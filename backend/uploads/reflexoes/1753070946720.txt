@@ -1,0 +1,48 @@
+Projetos
+
+Selva - Wyden Previsão entrega fevereiro
+
+- Funil, vou conversar com wd para saber o que ele adiantou nas ferias do funil
+- reunião com o time de negócio, redefinição da maneira de fazer
+- Reunião com Jos e WD para planejamento do desenvolvimento desse ano
+- Fazer o backup todo do banco de produção.
+
+- Relatórios pesados, carrega tudo ao invés de paginado
+- Página de representantes separado pela marca
+- Reativar o APP
+- 
+
+
+
+- Tayana
+
+ - Previsão de entrega de relatório e planejamento 2023 hoje.
+ - Definição dos próximos passos
+
+
+GI
+
+ - Durante as ferias coletivas, tudo normal.. Sem grandes problemas
+ - Não subiu nada ainda que foi feito, está com problemas no pipeline ainda. Daniel está em contato com o time de infra
+ - Fazer um report com o Bruno para passar um visão de necessidade sobre a infra
+
+
+Unicesumar
+
+ - Conectar API da EAD no site presencial
+	- Curso de administração em Maringá
+
+
+
+
+Portal 2.0
+
+ - Durante as ferias coletivas, tudo normal.. Sem grandes problemas
+
+
+Betunel 
+
+ - APP vendas da betunel
+
+
+

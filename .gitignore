@@ -48,6 +48,6 @@ logs
 ehthumbs.db
 Thumbs.db
 
-# Uploads
-backend/uploads/*
-!backend/uploads/.gitkeep
+# Uploads - apenas ignorar arquivos temporários
+backend/uploads/temp/*
+!backend/uploads/temp/.gitkeep
