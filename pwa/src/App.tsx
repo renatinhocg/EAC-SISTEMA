@@ -24,6 +24,8 @@ function App() {
       <Routes>
         {/* rota pública de login */}
         <Route path="/login" element={<Login />} />
+        {/* rota de pagamento sem layout (sem menu footer) */}
+        <Route path="/pagamento" element={<RequireAuth><PagamentoTaxa /></RequireAuth>} />
         {/* rotas privadas protegidas com layout */}
         <Route element={<RequireAuth><Layout /></RequireAuth>}>
           <Route path="/" element={<Home />} />
@@ -37,7 +39,6 @@ function App() {
           <Route path="/notificacoes" element={<Notificacoes />} />
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/presenca-equipe" element={<PresencaEquipe />} />
-          <Route path="/pagamento" element={<PagamentoTaxa />} />
         </Route>
       </Routes>
     </>
