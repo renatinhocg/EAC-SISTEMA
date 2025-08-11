@@ -165,6 +165,10 @@ app.use('/admin', express.static(path.join(__dirname, '../frontend/dist')));
 app.use('/assets', express.static(path.join(__dirname, '../pwa/dist/assets')));
 app.use('/favicon.svg', express.static(path.join(__dirname, '../pwa/dist/favicon.svg')));
 app.use('/manifest.json', express.static(path.join(__dirname, '../pwa/dist/manifest.json')));
+app.use('/icon-192.svg', express.static(path.join(__dirname, '../pwa/dist/icon-192.svg')));
+app.use('/icon-512.svg', express.static(path.join(__dirname, '../pwa/dist/icon-512.svg')));
+app.use('/logo-eac.svg', express.static(path.join(__dirname, '../pwa/dist/logo-eac.svg')));
+app.use('/logo-splash.png', express.static(path.join(__dirname, '../pwa/dist/logo-splash.png')));
 
 // SPA Routing
 app.get('/admin/*', (req, res) => {
