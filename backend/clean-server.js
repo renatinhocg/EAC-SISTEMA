@@ -159,6 +159,11 @@ app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
 // Admin
 app.use('/admin', express.static(path.join(__dirname, '../frontend/dist')));
 
+// PWA Assets - ANTES do catch-all
+app.use('/assets', express.static(path.join(__dirname, '../pwa/dist/assets')));
+app.use('/favicon.svg', express.static(path.join(__dirname, '../pwa/dist/favicon.svg')));
+app.use('/manifest.json', express.static(path.join(__dirname, '../pwa/dist/manifest.json')));
+
 // SPA Routing
 app.get('/admin/*', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));

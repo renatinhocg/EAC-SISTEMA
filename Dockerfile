@@ -31,5 +31,5 @@ EXPOSE 3000
 # Set environment to production
 ENV NODE_ENV=production
 
-# Start the clean server
-CMD ["node", "backend/clean-server.js"]
+# Start the main server (with all routes)
+CMD ["node", "backend/index.js"]
