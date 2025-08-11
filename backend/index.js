@@ -499,9 +499,18 @@ app.post('/api/usuarios-com-foto', upload.single('foto'), (req, res) => {
 });
 
 // ==================== ARQUIVOS ESTÁTICOS ====================
-// Servir arquivos estáticos do frontend e PWA
+// Servir arquivos estáticos do frontend admin
 app.use('/admin', express.static(path.join(__dirname, '../frontend/dist')));
-app.use(express.static(path.join(__dirname, '../pwa/dist')));
+
+// Middleware para servir arquivos estáticos da PWA apenas se não for rota da API
+app.use((req, res, next) => {
+  // Se a requisição começa com /api, pula para o próximo middleware
+  if (req.path.startsWith('/api')) {
+    return next();
+  }
+  // Caso contrário, tenta servir arquivos estáticos da PWA
+  express.static(path.join(__dirname, '../pwa/dist'))(req, res, next);
+});
 
 // ==================== SPA ROUTING ====================
 // Configurar SPA routing para o frontend admin
