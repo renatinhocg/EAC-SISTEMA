@@ -20,85 +20,43 @@ const db = require('./db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-console.log('🔥 CONFIGURANDO ROTAS DA API...');
+// Importar routers das outras APIs
+const usuariosRouter = require('./routes/usuarios');
+const equipesRouter = require('./routes/equipes');
+const notificacoesRouter = require('./routes/notificacoes');
+const agendasRouter = require('./routes/agendas');
+const checklistsRouter = require('./routes/checklists');
+const reflexoesRouter = require('./routes/reflexoes');
+const presencasRouter = require('./routes/presencas');
+const usuariosFotoRouter = require('./routes/usuarios_foto');
+const tipoCirculoRouter = require('./routes/tipo_circulo');
+
+console.log('🔥 CONFIGURANDO TODAS AS ROTAS DA API...');
+
+// Configurar todas as rotas das outras seções
+app.use('/api/usuarios', usuariosRouter);
+app.use('/api/usuarios', usuariosFotoRouter);
+app.use('/api/equipes', equipesRouter);
+app.use('/api/notificacoes', notificacoesRouter);
+app.use('/api/agendas', agendasRouter);
+app.use('/api/checklists', checklistsRouter);
+app.use('/api/reflexoes', reflexoesRouter);
+app.use('/api/presencas', presencasRouter);
+app.use('/api/tipo_circulo', tipoCirculoRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {
   console.log('💚 Health check called');
   res.json({ 
     message: 'API FUNCIONANDO!', 
-    version: 'CLEAN-VERSION-2025-08-11',
+    version: 'COMPLETE-VERSION-2025-08-11',
     timestamp: new Date().toISOString()
   });
 });
 
-// LOGIN - ROTA ESSENCIAL
-app.post('/api/usuarios/login', async (req, res) => {
-  console.log('🔐 POST /api/usuarios/login');
-  const { email, senha } = req.body;
-  
-  if (!email || !senha) {
-    return res.status(400).json({ error: 'Email e senha são obrigatórios' });
-  }
-  
-  try {
-    db.query(
-      `SELECT u.*, e.id as e_id, e.nome as equipe_nome 
-       FROM usuario u 
-       LEFT JOIN equipe e ON u.equipe_id = e.id 
-       WHERE u.email = $1`,
-      [email],
-      async (err, results) => {
-        if (err) return res.status(500).json({ error: err.message });
-        
-        const usuarios = Array.isArray(results) ? results : results.rows || [];
-        if (usuarios.length === 0) return res.status(401).json({ error: 'Usuário não encontrado' });
-        
-        const user = usuarios[0];
-        
-        // Verificar senha com bcrypt
-        try {
-          const isValidPassword = await bcrypt.compare(senha, user.senha);
-          if (!isValidPassword) {
-            return res.status(401).json({ error: 'Senha incorreta' });
-          }
-        } catch (error) {
-          return res.status(500).json({ error: 'Erro ao verificar senha' });
-        }
-        
-        const token = jwt.sign(
-          { id: user.id, email: user.email, nome: user.nome, tipo_usuario: user.tipo_usuario },
-          process.env.JWT_SECRET || 'secret-key',
-          { expiresIn: '24h' }
-        );
-        
-        console.log('✅ Login realizado:', user.nome, user.tipo_usuario);
-        
-        res.json({
-          token,
-          user: {
-            id: user.id,
-            nome: user.nome,
-            email: user.email,
-            tipo_usuario: user.tipo_usuario,
-            foto: user.foto,
-            equipe: user.equipe_nome ? {
-              id: user.e_id,
-              nome: user.equipe_nome
-            } : null
-          }
-        });
-      }
-    );
-  } catch (error) {
-    console.error('❌ Erro interno no login:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
 // Pagamentos usuarios
 app.get('/api/pagamentos/usuarios', async (req, res) => {
-  console.log('👥 GET /api/pagamentos/usuarios - NOVA VERSÃO');
+  console.log('� GET /api/pagamentos/usuarios');
   
   try {
     const query = `
@@ -142,6 +100,50 @@ app.get('/api/pagamentos/usuarios', async (req, res) => {
       
       console.log(`✅ Encontrados ${usuarios.length} usuários`);
       res.json(usuariosProcessados);
+    });
+  } catch (error) {
+    console.error('❌ Erro interno:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Estatísticas de pagamentos
+app.get('/api/pagamentos/estatisticas', async (req, res) => {
+  console.log('� GET /api/pagamentos/estatisticas');
+  
+  try {
+    const query = `
+      SELECT 
+        COUNT(*) as total,
+        COUNT(CASE WHEN status = 'aprovado' THEN 1 END) as aprovados,
+        COUNT(CASE WHEN status = 'pendente' THEN 1 END) as pendentes,
+        COUNT(CASE WHEN status = 'aguardando_aprovacao' THEN 1 END) as aguardando_aprovacao,
+        COUNT(CASE WHEN status = 'rejeitado' THEN 1 END) as rejeitados
+      FROM pagamento
+    `;
+    
+    db.query(query, (err, result) => {
+      if (err) {
+        console.error('❌ Erro ao buscar estatísticas:', err);
+        return res.status(500).json({ error: err.message });
+      }
+      
+      const stats = Array.isArray(result) ? result[0] : result.rows?.[0] || {};
+      const total = parseInt(stats.total || 0);
+      const aprovados = parseInt(stats.aprovados || 0);
+      const percentual_pagos = total > 0 ? ((aprovados / total) * 100).toFixed(2) : '0.00';
+      
+      const estatisticas = {
+        total: stats.total || '0',
+        aprovados: stats.aprovados || '0',
+        pendentes: stats.pendentes || '0',
+        aguardando_aprovacao: stats.aguardando_aprovacao || '0',
+        rejeitados: stats.rejeitados || '0',
+        percentual_pagos
+      };
+      
+      console.log('✅ Estatísticas:', estatisticas);
+      res.json(estatisticas);
     });
   } catch (error) {
     console.error('❌ Erro interno:', error);
