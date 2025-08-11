@@ -171,11 +171,31 @@ app.get('/admin/*', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
 });
 
-// PWA (catch-all) - ÚLTIMA ROTA
+// PWA - Rotas específicas ao invés de catch-all
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../pwa/dist/index.html'));
+});
+
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, '../pwa/dist/index.html'));
+});
+
+app.get('/home', (req, res) => {
+  res.sendFile(path.join(__dirname, '../pwa/dist/index.html'));
+});
+
+app.get('/pagamento-taxa', (req, res) => {
+  res.sendFile(path.join(__dirname, '../pwa/dist/index.html'));
+});
+
+// Catch-all final só para rotas não encontradas
 app.get('*', (req, res) => {
+  // Se a rota começa com /api, retorna 404
   if (req.path.startsWith('/api')) {
     return res.status(404).json({ error: 'API endpoint not found' });
   }
+  
+  // Para outras rotas PWA, serve o index.html
   res.sendFile(path.join(__dirname, '../pwa/dist/index.html'));
 });
 
