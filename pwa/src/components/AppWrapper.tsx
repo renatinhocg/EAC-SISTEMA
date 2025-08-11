@@ -8,10 +8,10 @@ const AppWrapper: React.FC = () => {
   const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
-    // Timer para garantir que o splash apareça por pelo menos 5 segundos
+    // Timer para garantir que o splash apareça por pelo menos 2 segundos
     const timer = setTimeout(() => {
       setShowSplash(false);
-    }, 5000); // 5 segundos
+    }, 2000); // 2 segundos
 
     return () => clearTimeout(timer);
   }, []);
