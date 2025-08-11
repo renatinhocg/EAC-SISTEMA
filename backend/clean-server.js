@@ -151,6 +151,77 @@ app.get('/api/pagamentos/estatisticas', async (req, res) => {
   }
 });
 
+// Buscar pagamento específico de um usuário
+app.get('/api/pagamentos/usuario/:id', async (req, res) => {
+  console.log('📋 GET /api/pagamentos/usuario/' + req.params.id);
+  
+  try {
+    const { id } = req.params;
+    const query = `
+      SELECT 
+        p.*,
+        u.nome as usuario_nome,
+        u.email as usuario_email
+      FROM pagamento p
+      JOIN usuario u ON p.usuario_id = u.id
+      WHERE p.usuario_id = ?
+      ORDER BY p.created_at DESC
+      LIMIT 1
+    `;
+    
+    db.query(query, [id], (err, result) => {
+      if (err) {
+        console.error('❌ Erro ao buscar pagamento:', err);
+        return res.status(500).json({ error: err.message });
+      }
+      
+      const pagamentos = Array.isArray(result) ? result : result.rows || [];
+      const pagamento = pagamentos.length > 0 ? pagamentos[0] : null;
+      
+      console.log('✅ Pagamento encontrado:', pagamento ? 'SIM' : 'NÃO');
+      res.json(pagamento);
+    });
+  } catch (error) {
+    console.error('❌ Erro interno:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Criar novo pagamento
+app.post('/api/pagamentos', async (req, res) => {
+  console.log('💳 POST /api/pagamentos');
+  
+  try {
+    const { usuario_id, valor, comprovante } = req.body;
+    
+    if (!usuario_id || !valor) {
+      return res.status(400).json({ error: 'Usuário e valor são obrigatórios' });
+    }
+    
+    const query = `
+      INSERT INTO pagamento (usuario_id, valor, comprovante, status, data_envio, created_at, updated_at)
+      VALUES (?, ?, ?, 'aguardando_aprovacao', NOW(), NOW(), NOW())
+    `;
+    
+    db.query(query, [usuario_id, valor, comprovante || null], (err, result) => {
+      if (err) {
+        console.error('❌ Erro ao criar pagamento:', err);
+        return res.status(500).json({ error: err.message });
+      }
+      
+      console.log('✅ Pagamento criado com sucesso');
+      res.status(201).json({ 
+        message: 'Pagamento enviado com sucesso!',
+        id: result.insertId || result.lastID,
+        status: 'aguardando_aprovacao'
+      });
+    });
+  } catch (error) {
+    console.error('❌ Erro interno:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ===== ARQUIVOS ESTÁTICOS - ÚLTIMA PRIORIDADE =====
 console.log('📁 CONFIGURANDO ARQUIVOS ESTÁTICOS...');
 
