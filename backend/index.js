@@ -502,14 +502,13 @@ app.post('/api/usuarios-com-foto', upload.single('foto'), (req, res) => {
 // Servir arquivos estáticos do frontend admin
 app.use('/admin', express.static(path.join(__dirname, '../frontend/dist')));
 
-// Middleware para servir arquivos estáticos da PWA apenas se não for rota da API
-app.use((req, res, next) => {
-  // Se a requisição começa com /api, pula para o próximo middleware
-  if (req.path.startsWith('/api')) {
-    return next();
-  }
-  // Caso contrário, tenta servir arquivos estáticos da PWA
-  express.static(path.join(__dirname, '../pwa/dist'))(req, res, next);
+// Servir arquivos estáticos da PWA (apenas assets específicos)
+app.use('/assets', express.static(path.join(__dirname, '../pwa/dist/assets')));
+app.use('/favicon.svg', (req, res) => {
+  res.sendFile(path.join(__dirname, '../pwa/dist/favicon.svg'));
+});
+app.use('/manifest.json', (req, res) => {
+  res.sendFile(path.join(__dirname, '../pwa/dist/manifest.json'));
 });
 
 // ==================== SPA ROUTING ====================
@@ -520,6 +519,10 @@ app.get('/admin/*', (req, res) => {
 
 // Configurar SPA routing para o PWA (catch-all) - DEVE SER A ÚLTIMA ROTA
 app.get('*', (req, res) => {
+  // Se a rota começa com /api, retorna 404 ao invés de servir a PWA
+  if (req.path.startsWith('/api')) {
+    return res.status(404).json({ error: 'API endpoint not found' });
+  }
   res.sendFile(path.join(__dirname, '../pwa/dist/index.html'));
 });
 
