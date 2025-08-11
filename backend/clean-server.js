@@ -18,6 +18,20 @@ app.use(express.json());
 // ===== ROTAS DA API - PRIMEIRA PRIORIDADE =====
 const db = require('./db');
 const bcrypt = require('bcrypt');
+const multer = require('multer');
+
+// Configurar multer para uploads de comprovantes
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, 'uploads/comprovantes/'));
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'comprovante-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage: storage });
 const jwt = require('jsonwebtoken');
 
 // Importar routers das outras APIs
@@ -188,13 +202,19 @@ app.get('/api/pagamentos/usuario/:id', async (req, res) => {
 });
 
 // Criar novo pagamento
-app.post('/api/pagamentos', async (req, res) => {
+app.post('/api/pagamentos', upload.single('comprovante'), async (req, res) => {
   console.log('💳 POST /api/pagamentos');
+  console.log('📋 Body recebido:', req.body);
+  console.log('📎 Arquivo recebido:', req.file ? req.file.filename : 'Nenhum');
   
   try {
-    const { usuario_id, valor, comprovante } = req.body;
+    const { usuario_id, valor } = req.body;
+    const comprovante = req.file ? req.file.filename : null;
+    
+    console.log('📝 Dados extraídos:', { usuario_id, valor, comprovante });
     
     if (!usuario_id || !valor) {
+      console.log('❌ Dados obrigatórios ausentes:', { usuario_id: !!usuario_id, valor: !!valor });
       return res.status(400).json({ error: 'Usuário e valor são obrigatórios' });
     }
     
