@@ -242,6 +242,68 @@ app.post('/api/pagamentos', upload.single('comprovante'), async (req, res) => {
   }
 });
 
+// Aprovar pagamento
+app.put('/api/pagamentos/usuario/:id/aprovar', async (req, res) => {
+  console.log('✅ PUT /api/pagamentos/usuario/' + req.params.id + '/aprovar');
+  
+  try {
+    const { id } = req.params;
+    const query = `
+      UPDATE pagamento 
+      SET status = 'aprovado', data_aprovacao = NOW(), updated_at = NOW()
+      WHERE usuario_id = ?
+    `;
+    
+    db.query(query, [id], (err, result) => {
+      if (err) {
+        console.error('❌ Erro ao aprovar pagamento:', err);
+        return res.status(500).json({ error: err.message });
+      }
+      
+      console.log('✅ Pagamento aprovado com sucesso');
+      res.json({ 
+        message: 'Pagamento aprovado com sucesso!',
+        status: 'aprovado'
+      });
+    });
+  } catch (error) {
+    console.error('❌ Erro interno:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Rejeitar pagamento
+app.put('/api/pagamentos/usuario/:id/rejeitar', async (req, res) => {
+  console.log('❌ PUT /api/pagamentos/usuario/' + req.params.id + '/rejeitar');
+  
+  try {
+    const { id } = req.params;
+    const { observacoes } = req.body;
+    
+    const query = `
+      UPDATE pagamento 
+      SET status = 'rejeitado', observacoes = ?, updated_at = NOW()
+      WHERE usuario_id = ?
+    `;
+    
+    db.query(query, [observacoes || null, id], (err, result) => {
+      if (err) {
+        console.error('❌ Erro ao rejeitar pagamento:', err);
+        return res.status(500).json({ error: err.message });
+      }
+      
+      console.log('✅ Pagamento rejeitado com sucesso');
+      res.json({ 
+        message: 'Pagamento rejeitado com sucesso!',
+        status: 'rejeitado'
+      });
+    });
+  } catch (error) {
+    console.error('❌ Erro interno:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ===== ARQUIVOS ESTÁTICOS - ÚLTIMA PRIORIDADE =====
 console.log('📁 CONFIGURANDO ARQUIVOS ESTÁTICOS...');
 
