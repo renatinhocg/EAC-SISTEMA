@@ -19,6 +19,7 @@ import {
   CalendarOutlined,
   CommentOutlined,
   CheckSquareOutlined, // ícone para checklists
+  DollarOutlined, // ícone para pagamentos
 } from '@ant-design/icons';
 
 const { Sider, Content, Header } = Layout;
@@ -35,6 +36,7 @@ const AdminLayout = ({ user, onLogout }) => {
     { key: 'checklists', icon: <CheckSquareOutlined />, label: <Link to="/checklists">Checklists</Link> },
     { key: 'agendas', icon: <CalendarOutlined />, label: <Link to="/agendas">Agenda</Link> },
     { key: 'reflexoes', icon: <CommentOutlined />, label: <Link to="/reflexoes">Reflexões</Link> },
+    { key: 'pagamentos', icon: <DollarOutlined />, label: <Link to="/pagamentos">Pagamentos</Link> },
     { key: 'notificacoes', icon: <NotificationOutlined />, label: <Link to="/notificacoes">Notificações</Link> },
   ];
 

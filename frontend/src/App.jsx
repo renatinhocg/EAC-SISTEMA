@@ -19,6 +19,7 @@ import Checklists from './pages/Checklists';
 import ChecklistForm from './pages/ChecklistForm';
 import AgendaPresencaEquipes from './pages/AgendaPresencaEquipes';
 import AgendaEquipePresenca from './pages/AgendaEquipePresenca';
+import Pagamentos from './pages/Pagamentos';
 import 'antd/dist/reset.css';
 import './App.css';
 import axios from 'axios';
@@ -78,6 +79,7 @@ function App() {
         <Route path="checklists" element={<Checklists />} />
         <Route path="checklists/novo" element={<ChecklistForm />} />
         <Route path="checklists/:id/editar" element={<ChecklistForm />} />
+        <Route path="pagamentos" element={<Pagamentos />} />
         <Route path="agendas/:agendaId/presenca" element={<AgendaPresencaEquipes />} />
         <Route path="agendas/:agendaId/presenca/equipe/:equipeId" element={<AgendaEquipePresenca />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

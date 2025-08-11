@@ -15,6 +15,7 @@ import ReflexaoDetalhe from './pages/ReflexaoDetalhe'
 import Calendario from './pages/Calendario'
 import Perfil from './pages/Perfil'
 import PresencaEquipe from './pages/PresencaEquipe'
+import PagamentoTaxa from './pages/PagamentoTaxa'
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
           <Route path="/notificacoes" element={<Notificacoes />} />
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/presenca-equipe" element={<PresencaEquipe />} />
+          <Route path="/pagamento" element={<PagamentoTaxa />} />
         </Route>
       </Routes>
     </>

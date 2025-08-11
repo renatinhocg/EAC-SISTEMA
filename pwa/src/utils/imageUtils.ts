@@ -21,5 +21,11 @@ export const getUserAvatarUrl = (userPhoto?: string): string => {
     return 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face';
   }
   
-  return getImageUrl(`uploads/usuarios/${userPhoto}`);
+  // Em desenvolvimento, usa a API do backend
+  if (import.meta.env.DEV) {
+    return `http://localhost:3000/api/uploads/usuarios/${userPhoto}`;
+  }
+  
+  // Em produção, usa as imagens da pasta public (servidas pelo frontend)
+  return `/uploads/usuarios/${userPhoto}`;
 };

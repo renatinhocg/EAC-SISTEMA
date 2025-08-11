@@ -9,7 +9,15 @@ const path = require('path');
 // Configurar multer para upload de fotos
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, '../uploads/usuarios/'));
+    const uploadDir = path.join(__dirname, '../uploads/usuarios/');
+    
+    // Cria a pasta se não existir
+    const fs = require('fs');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    
+    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
     const timestamp = Date.now();
@@ -92,6 +100,25 @@ router.post('/', upload.single('foto'), (req, res) => {
   if (req.file) {
     fotoPath = req.file.filename; // Apenas o nome do arquivo, não o caminho completo
     console.log('📷 Foto salva como:', fotoPath);
+    
+    // Copiar arquivo para a pasta da PWA
+    const fs = require('fs');
+    const sourcePath = req.file.path;
+    const pwaDir = path.join(__dirname, '../../pwa/public/uploads/usuarios/');
+    const destPath = path.join(pwaDir, fotoPath);
+    
+    // Criar pasta se não existir
+    if (!fs.existsSync(pwaDir)) {
+      fs.mkdirSync(pwaDir, { recursive: true });
+    }
+    
+    // Copiar arquivo
+    try {
+      fs.copyFileSync(sourcePath, destPath);
+      console.log(`📷 Arquivo copiado para PWA: ${destPath}`);
+    } catch (err) {
+      console.error('❌ Erro ao copiar arquivo para PWA:', err);
+    }
   }
   
   // Mapear tipo_usuario para valores aceitos pelo banco
@@ -245,6 +272,21 @@ router.post('/:id/foto', upload.single('foto'), (req, res) => {
   
   const fotoPath = req.file.filename;
   const userId = req.params.id;
+  
+  // Copiar arquivo para a pasta da PWA
+  const fs = require('fs');
+  const sourcePath = req.file.path;
+  const pwaDir = path.join(__dirname, '../../pwa/public/uploads/usuarios/');
+  const destPath = path.join(pwaDir, fotoPath);
+  
+  // Criar pasta se não existir
+  if (!fs.existsSync(pwaDir)) {
+    fs.mkdirSync(pwaDir, { recursive: true });
+  }
+  
+  // Copiar arquivo
+  fs.copyFileSync(sourcePath, destPath);
+  console.log(`📷 Arquivo copiado para PWA: ${destPath}`);
   
   console.log(`📷 Atualizando usuário ${userId} com foto: ${fotoPath}`);
   

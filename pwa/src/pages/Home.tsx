@@ -32,10 +32,12 @@ const Home: React.FC = () => {
       if (user?.equipe?.id) {
         try {
           console.log('🔍 Carregando dados da equipe:', user.equipe.id);
+          console.log('🔍 Token disponível:', localStorage.getItem('token') ? 'SIM' : 'NÃO');
           
           // Carregar membros da equipe
           const membersResponse = await api.get(`/equipes/${user.equipe.id}/membros`);
           console.log('✅ Membros carregados:', membersResponse.data);
+          console.log('✅ Quantidade de membros:', membersResponse.data?.length || 0);
           setTeamMembers(membersResponse.data || []);
           
           // Carregar detalhes da equipe
@@ -43,15 +45,18 @@ const Home: React.FC = () => {
           console.log('✅ Detalhes da equipe carregados:', teamResponse.data);
           setTeamDetails(teamResponse.data || null);
           
-        } catch (error) {
+        } catch (error: any) {
           console.error('❌ Erro ao carregar dados da equipe:', error);
+          console.error('❌ Detalhes do erro:', error.response?.data || error.message);
           setTeamMembers([]);
           setTeamDetails(null);
         }
+      } else {
+        console.warn('⚠️ Usuário não tem equipe configurada:', user);
       }
     };
     loadTeamData();
-  }, [user?.equipe]);
+  }, [user]);
 
   // Debug do usuário
   useEffect(() => {
@@ -352,24 +357,48 @@ const Home: React.FC = () => {
           </div>
         </div>
 
-        {/* Card em branco (placeholder) */}
+        {/* Card Pagamento */}
         <div style={{
-          background: 'rgba(255, 255, 255, 0.08)',
+          background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
           borderRadius: '16px',
           padding: '16px',
           cursor: 'pointer',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100px'
-        }}>
+          position: 'relative',
+          overflow: 'hidden',
+          boxShadow: '0 4px 20px rgba(34, 197, 94, 0.3)'
+        }}
+        onClick={() => navigate('/pagamento')}
+        >
           <div style={{ 
-            textAlign: 'center',
-            color: 'rgba(255, 255, 255, 0.5)'
+            fontSize: '12px', 
+            fontWeight: '600', 
+            marginBottom: '4px',
+            color: 'rgba(255, 255, 255, 0.8)'
           }}>
-            <div style={{ fontSize: '24px', marginBottom: '8px' }}>📋</div>
-            <div style={{ fontSize: '12px' }}>Em breve</div>
+            Taxa EAC
+          </div>
+          <div style={{ 
+            fontSize: '16px', 
+            fontWeight: '700',
+            marginBottom: '8px',
+            color: 'white'
+          }}>
+            Pagamento
+          </div>
+          <div style={{ 
+            fontSize: '18px', 
+            fontWeight: '700',
+            color: 'white'
+          }}>
+            R$ 25,00
+          </div>
+          <div style={{
+            position: 'absolute',
+            right: '8px',
+            top: '8px',
+            fontSize: '24px'
+          }}>
+            💳
           </div>
         </div>
       </div>
