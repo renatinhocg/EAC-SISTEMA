@@ -1,3 +1,4 @@
+import React from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Login from './pages/Login'
 import Layout from './components/Layout'
@@ -16,8 +17,27 @@ import Calendario from './pages/Calendario'
 import Perfil from './pages/Perfil'
 import PresencaEquipe from './pages/PresencaEquipe'
 import PagamentoTaxa from './pages/PagamentoTaxa'
+import { usePushNotifications } from './hooks/usePushNotifications'
 
 function App() {
+
+  usePushNotifications()
+
+  // Listener para mensagens do service worker (alerta de push)
+  React.useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      const handler = (event: MessageEvent) => {
+        if (event.data && event.data.type === 'PUSH_RECEIVED') {
+          alert('Notificação recebida!\n' + event.data.title + '\n' + (event.data.body || ''));
+        }
+      };
+      navigator.serviceWorker.addEventListener('message', handler);
+      return () => {
+        navigator.serviceWorker.removeEventListener('message', handler);
+      };
+    }
+  }, []);
+
   return (
     <>
       <InstallPWAModal />

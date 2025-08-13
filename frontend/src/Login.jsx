@@ -1,10 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Form, Input, Typography, message, Card } from 'antd';
 import axios from 'axios';
 import { getApiUrl } from './config/api';
 import Illustration from './Illustration';
 
 const { Title, Text } = Typography;
+
+// Componente para forçar atualização do Service Worker e limpar cache
+function ForceSWUpdate() {
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(regs => {
+        regs.forEach(reg => {
+          reg.update();
+          reg.unregister();
+        });
+      });
+      // Limpa todos os caches do navegador relacionados ao domínio
+      if (window.caches) {
+        caches.keys().then(keys => {
+          keys.forEach(key => caches.delete(key));
+        });
+      }
+    }
+  }, []);
+  return null;
+}
 
 const Login = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
@@ -48,11 +69,13 @@ const Login = ({ onLogin }) => {
             </Form.Item>
           </Form>
           <div style={{ textAlign: 'center', marginTop: 16 }}>
-            <Text type="secondary">Não tem uma conta? <a href="#">Sign Up</a></Text><br />
-            <a href="#" style={{ fontSize: 12 }}>Forgot Password?</a>
+            <Text type="secondary">Não tem uma conta? <a href="#">Cadastre-se</a></Text><br />
+            <a href="#" style={{ fontSize: 12 }}>Esqueceu a senha?</a>
           </div>
         </Card>
-        versão 2.0
+        versão 4.1
+        {/* Força atualização do Service Worker e cache ao carregar a tela de login */}
+        <ForceSWUpdate />
       </div>
     </div>
   );

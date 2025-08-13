@@ -9,7 +9,7 @@ export default defineConfig({
   },
   plugins: [
     react(),
-    VitePWA({
+  VitePWA({
       registerType: 'autoUpdate',
       manifest: {
         name: 'EAC PWA',
@@ -19,10 +19,21 @@ export default defineConfig({
         background_color: '#ffffff',
         theme_color: '#1890ff',
         icons: [
-          { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
-          { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' }
+          { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png' }
         ]
+      },
+      strategy: 'injectManifest',
+      injectManifest: {
+        swSrc: 'src/sw/sw.js',
+        swDest: 'sw.js'
+      },
+      injectRegister: 'auto',
+      devOptions: {
+        enabled: true,
+        type: 'module',
+        navigateFallback: '/index.html'
       }
-    })
+  } as any)
   ]
 })

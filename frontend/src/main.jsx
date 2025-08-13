@@ -9,6 +9,7 @@ import { API_BASE_URL } from './config/api';
 // Configurar axios base URL
 axios.defaults.baseURL = API_BASE_URL;
 
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter basename="/admin">

@@ -12,7 +12,8 @@ interface Notificacao {
   descricao: string;
   para_todos: boolean;
   equipe_id?: number;
-  data_criacao?: string; // Adicionando campo para data
+  data_criacao?: string;
+  status?: string;
 }
 
 const Notificacoes: React.FC = () => {
@@ -146,14 +147,27 @@ const Notificacoes: React.FC = () => {
                     alignItems: 'flex-start',
                     marginBottom: '8px'
                   }}>
-                    {/* Título */}
+                    {/* Título + Tag Push */}
                     <div style={{
                       color: 'white',
                       fontSize: '16px',
                       fontWeight: '600',
-                      lineHeight: '1.3'
+                      lineHeight: '1.3',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
                     }}>
                       {item.titulo}
+                      {item.status === 'push' && (
+                        <span style={{
+                          background: '#1890ff',
+                          color: 'white',
+                          borderRadius: '6px',
+                          padding: '2px 8px',
+                          fontSize: '12px',
+                          fontWeight: 500
+                        }}>Push</span>
+                      )}
                     </div>
 
                     {/* Data */}

@@ -38,6 +38,7 @@ const AdminLayout = ({ user, onLogout }) => {
     { key: 'reflexoes', icon: <CommentOutlined />, label: <Link to="/reflexoes">Reflexões</Link> },
     { key: 'pagamentos', icon: <DollarOutlined />, label: <Link to="/pagamentos">Pagamentos</Link> },
     { key: 'notificacoes', icon: <NotificationOutlined />, label: <Link to="/notificacoes">Notificações</Link> },
+    { key: 'push', icon: <NotificationOutlined />, label: <Link to="/push">Push</Link> },
   ];
 
   // Menu de dropdown no avatar

@@ -3,6 +3,7 @@ import Login from './Login';
 import AdminLayout from './AdminLayout';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
+import PushPage from './pages/PushPage';
 import Usuarios from './pages/Usuarios';
 import UsuarioForm from './pages/UsuarioForm';
 import Equipes from './pages/Equipes';
@@ -57,7 +58,8 @@ function App() {
     <Routes>
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route element={<AdminLayout user={user} onLogout={handleLogout} />}>
-        <Route path="dashboard" element={<Dashboard />} />
+  <Route path="dashboard" element={<Dashboard />} />
+  <Route path="push" element={<PushPage />} />
         <Route path="usuarios" element={<Usuarios />} />
         <Route path="usuarios/novo" element={<UsuarioForm />} />
         <Route path="usuarios/:id/editar" element={<UsuarioForm />} />

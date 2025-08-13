@@ -45,6 +45,9 @@ const presencasRouter = require('./routes/presencas');
 const usuariosFotoRouter = require('./routes/usuarios_foto');
 const tipoCirculoRouter = require('./routes/tipo_circulo');
 
+// Importar e registrar rota de push notification
+const pushRouter = require('./routes/push');
+
 console.log('🔥 CONFIGURANDO TODAS AS ROTAS DA API...');
 
 // Configurar todas as rotas das outras seções
@@ -57,6 +60,7 @@ app.use('/api/checklists', checklistsRouter);
 app.use('/api/reflexoes', reflexoesRouter);
 app.use('/api/presencas', presencasRouter);
 app.use('/api/tipo_circulo', tipoCirculoRouter);
+app.use('/api/push', pushRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {
