@@ -126,10 +126,7 @@ const Perfil: React.FC = () => {
             onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
           >
             <img 
-              src={user?.foto && user.foto.trim() !== '' 
-                ? `${getUserAvatarUrl(user.foto)}?t=${Date.now()}`
-                : 'https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=120&h=120&fit=crop&crop=face'
-              }
+              src={getUserAvatarUrl(user?.foto)}
               alt="Foto do Perfil" 
               style={{ 
                 width: '100%', 

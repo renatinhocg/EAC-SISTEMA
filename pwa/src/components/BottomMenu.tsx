@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import {
   Home,
@@ -8,20 +8,27 @@ import {
   FileText,
   Calendar
 } from 'lucide-react'
+import { AuthContext } from '../contexts/AuthContext'
 
-// Apenas 6 links principais
-const icons: { path: string; icon: React.ReactNode }[] = [
-  { path: '/', icon: <Home /> },
-  { path: '/sobre', icon: <Info /> },
-  { path: '/checklist', icon: <CheckSquare /> },
-  { path: '/presenca', icon: <Users /> },
-  { path: '/reflexoes', icon: <FileText /> },
-  { path: '/calendario', icon: <Calendar /> }
+const allIcons: { path: string; icon: React.ReactNode; key: string }[] = [
+  { path: '/', icon: <Home />, key: 'home' },
+  { path: '/sobre', icon: <Info />, key: 'sobre' },
+  { path: '/checklist', icon: <CheckSquare />, key: 'checklist' },
+  { path: '/presenca', icon: <Users />, key: 'presenca' },
+  { path: '/reflexoes', icon: <FileText />, key: 'reflexoes' },
+  { path: '/calendario', icon: <Calendar />, key: 'calendario' }
 ]
 
 const BottomMenu: React.FC = () => {
+  const { user } = useContext(AuthContext)
   const navigate = useNavigate()
   const location = useLocation()
+
+  // Segmentação para integrantes
+  let icons = allIcons
+  if (user?.tipo_usuario?.toLowerCase() === 'integrante') {
+    icons = allIcons.filter(item => !['sobre', 'checklist', 'presenca'].includes(item.key))
+  }
 
   return (
     <div

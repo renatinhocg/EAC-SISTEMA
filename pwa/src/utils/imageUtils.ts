@@ -19,6 +19,7 @@ export const getImageUrl = (imagePath: string): string => {
 export const getUserAvatarUrl = (userPhoto?: string): string => {
   // Se não houver foto, retorna sempre o mesmo placeholder padrão
   if (!userPhoto || userPhoto.trim() === '' || userPhoto === 'null' || userPhoto === 'undefined') {
+    // Sempre retorna o caminho relativo para o avatar padrão
     return '/default-avatar.svg';
   }
   // Adiciona cache busting para evitar imagem antiga após upload

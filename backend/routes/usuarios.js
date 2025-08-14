@@ -245,7 +245,7 @@ router.post('/login', (req, res) => {
           nome: user.nome,
           email: user.email,
           tipo_usuario: user.tipo_usuario,
-          foto: user.foto,
+          foto: (user.foto && user.foto !== 'null' && user.foto !== 'undefined') ? user.foto : '',
           equipe: user.equipe_nome ? {
             id: user.e_id,
             nome: user.equipe_nome
@@ -269,7 +269,9 @@ router.put('/:id', (req, res) => {
       db.query('SELECT * FROM usuario WHERE id = $1', [req.params.id], (err2, results) => {
         if (err2) return res.status(500).json({ error: err2 });
         if (!results || results.length === 0) return res.status(404).json({ error: 'Usuário não encontrado após update' });
-        res.json(results[0]);
+    const user = results[0];
+    user.foto = (user.foto && user.foto !== 'null' && user.foto !== 'undefined') ? user.foto : '';
+    res.json(user);
       });
     }
   );

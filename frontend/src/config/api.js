@@ -2,7 +2,7 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || 
   (import.meta.env.PROD 
     ? 'https://eac-sistema-production.up.railway.app/api' 
-  : 'http://localhost:3000/api');
+  : 'http://localhost:3001/api');
 
 // Função para obter a URL completa da API
 const getApiUrl = (endpoint) => {

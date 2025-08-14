@@ -73,22 +73,17 @@ const Checklist: React.FC = () => {
     setLoading(true);
     api.get('/checklists')
       .then(res => {
-        const agrupado: ChecklistByTipo = {};
-        tipos.forEach(t => agrupado[t.key] = []);
-        
-        // Filtrar apenas checklists da equipe do usuário
+        // Filtra checklist por equipe
         const checklistsFiltrados = (res.data || []).filter((item: ChecklistItem) => {
-          // Se não tem equipe definida, não mostrar
           if (!user?.equipe?.id) return false;
-          
-          // Mostrar se a equipe do usuário está nos equipe_ids do checklist
           return item.equipe_ids.includes(user.equipe.id);
         });
-        
+        // Agrupa por tipo
+        const agrupado: ChecklistByTipo = {};
         checklistsFiltrados.forEach((item: ChecklistItem) => {
-          if (agrupado[item.tipo]) agrupado[item.tipo].push(item);
+          if (!agrupado[item.tipo]) agrupado[item.tipo] = [];
+          agrupado[item.tipo].push(item);
         });
-        
         setItemsByTipo(agrupado);
       })
       .catch(() => message.error('Erro ao carregar checklist'))

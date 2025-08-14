@@ -54,12 +54,17 @@ function App() {
 
   if (!user) return <Login onLogin={handleLogin} />;
 
+  // Bloquear acesso ao admin para quem não for admin
+  if (user?.tipo_usuario?.toLowerCase() !== 'admin') {
+    return <div style={{textAlign: 'center', marginTop: 80}}><h2>Acesso restrito ao painel administrativo</h2><p>Somente administradores podem acessar esta área.</p></div>;
+  }
+
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
-      <Route element={<AdminLayout user={user} onLogout={handleLogout} />}>
-  <Route path="dashboard" element={<Dashboard />} />
-  <Route path="push" element={<PushPage />} />
+      <Route element={<AdminLayout user={user} onLogout={handleLogout} />}> 
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="push" element={<PushPage />} />
         <Route path="usuarios" element={<Usuarios />} />
         <Route path="usuarios/novo" element={<UsuarioForm />} />
         <Route path="usuarios/:id/editar" element={<UsuarioForm />} />

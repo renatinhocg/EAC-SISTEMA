@@ -105,6 +105,10 @@ const UsuarioForm = () => {
               { headers: { 'Content-Type': 'multipart/form-data' } }
             );
             console.log('✅ Foto uploaded:', fotoRes.data);
+            // Atualiza localStorage e estado do usuário com a nova foto
+            const storedUser = JSON.parse(localStorage.getItem('user')) || {};
+            const updatedUser = { ...storedUser, foto: fotoRes.data.caminho };
+            localStorage.setItem('user', JSON.stringify(updatedUser));
           } catch (fotoError) {
             console.error('❌ Erro no upload da foto:', fotoError);
             message.warning('Usuário criado, mas houve erro no upload da foto. Você pode editar o usuário para adicionar a foto depois.');
@@ -127,6 +131,9 @@ const UsuarioForm = () => {
         onFinish={onFinish}
       >
         <Form.Item name="nome" label="Nome" rules={[{ required: true, message: 'Informe o nome' }]}>        
+          <Input />
+        </Form.Item>
+        <Form.Item name="username" label="Usuário (login)" rules={[{ required: true, message: 'Informe o nome de usuário' }]}>        
           <Input />
         </Form.Item>
         <Form.Item

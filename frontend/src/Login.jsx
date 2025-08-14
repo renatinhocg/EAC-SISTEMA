@@ -73,7 +73,7 @@ const Login = ({ onLogin }) => {
             <a href="#" style={{ fontSize: 12 }}>Esqueceu a senha?</a>
           </div>
         </Card>
-        versão 4.1
+        versão 5.0
         {/* Força atualização do Service Worker e cache ao carregar a tela de login */}
         <ForceSWUpdate />
       </div>

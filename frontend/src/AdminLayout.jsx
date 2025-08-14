@@ -28,7 +28,8 @@ const { Title, Text } = Typography;
 const AdminLayout = ({ user, onLogout }) => {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
-  const menuItems = [
+  // Segmentação de menu por tipo de usuário
+  let menuItems = [
     { key: 'dashboard', icon: <HomeOutlined />, label: <Link to="/dashboard">Dashboard</Link> },
     { key: 'usuarios', icon: <UserOutlined />, label: <Link to="/usuarios">Usuários</Link> },
     { key: 'equipes', icon: <TeamOutlined />, label: <Link to="/equipes">Equipes</Link> },
@@ -40,6 +41,10 @@ const AdminLayout = ({ user, onLogout }) => {
     { key: 'notificacoes', icon: <NotificationOutlined />, label: <Link to="/notificacoes">Notificações</Link> },
     { key: 'push', icon: <NotificationOutlined />, label: <Link to="/push">Push</Link> },
   ];
+
+if (user?.tipo_usuario?.toLowerCase() === 'integrante') {
+  menuItems = menuItems.filter(item => !['checklists', 'agendas', 'reflexoes'].includes(item.key));
+}
 
   // Menu de dropdown no avatar
   const avatarMenu = (
@@ -81,7 +86,9 @@ const AdminLayout = ({ user, onLogout }) => {
             <Dropdown overlay={avatarMenu} trigger={['click']} placement="bottomRight">
               <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
                 <Avatar
-                  src={user?.foto ? `${API_BASE_URL.replace('/api', '')}/uploads/usuarios/${user.foto}` : undefined}
+                  src={user?.foto
+                    ? `${API_BASE_URL.replace('/api', '')}/uploads/usuarios/${user.foto}`
+                    : '/default-avatar.svg'}
                   icon={!user?.foto && <UserOutlined />}
                 />
                 <Text style={{ marginLeft: 8, textTransform: 'capitalize' }}>{user?.tipo_usuario}</Text>

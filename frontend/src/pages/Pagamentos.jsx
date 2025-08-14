@@ -268,22 +268,16 @@ const Pagamentos = () => {
                 alt={text || 'Usuário'}
                 style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }}
                 onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.nextSibling.style.display = 'flex';
+                  e.target.src = '/default-avatar.svg';
                 }}
               />
-            ) : null}
-            <div style={{ 
-              width: 32, 
-              height: 32, 
-              borderRadius: '50%', 
-              backgroundColor: '#f0f0f0', 
-              display: record.foto && record.foto.trim() !== '' ? 'none' : 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center' 
-            }}>
-              <UserOutlined />
-            </div>
+            ) : (
+              <img 
+                src={'/default-avatar.svg'}
+                alt={'Avatar padrão'}
+                style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }}
+              />
+            )}
             <span>{text || 'Sem nome'}</span>
           </Space>
         );
