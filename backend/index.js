@@ -41,6 +41,7 @@ const tipoCirculoRouter = require('./routes/tipo_circulo');
 const pushRouter = require('./routes/push');
 const pushsEnviadosRouter = require('./routes/pushs_enviados');
 const db = require('./db');
+const pagamentosRouter = require('./routes/pagamentos');
 
 // ROTAS DE API - CONFIGURAR ANTES DE QUALQUER MIDDLEWARE
 app.use('/api/usuarios', usuariosRouter);
@@ -54,6 +55,7 @@ app.use('/api/presencas', presencasRouter);
 app.use('/api/tipo_circulo', tipoCirculoRouter);
 app.use('/api/push', pushRouter);
 app.use('/api/pushs-enviados', pushsEnviadosRouter);
+app.use('/api/pagamentos', pagamentosRouter);
 
 // GET /api/pagamentos/usuarios - Listar usuários com status de pagamento (incluindo equipe)
 app.get('/api/pagamentos/usuarios', async (req, res) => {

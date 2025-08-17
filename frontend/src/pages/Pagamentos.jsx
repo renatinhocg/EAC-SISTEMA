@@ -28,42 +28,28 @@ const Pagamentos = () => {
   }, []);
 
   useEffect(() => {
-    const aplicarFiltros = () => {
-      let dadosFiltrados = [...pagamentos];
+    let filtrados = [...pagamentos];
 
-      // Filtro por equipe
-      if (filtroEquipe) {
-        dadosFiltrados = dadosFiltrados.filter(item => 
-          item.equipe_id === parseInt(filtroEquipe)
-        );
-      }
+    // Filtro por equipe
+    if (filtroEquipe) {
+      filtrados = filtrados.filter(p => String(p.equipe_id || p.equipe?.id) === String(filtroEquipe));
+    }
 
-      // Filtro por status
-      if (filtroStatus) {
-        dadosFiltrados = dadosFiltrados.filter(item => {
-          const status = item.status_pagamento || item.status || item.pagamento_status || '';
-          return status === filtroStatus;
-        });
-      }
-
-      // Filtro por busca de nome
-      if (busca.trim()) {
-        dadosFiltrados = dadosFiltrados.filter(item =>
-          item.nome?.toLowerCase().includes(busca.toLowerCase().trim())
-        );
-      }
-
-      // Ordenar por data_envio (mais antigo primeiro)
-      dadosFiltrados.sort((a, b) => {
-        if (!a.data_envio) return 1;
-        if (!b.data_envio) return -1;
-        return new Date(a.data_envio) - new Date(b.data_envio);
+    // Filtro por status
+    if (filtroStatus) {
+      filtrados = filtrados.filter(p => {
+        const status = (p.status_pagamento || p.status || p.pagamento_status || 'sem_pagamento').toLowerCase();
+        return status === filtroStatus;
       });
+    }
 
-      setPagamentosFiltrados(dadosFiltrados);
-    };
+    // Filtro por busca (nome)
+    if (busca && busca.trim() !== '') {
+      const buscaLower = busca.trim().toLowerCase();
+      filtrados = filtrados.filter(p => (p.nome || '').toLowerCase().includes(buscaLower));
+    }
 
-    aplicarFiltros();
+    setPagamentosFiltrados(filtrados);
   }, [pagamentos, filtroEquipe, filtroStatus, busca]);
 
   const fetchEquipes = async () => {
@@ -95,8 +81,24 @@ const Pagamentos = () => {
       // Verificar se response.data é um array
       const data = Array.isArray(response.data) ? response.data : [];
       console.log('Dados processados:', data);
-      setPagamentos(data);
-      setPagamentosFiltrados(data); // Inicializar dados filtrados
+      // Agrupa por usuario_id e pega o pagamento de maior prioridade
+      const prioridade = {
+        aprovado: 4,
+        aguardando_aprovacao: 3,
+        pendente: 2,
+        sem_pagamento: 1
+      };
+      const pagamentosPorUsuario = {};
+      for (const item of data) {
+        const usuarioId = item.usuario_id || item.id;
+        const status = (item.status_pagamento || item.status || item.pagamento_status || 'sem_pagamento').toLowerCase();
+        if (usuarioId) {
+          if (!pagamentosPorUsuario[usuarioId] || prioridade[status] > prioridade[(pagamentosPorUsuario[usuarioId].status_pagamento || pagamentosPorUsuario[usuarioId].status || pagamentosPorUsuario[usuarioId].pagamento_status || 'sem_pagamento').toLowerCase()]) {
+            pagamentosPorUsuario[usuarioId] = item;
+          }
+        }
+      }
+      setPagamentos(Object.values(pagamentosPorUsuario));
     } catch (error) {
       message.error('Erro ao carregar pagamentos');
       console.error('Erro ao carregar pagamentos:', error);
@@ -252,6 +254,9 @@ const Pagamentos = () => {
     }
   };
 
+  // Log do array final para depuração
+  console.log('Array final para tabela:', pagamentosFiltrados);
+
   const columns = [
     {
       title: 'Usuário',
@@ -259,7 +264,6 @@ const Pagamentos = () => {
       key: 'nome',
       render: (text, record) => {
         if (!record) return null;
-        
         return (
           <Space>
             {record.foto && record.foto.trim() !== '' ? (
@@ -479,7 +483,7 @@ const Pagamentos = () => {
           columns={columns}
           dataSource={pagamentosFiltrados}
           loading={loading}
-          rowKey="id"
+          rowKey={record => record.usuario_id}
           pagination={{
             total: pagamentosFiltrados.length,
             pageSize: 10,

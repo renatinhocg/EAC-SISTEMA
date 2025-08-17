@@ -216,6 +216,43 @@ const PagamentoTaxa: React.FC = () => {
         </h1>
       </div>
 
+      {/* Card de Valor */}
+      <Card style={{ 
+        marginBottom: '24px',
+        borderRadius: '16px',
+        border: 'none',
+        backgroundColor: 'white',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
+      }}>
+        <div style={{ textAlign: 'center', padding: '8px 0' }}>
+          <h3 style={{ 
+            margin: 0, 
+            marginBottom: '12px', 
+            color: '#1a202c',
+            fontSize: '18px',
+            fontWeight: '600'
+          }}>
+            Valor da Taxa
+          </h3>
+          <div style={{ 
+            fontSize: '36px', 
+            fontWeight: '700',
+            color: '#22c55e',
+            marginBottom: '8px'
+          }}>
+            R$ {parseFloat(String(pagamentoInfo?.valor || '25')).toFixed(2).replace('.', ',')}
+          </div>
+          <p style={{ 
+            color: '#64748b', 
+            fontSize: '14px', 
+            margin: 0,
+            lineHeight: '1.4'
+          }}>
+            Taxa de participação do EAC 2025
+          </p>
+        </div>
+      </Card>
+
       {/* Card de Status */}
       <Card style={{ 
         marginBottom: '24px',
@@ -254,42 +291,7 @@ const PagamentoTaxa: React.FC = () => {
         </div>
       </Card>
 
-      {/* Card de Valor */}
-      <Card style={{ 
-        marginBottom: '24px',
-        borderRadius: '16px',
-        border: 'none',
-        backgroundColor: 'white',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
-      }}>
-        <div style={{ textAlign: 'center', padding: '8px 0' }}>
-          <h3 style={{ 
-            margin: 0, 
-            marginBottom: '12px', 
-            color: '#1a202c',
-            fontSize: '18px',
-            fontWeight: '600'
-          }}>
-            Valor da Taxa
-          </h3>
-          <div style={{ 
-            fontSize: '36px', 
-            fontWeight: '700',
-            color: '#22c55e',
-            marginBottom: '8px'
-          }}>
-            R$ {parseFloat(String(pagamentoInfo?.valor || '25')).toFixed(2).replace('.', ',')}
-          </div>
-          <p style={{ 
-            color: '#64748b', 
-            fontSize: '14px', 
-            margin: 0,
-            lineHeight: '1.4'
-          }}>
-            Taxa de participação do EAC 2025
-          </p>
-        </div>
-      </Card>
+      
 
       {/* Card de Upload (apenas se não aprovado) */}
       {pagamentoInfo?.status !== 'aprovado' && (
@@ -374,13 +376,13 @@ const PagamentoTaxa: React.FC = () => {
         </h3>
         
         <div style={{ marginBottom: '12px', color: '#1a202c' }}>
-          <strong style={{ color: '#4338ca' }}>PIX:</strong> eac@exemplo.com
+          <strong style={{ color: '#4338ca' }}>PIX:</strong> contatoeacpnsa@gmail.com
         </div>
         <div style={{ marginBottom: '12px', color: '#1a202c' }}>
-          <strong style={{ color: '#4338ca' }}>Banco:</strong> Banco do Brasil
+          <strong style={{ color: '#4338ca' }}>Banco:</strong> Nubank
         </div>
         <div style={{ marginBottom: '12px', color: '#1a202c' }}>
-          <strong style={{ color: '#4338ca' }}>Agência:</strong> 1234-5
+          <strong style={{ color: '#4338ca' }}>Nome:</strong> Emmanuelle
         </div>
         
         <div style={{ 

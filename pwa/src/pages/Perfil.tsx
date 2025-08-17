@@ -127,12 +127,13 @@ const Perfil: React.FC = () => {
           >
             <img 
               src={getUserAvatarUrl(user?.foto)}
-              alt="Foto do Perfil" 
+              alt="Foto do Perfil"
               style={{ 
                 width: '100%', 
                 height: '100%', 
                 objectFit: 'cover'
               }}
+              onError={e => { e.currentTarget.onerror = null; e.currentTarget.src = '/default-avatar.svg'; }}
             />
             {/* Overlay para indicar que é clicável */}
             <div style={{

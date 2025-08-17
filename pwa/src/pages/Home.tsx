@@ -171,16 +171,14 @@ const Home: React.FC = () => {
 
       {/* Banner amarelo com imagem */}
       <div style={{
-        background: 'linear-gradient(135deg, #f6d55c 0%, #fbbf24 100%)',
-        borderRadius: '16px',
         padding: '0',
         marginBottom: '20px',
         position: 'relative',
         overflow: 'hidden',
-        height: '120px'
+        height: '140px'
       }}>
         <img 
-          src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&h=120&fit=crop&crop=center"
+          src="../public/banner-camisa.png"
           alt="Banner da equipe"
           style={{
             width: '100%',
@@ -211,7 +209,13 @@ const Home: React.FC = () => {
           paddingLeft: '16px',
           paddingRight: '16px'
         }}>
-          {Array.isArray(teamMembers) && teamMembers.length > 0 ? teamMembers.slice(0, 4).map((member, index) => (
+          {Array.isArray(teamMembers) && teamMembers.length > 0 ? [...teamMembers].sort((a, b) => {
+            const isCoordA = String(a.tipo_usuario).trim().toLowerCase() === 'coordenador';
+            const isCoordB = String(b.tipo_usuario).trim().toLowerCase() === 'coordenador';
+            if (isCoordA && !isCoordB) return -1;
+            if (!isCoordA && isCoordB) return 1;
+            return 0;
+          }).map((member, index) => (
             <div
               key={member.id}
               style={{
@@ -302,7 +306,7 @@ const Home: React.FC = () => {
             boxShadow: '0 4px 20px rgba(239, 68, 68, 0.3)',
             gridColumn: '1 / -1'
           }}
-          onClick={() => navigate('/pos-montagem')}
+        
         >
           <div style={{ fontSize: '20px', fontWeight: '700', marginBottom: '8px' }}>
             Pós-montagem
