@@ -587,8 +587,14 @@ app.post('/api/usuarios-com-foto', upload.single('foto'), (req, res) => {
 
 // ==================== ARQUIVOS ESTÁTICOS ====================
 // Servir arquivos estáticos do frontend admin
-app.use('/admin', express.static(path.join(__dirname, '../frontend/dist/admin')));
-app.use('/admin/assets', express.static(path.join(__dirname, '../frontend/dist/admin/assets')));
+app.use('/admin', (req, res, next) => {
+  console.log(`[ADMIN STATIC] Requisição: ${req.method} ${req.url}`);
+  next();
+}, express.static(path.join(__dirname, '../frontend/dist/admin')));
+app.use('/admin/assets', (req, res, next) => {
+  console.log(`[ADMIN ASSETS] Requisição: ${req.method} ${req.url}`);
+  next();
+}, express.static(path.join(__dirname, '../frontend/dist/admin/assets')));
 
 // Servir arquivos estáticos da PWA (apenas assets específicos)
 app.use('/assets', express.static(path.join(__dirname, '../pwa/dist/assets')));
@@ -602,6 +608,7 @@ app.use('/manifest.json', (req, res) => {
 // ==================== SPA ROUTING ====================
 // Configurar SPA routing para o frontend admin
 app.get('/admin/*', (req, res) => {
+  console.log(`[ADMIN SPA] Requisição SPA: ${req.method} ${req.url}`);
   res.sendFile(path.join(__dirname, '../frontend/dist/admin/index.html'));
 });
 
