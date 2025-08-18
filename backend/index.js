@@ -587,7 +587,7 @@ app.post('/api/usuarios-com-foto', upload.single('foto'), (req, res) => {
 
 // ==================== ARQUIVOS ESTÁTICOS ====================
 // Servir arquivos estáticos do frontend admin
-app.use('/admin', express.static(path.join(__dirname, '../frontend/dist')));
+app.use('/admin', express.static(path.join(__dirname, '../frontend/dist/admin')));
 
 // Servir arquivos estáticos da PWA (apenas assets específicos)
 app.use('/assets', express.static(path.join(__dirname, '../pwa/dist/assets')));
@@ -601,7 +601,7 @@ app.use('/manifest.json', (req, res) => {
 // ==================== SPA ROUTING ====================
 // Configurar SPA routing para o frontend admin
 app.get('/admin/*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+  res.sendFile(path.join(__dirname, '../frontend/dist/admin/index.html'));
 });
 
 // Configurar SPA routing para o PWA (catch-all) - DEVE SER A ÚLTIMA ROTA
