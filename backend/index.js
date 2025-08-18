@@ -588,6 +588,7 @@ app.post('/api/usuarios-com-foto', upload.single('foto'), (req, res) => {
 // ==================== ARQUIVOS ESTÁTICOS ====================
 // Servir arquivos estáticos do frontend admin
 app.use('/admin', express.static(path.join(__dirname, '../frontend/dist/admin')));
+app.use('/admin/assets', express.static(path.join(__dirname, '../frontend/dist/admin/assets')));
 
 // Servir arquivos estáticos da PWA (apenas assets específicos)
 app.use('/assets', express.static(path.join(__dirname, '../pwa/dist/assets')));
