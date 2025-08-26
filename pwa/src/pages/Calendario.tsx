@@ -7,11 +7,12 @@ import { useAuth } from '../hooks/useAuth';
 import { getUserAvatarUrl } from '../utils/imageUtils';
 
 interface AgendaItem { 
-  id: number; 
-  titulo: string; 
-  data: string; 
-  hora_inicio?: string; 
-  hora_fim?: string; 
+  id: number;
+  titulo: string;
+  data: string;
+  hora_inicio?: string;
+  hora_fim?: string;
+  local?: string;
 }
 
 const Calendario: React.FC = () => {
@@ -135,20 +136,24 @@ const Calendario: React.FC = () => {
                 <div style={{ fontSize: '20px', fontWeight: '600', color: '#fff' }}>
                   {item.titulo}
                 </div>
-                
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <CalendarOutlined style={{ color: '#1890ff', fontSize: '14px' }} />
                   <div style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px' }}>
                     {formatDate(item.data)}
                   </div>
                 </div>
-                
                 {formatTime(item.hora_inicio, item.hora_fim) && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <ClockCircleOutlined style={{ color: '#52c41a', fontSize: '14px' }} />
                     <div style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px' }}>
                       {formatTime(item.hora_inicio, item.hora_fim)}
                     </div>
+                  </div>
+                )}
+                {item.local && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ color: '#f59e42', fontSize: '14px', fontWeight: 500 }}>Local:</span>
+                    <div style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px' }}>{item.local}</div>
                   </div>
                 )}
               </div>

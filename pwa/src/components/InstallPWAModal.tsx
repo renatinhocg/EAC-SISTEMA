@@ -1,7 +1,3 @@
-import React, { useState, useEffect } from 'react';
-import { Button, Modal } from 'antd';
-import { DownloadOutlined, CloseOutlined, MobileOutlined, ShareAltOutlined, AppleOutlined } from '@ant-design/icons';
-
 interface InstallPWAModalProps {
   onClose?: () => void;
 }
@@ -14,13 +10,18 @@ interface BeforeInstallPromptEvent extends Event {
 const InstallPWAModal: React.FC<InstallPWAModalProps> = ({ onClose }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
-    // Verifica se já foi instalado ou se o usuário já rejeitou
+    // Verifica se já foi instalado ou rejeitado
     const hasRejected = localStorage.getItem('pwa-install-rejected');
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
     const isInWebAppiOS = (window.navigator as typeof navigator & { standalone?: boolean }).standalone === true;
     const isInstalled = isStandalone || isInWebAppiOS;
+
+    // Detecta iOS
+    const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as typeof window & { MSStream?: unknown }).MSStream;
+    setIsIOS(iOS);
 
     if (hasRejected || isInstalled) {
       return;
@@ -30,7 +31,6 @@ const InstallPWAModal: React.FC<InstallPWAModalProps> = ({ onClose }) => {
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      
       // Mostra o modal após 3 segundos
       setTimeout(() => {
         setIsVisible(true);
@@ -48,8 +48,7 @@ const InstallPWAModal: React.FC<InstallPWAModalProps> = ({ onClose }) => {
     window.addEventListener('appinstalled', handleAppInstalled);
 
     // Para iOS - mostra o modal mesmo sem o evento beforeinstallprompt
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as typeof window & { MSStream?: unknown }).MSStream;
-    if (isIOS && !isInstalled) {
+    if (iOS && !isInstalled) {
       setTimeout(() => {
         setIsVisible(true);
       }, 3000);
@@ -83,135 +82,52 @@ const InstallPWAModal: React.FC<InstallPWAModalProps> = ({ onClose }) => {
     onClose?.();
   };
 
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-
   return (
-    <Modal
-      open={isVisible}
-      footer={null}
-      closable={false}
-      width={400}
-      centered
-      className="install-pwa-modal"
-      style={{
-        animation: isVisible ? 'slideInDown 0.5s ease-out' : undefined
-      }}
-    >
-      <div className="text-center p-4">
-        <div className="mb-4">
-          {isIOS ? (
-            <div className="flex items-center justify-center gap-2">
-              <AppleOutlined 
-                style={{ 
-                  fontSize: '42px', 
-                  color: '#1890ff',
-                  animation: 'pulse 2s infinite'
-                }} 
-              />
-              <ShareAltOutlined 
-                style={{ 
-                  fontSize: '32px', 
-                  color: '#52c41a',
-                  animation: 'pulse 2s infinite 0.5s'
-                }} 
-              />
-            </div>
-          ) : (
-            <MobileOutlined 
-              style={{ 
-                fontSize: '48px', 
-                color: '#1890ff',
-                animation: 'pulse 2s infinite'
-              }} 
-            />
-          )}
-        </div>
-        
-        <h3 className="text-xl font-bold mb-2">
-          Instale o EAC App
-        </h3>
-        
-        <p className="text-gray-600 mb-4">
-          Tenha acesso rápido ao EAC diretamente da sua tela inicial!
-        </p>
-
-        {isIOS ? (
-          <div className="mb-4 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border border-blue-200">
-            <div className="flex items-center gap-2 mb-3">
-              <AppleOutlined style={{ fontSize: '20px', color: '#1890ff' }} />
-              <p className="text-sm font-semibold text-gray-700 mb-0">
-                Para instalar no iOS:
-              </p>
-            </div>
-            <ol className="text-sm text-left space-y-2">
-              <li className="flex items-center gap-2">
-                <ShareAltOutlined style={{ color: '#52c41a', fontSize: '16px' }} />
-                <span>1. Toque no ícone de <strong>compartilhar</strong> (⬆️)</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <span>📱</span>
-                <span>2. Role para baixo e toque em <strong>"Adicionar à Tela de Início"</strong></span>
-              </li>
-              <li className="flex items-center gap-2">
-                <span>✅</span>
-                <span>3. Toque em <strong>"Adicionar"</strong></span>
-              </li>
-            </ol>
-          </div>
-        ) : (
-          <div className="mb-4">
-            <p className="text-sm text-gray-600">
-              O app será instalado em seu dispositivo para acesso rápido.
+    <>
+      {isVisible && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          zIndex: 9999,
+          background: 'rgba(20,27,52,0.35)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          animation: 'fadeIn 0.5s',
+        }}>
+          <style>{`
+            @keyframes fadeIn {
+              from { opacity: 0; }
+              to { opacity: 1; }
+            }
+          `}</style>
+          <div className="text-center p-4" style={{ background: '#fff', borderRadius: 24, boxShadow: '0 8px 32px #0002', minWidth: 320, maxWidth: 360, width: '90vw', margin: '0 auto' }}>
+            <img src={logoEac} alt="Logo EAC" style={{ width: 72, height: 72, margin: '0 auto 16px', display: 'block' }} />
+            <h3 style={{ fontSize: 26, fontWeight: 700, marginBottom: 10, color: '#11182c' }}>Instale o APP do EAC</h3>
+            <p style={{ color: '#222', fontWeight: 500, marginBottom: 18, fontSize: 17 }}>
+              Tenha acesso rápido ao EAC direto da tela inicial do seu celular.<br />
+              <span style={{ color: '#0345EF', fontWeight: 600 }}>Android:</span> {deferredPrompt ? <>Clique em <b>Instalar</b> abaixo.</> : <>Abra no Chrome para instalar.</>}<br />
+              <span style={{ color: '#0345EF', fontWeight: 600 }}>iPhone:</span> Toque em <b>Compartilhar</b> e depois <b>Adicionar à Tela de Início</b>.
             </p>
+            <div style={{ background: '#f8fafc', borderRadius: 16, padding: 18, marginBottom: 18 }}>
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 12 }}>
+                {!isIOS && deferredPrompt && (
+                  <Button type="primary" onClick={handleInstall} size="large" style={{ fontWeight: 700, fontSize: 18, borderRadius: 10, padding: '0 32px', boxShadow: '0 2px 8px #0345ef33' }}>Instalar</Button>
+                )}
+                <Button onClick={handleReject} size="large" style={{ background: '#a5b4fc', color: '#11182c', fontWeight: 700, fontSize: 18, borderRadius: 10, border: 'none', padding: '0 32px', boxShadow: '0 2px 8px #a5b4fc33' }}>Agora não</Button>
+              </div>
+            </div>
           </div>
-        )}
-
-        <div className="flex gap-2 justify-center">
-          {!isIOS && deferredPrompt && (
-            <Button
-              type="primary"
-              icon={<DownloadOutlined />}
-              onClick={handleInstall}
-              size="large"
-            >
-              Instalar App
-            </Button>
-          )}
-          
-          <Button
-            icon={<CloseOutlined />}
-            onClick={handleReject}
-            size="large"
-          >
-            Agora não
-          </Button>
         </div>
-      </div>
-
-      <style>{`
-        @keyframes slideInDown {
-          from {
-            transform: translate3d(0, -100%, 0);
-            visibility: visible;
-          }
-          to {
-            transform: translate3d(0, 0, 0);
-          }
-        }
-        
-        @keyframes pulse {
-          0% { transform: scale(1); }
-          50% { transform: scale(1.1); }
-          100% { transform: scale(1); }
-        }
-        
-        .install-pwa-modal .ant-modal-content {
-          border-radius: 12px;
-          overflow: hidden;
-        }
-      `}</style>
-    </Modal>
+      )}
+    </>
   );
 };
 
 export default InstallPWAModal;
+import React, { useState, useEffect } from 'react';
+import { Button } from 'antd';
+import logoEac from '../assets/img/icon-180.png';

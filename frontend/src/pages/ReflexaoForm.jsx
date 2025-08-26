@@ -36,9 +36,8 @@ const ReflexaoForm = () => {
                 uid: '-1',
                 name: res.data.anexo.split('/').pop(),
                 status: 'done',
-                url: getApiUrl('${res.data.anexo}'),
-                // Necessário para download/preview
-                thumbUrl: getApiUrl('${res.data.anexo}'),
+                url: res.data.anexo, // usa a URL do S3
+                thumbUrl: res.data.anexo, // preview direto do S3
               }
             ]);
           } else {
@@ -89,7 +88,7 @@ const ReflexaoForm = () => {
         );
         message.success('Reflexão criada com sucesso');
       }
-      navigate('/reflexoes');
+  navigate('/admin/reflexoes');
     } catch {
       message.error('Erro ao salvar reflexão');
     }
@@ -123,17 +122,21 @@ const ReflexaoForm = () => {
             defaultFileList={[]}
             // Permite download/preview do anexo já salvo
             onPreview={file => {
-              if (file.url) window.open(file.url, '_blank');
+              if (file.url) {
+                window.open(file.url, '_blank', 'noopener,noreferrer');
+              } else {
+                message.error('Arquivo não disponível para download');
+              }
             }}
           >
-            <Button icon={<UploadOutlined />}>Anexar</Button>
+            <Button icon={<UploadOutlined />} type="button" htmlType="button">Anexar</Button>
           </Upload>
         </Form.Item>
         <Form.Item>
           <Button type="primary" htmlType="submit">
             {isEdit ? 'Atualizar' : 'Criar'}
           </Button>
-          <Button style={{ marginLeft: 8 }} onClick={() => navigate('/reflexoes')}>
+          <Button style={{ marginLeft: 8 }} onClick={() => navigate('/admin/reflexoes')}>
             Cancelar
           </Button>
         </Form.Item>

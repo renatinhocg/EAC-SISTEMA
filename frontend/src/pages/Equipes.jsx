@@ -19,8 +19,8 @@ const Equipes = () => {
 
   useEffect(() => { fetchData(); }, []);
 
-  const handleCreate = () => navigate('/equipes/novo');
-  const handleEdit = record => navigate(`/equipes/${record.id}/editar`);
+  const handleCreate = () => navigate('/admin/equipes/novo');
+  const handleEdit = record => navigate(`/admin/equipes/${record.id}/editar`);
   const handleDelete = id => {
     axios.delete(getApiUrl(`equipes/${id}`))
       .then(() => { message.success('Equipe deletada'); fetchData(); })

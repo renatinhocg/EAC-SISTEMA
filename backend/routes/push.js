@@ -1,77 +1,105 @@
-const webpush = require('web-push');
 const express = require('express');
 const router = express.Router();
 
-// Substitua pelas suas chaves VAPID reais depois!
-const vapidKeys = webpush.generateVAPIDKeys();
+const db = require('../db');
+const webpush = require('web-push');
+const pushConfig = require('../pushConfig');
 
-// ...existing code...
-
-// Endpoint para disparar push de teste para todos inscritos
-router.post('/test', async (req, res) => {
-  const payload = JSON.stringify({
-    title: 'Push de Teste',
-    body: 'Este é um push enviado para teste do sistema!',
-    url: 'https://eac-app-production.up.railway.app/'
-  });
-  const results = await Promise.all(subscriptions.map(subObj =>
-    webpush.sendNotification(subObj.subscription, payload).catch(err => err)
-  ));
-  res.json({ results });
-});
 webpush.setVapidDetails(
-  'mailto:seu-email@dominio.com',
-  vapidKeys.publicKey,
-  vapidKeys.privateKey
+	pushConfig.VAPID_SUBJECT,
+	pushConfig.VAPID_PUBLIC_KEY,
+	pushConfig.VAPID_PRIVATE_KEY
 );
 
-
-const db = require('../db');
-// Estrutura: { subscription, usuario_id, equipe_id }
-let subscriptions = [];
-
-// Salva subscription com usuario_id e equipe_id
-router.post('/subscribe', (req, res) => {
-  const { subscription, usuario_id, equipe_id } = req.body;
-  if (!subscription) return res.status(400).json({ error: 'Subscription obrigatória' });
-  subscriptions.push({ subscription, usuario_id, equipe_id });
-  res.status(201).json({ message: 'Inscrito com sucesso!' });
-});
-
-// Envia push para todos, equipe ou usuario
-router.post('/send-notification', async (req, res) => {
-  const { title, body, url, equipe_id, usuario_id } = req.body;
-  const payload = JSON.stringify({ title, body, url });
-  let filtered = subscriptions;
-  if (usuario_id) {
-    filtered = subscriptions.filter(s => s.usuario_id == usuario_id);
-  } else if (equipe_id) {
-    filtered = subscriptions.filter(s => s.equipe_id == equipe_id);
-  }
-  // Salvar notificação no banco com status 'push'
-  db.query(
-    'INSERT INTO notificacao (titulo, descricao, para_todos, equipe_id, status) VALUES (?,?,?,?,?)',
-    [title, body, !equipe_id, equipe_id || null, 'push'],
-    (err, result) => {
-      // Não bloqueia envio do push se der erro no banco
-    }
-  );
-  // Salvar envio na tabela pushs_enviados
-  db.query(
-    'INSERT INTO pushs_enviados (titulo, mensagem, url, equipe_id, usuario_id, enviado_por, status, erro, created_at) VALUES (?,?,?,?,?,?,?,?,now())',
-    [title, body, url || null, equipe_id || null, usuario_id || null, null, 'enviado', null],
-    (err, result) => {
-      // Não bloqueia envio do push se der erro no banco
-    }
-  );
-  const results = await Promise.all(filtered.map(subObj =>
-    webpush.sendNotification(subObj.subscription, payload).catch(err => err)
-  ));
-  res.json({ results });
-});
-
+// Endpoint para retornar a chave pública VAPID
 router.get('/vapid-public-key', (req, res) => {
-  res.json({ publicKey: vapidKeys.publicKey });
+	res.json({ publicKey: pushConfig.VAPID_PUBLIC_KEY });
 });
 
+// Exemplo de endpoint para registrar push subscription
+router.post('/subscribe', (req, res) => {
+	// Aqui você pode salvar a subscription no banco ou enviar push
+	console.log('Push subscription recebida:', req.body);
+	res.status(201).json({ message: 'Subscription registrada com sucesso!' });
+});
+
+
+
+router.post('/send-notification', (req, res) => {
+	// Aceita tanto titulo/mensagem quanto title/body
+	const titulo = req.body.titulo || req.body.title;
+	const mensagem = req.body.mensagem || req.body.body;
+	const url = req.body.url;
+	const equipe_id = req.body.equipe_id;
+	const usuario_id = req.body.usuario_id;
+	console.log('[PUSH] Recebendo push notification:', req.body);
+	// Salvar na tabela notificacao
+	const sql = `INSERT INTO notificacao (titulo, descricao, para_todos, equipe_id, status) VALUES (?, ?, ?, ?, ?)`;
+	const params = [
+		titulo,
+		mensagem,
+		!usuario_id, // para_todos = true se não tem usuario_id
+		equipe_id || null,
+		'push'
+	];
+	db.query(sql, params, (err, result) => {
+		if (err) {
+			console.error('[PUSH] Erro ao salvar notificacao:', err);
+			return res.status(500).json({ error: 'Erro ao salvar notificacao' });
+		}
+		// Buscar subscriptions
+		let subSql = 'SELECT * FROM push_subscriptions';
+		let subParams = [];
+		if (usuario_id) {
+			subSql += ' WHERE usuario_id = ?';
+			subParams = [usuario_id];
+		} else if (equipe_id) {
+			subSql += ' WHERE equipe_id = ?';
+			subParams = [equipe_id];
+		}
+		db.query(subSql, subParams, async (subErr, subs) => {
+			if (subErr) {
+				console.error('[PUSH] Erro ao buscar subscriptions:', subErr);
+				return res.status(500).json({ error: 'Erro ao buscar subscriptions' });
+			}
+			if (!subs.length) {
+				console.warn('[PUSH] Nenhuma subscription encontrada');
+				return res.status(201).json({ message: 'Push salva, mas nenhuma subscription encontrada.' });
+			}
+			// Enviar push para cada subscription
+			const payload = JSON.stringify({
+				title: titulo,
+				body: mensagem,
+				url: url || '',
+				equipe_id,
+				usuario_id
+			});
+			let enviados = 0;
+					for (const sub of subs) {
+						let erro = null;
+						try {
+							const subscription = JSON.parse(sub.subscription_json);
+							await webpush.sendNotification(subscription, payload);
+							enviados++;
+						} catch (sendErr) {
+							erro = sendErr.message || JSON.stringify(sendErr);
+							console.error('[PUSH] Erro ao enviar push:', sendErr);
+						}
+								// Salvar histórico do envio na tabela v2
+																const histSql = `INSERT INTO pushs_enviados_v2 (titulo, mensagem, data_envio) VALUES (?, ?, CURRENT_DATE)`;
+																const histParams = [
+																	titulo,
+																	mensagem
+																];
+								console.log('[PUSH] Salvando histórico v2:', { histSql, histParams });
+								db.query(histSql, histParams, (histErr) => {
+									if (histErr) {
+										console.error('[PUSH] Erro ao salvar pushs_enviados_v2:', histErr);
+									}
+								});
+					}
+					res.status(201).json({ message: `Push salva e enviada para ${enviados} dispositivos.` });
+		});
+	});
+});
 module.exports = router;

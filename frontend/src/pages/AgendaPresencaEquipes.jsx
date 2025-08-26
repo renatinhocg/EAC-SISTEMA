@@ -123,11 +123,12 @@ const AgendaPresencaEquipes = () => {
     if (!drawerEquipe) return;
     setSaving(true);
     try {
-      await axios.post(getApiUrl(`presencas/salvar`), {
-        presencas: presencasEdit,
-        agendaId,
-        equipeId: drawerEquipe.id
+      const promises = Object.entries(presencasEdit).map(([usuarioId, status]) => {
+        return axios.post(getApiUrl(`presencas/evento/${agendaId}/equipe/${drawerEquipe.id}/usuario/${usuarioId}`), {
+          status: status === 1 ? 'ok' : status === 2 ? 'justificada' : 'falta'
+        });
       });
+      await Promise.all(promises);
       message.success('Presenças salvas com sucesso!');
       setDrawerEquipe(null);
       fetchEquipes();

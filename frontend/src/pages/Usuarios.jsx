@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Input, Select } from 'antd';
 import { Table, Typography, Button, Space, Popconfirm, message, Upload } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import axios from 'axios';
@@ -11,6 +12,8 @@ const { Title } = Typography;
 const Usuarios = () => {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
+  const [filtroEquipe, setFiltroEquipe] = useState('');
+  const [buscaNome, setBuscaNome] = useState('');
   const [csvFileName, setCsvFileName] = useState(null);
   const [csvUploading, setCsvUploading] = useState(false);
   const [csvError, setCsvError] = useState(null);
@@ -24,9 +27,9 @@ const Usuarios = () => {
 
   useEffect(fetchData, []);
 
-  const handleCreate = () => navigate('/usuarios/novo');
+    const handleCreate = () => navigate('/admin/usuarios/novo');
 
-  const handleEdit = (record) => navigate(`/usuarios/${record.id}/editar`);
+  const handleEdit = (record) => navigate(`/admin/usuarios/${record.id}/editar`);
 
   const handleDelete = (id) => {
     axios.delete(getApiUrl(`usuarios/${id}`))
@@ -81,6 +84,14 @@ const Usuarios = () => {
     return false; // impede upload automático
   };
 
+  // Filtragem local
+  const equipesUnicas = Array.from(new Set(data.map(u => u.equipe_nome).filter(Boolean)));
+  const dataFiltrada = data.filter(u => {
+    const equipeOk = !filtroEquipe || u.equipe_nome === filtroEquipe;
+    const nomeOk = !buscaNome || (u.nome && u.nome.toLowerCase().includes(buscaNome.toLowerCase()));
+    return equipeOk && nomeOk;
+  });
+
   const columns = [
     { title: 'ID', dataIndex: 'id', key: 'id' },
     { title: 'Nome', dataIndex: 'nome', key: 'nome' },
@@ -98,8 +109,28 @@ const Usuarios = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
         <Title level={2}>Usuários</Title>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Select
+            allowClear
+            placeholder="Filtrar por equipe"
+            style={{ minWidth: 200 }}
+            value={filtroEquipe || undefined}
+            onChange={v => setFiltroEquipe(v || '')}
+          >
+            {equipesUnicas.map(eq => (
+              <Select.Option key={eq} value={eq}>{eq}</Select.Option>
+            ))}
+          </Select>
+          <Input
+            placeholder="Buscar por nome"
+            style={{ minWidth: 120, height: 32 }}
+            value={buscaNome}
+            onChange={e => setBuscaNome(e.target.value)}
+            allowClear
+          />
+        </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <Upload beforeUpload={handleCSVUpload} showUploadList={false} accept=".csv">
             <Button icon={<UploadOutlined />} style={{ background: '#52c41a', color: '#fff', border: 'none' }}>
@@ -119,7 +150,7 @@ const Usuarios = () => {
           {csvError && <span style={{ marginLeft: 8, color: '#ff4d4f' }}>{csvError}</span>}
         </div>
       )}
-      <Table rowKey="id" columns={columns} dataSource={data} />
+  <Table rowKey="id" columns={columns} dataSource={dataFiltrada} />
     </div>
   );
 };

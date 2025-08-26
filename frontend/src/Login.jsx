@@ -64,7 +64,7 @@ const Login = ({ onLogin }) => {
             </Form.Item>
             <Form.Item>
               <Button type="primary" htmlType="submit" block loading={loading} size="large">
-                Sign In
+                Entrar
               </Button>
             </Form.Item>
           </Form>
@@ -73,10 +73,12 @@ const Login = ({ onLogin }) => {
             <a href="#" style={{ fontSize: 12 }}>Esqueceu a senha?</a>
           </div>
         </Card>
-        versão 1.0
+        
         {/* Força atualização do Service Worker e cache ao carregar a tela de login */}
         <ForceSWUpdate />
+        versão 1.0.7
       </div>
+      
     </div>
   );
 };

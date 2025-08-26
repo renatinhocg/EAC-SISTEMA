@@ -4,6 +4,12 @@ const db = require('../db');
 const multer = require('multer');
 const path = require('path');
 
+// Garantir que a pasta uploads/equipes existe
+const fs = require('fs');
+const equipesDir = path.join(__dirname, '../uploads/equipes');
+if (!fs.existsSync(equipesDir)) {
+  fs.mkdirSync(equipesDir, { recursive: true });
+}
 // Configurar multer para upload de imagens de equipes
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {

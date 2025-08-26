@@ -39,7 +39,9 @@ const UsuarioForm = () => {
           }, 100);
           if (userRes.data.foto) {
             // Corrige: monta URL sem /api para arquivos estáticos
-            const staticUrl = `${API_BASE_URL.replace('/api', '')}/uploads/usuarios/${userRes.data.foto}`;
+            const staticUrl = userRes.data.foto && userRes.data.foto.startsWith('http')
+              ? userRes.data.foto
+              : `${API_BASE_URL.replace('/api', '')}/uploads/usuarios/${userRes.data.foto}`;
             setFileList([{
               uid: '-1',
               name: userRes.data.foto.split('/').pop(),
@@ -117,7 +119,7 @@ const UsuarioForm = () => {
       }
       
       message.success(`Usuário ${isEdit ? 'atualizado' : 'criado'} com sucesso`);
-      navigate('/usuarios');
+  navigate('/admin/usuarios');
     } catch {
       message.error('Erro ao salvar usuário');
     }

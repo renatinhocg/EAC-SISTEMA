@@ -1,0 +1,145 @@
+/* Estilos iniciais para a página de pedido de camisa. Personalize conforme necessário! */
+.header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 32px;
+  margin-top: 32px;
+}
+.header-logo img {
+  height: 64px;
+  margin: 0 8px;
+}
+.container {
+  max-width: 1100px;
+  margin: 40px auto;
+  padding: 0 16px;
+}
+.pedido-info {
+  margin-bottom: 32px;
+}
+.form-container {
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 2px 12px #0001;
+  padding: 32px 40px;
+  margin-bottom: 32px;
+}
+.form-content {
+  width: 100%;
+}
+.form-section {
+  margin-bottom: 24px;
+}
+.form-group {
+  margin-bottom: 16px;
+}
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #DADADA;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 1rem;
+}
+.form-group label {
+  font-weight: 500;
+  margin-bottom: 6px;
+  display: block;
+}
+.color-options .colors {
+  display: flex;
+  gap: 16px;
+}
+.color-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: 2px solid #DADADA;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.color-box.black {
+  background: #111;
+}
+.color-box.white {
+  background: #fff;
+}
+.color-box.active {
+  border: 2px solid #0057FF;
+}
+.size-options .sizes {
+  display: flex;
+  gap: 10px;
+}
+.size-box {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: 1px solid #DADADA;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 500;
+}
+.size-box.active {
+  border: 2px solid #0057FF;
+  background: #F0F7FF;
+}
+.btn-primary {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  background: #0057FF;
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 18px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-primary:disabled {
+  background: #A0B8E6;
+  cursor: not-allowed;
+}
+.camisas-container {
+  margin-top: 40px;
+  text-align: center;
+}
+.camisas-title {
+  font-size: 2rem;
+  margin-bottom: 24px;
+}
+.camisas-flex {
+  display: flex;
+  gap: 40px;
+  justify-content: center;
+}
+.camisa-item {
+  background: #F7F7F7;
+  border-radius: 24px;
+  padding: 24px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 2px 8px #0001;
+}
+.camisa-item img {
+  width: 180px;
+  margin-bottom: 12px;
+}
+.preco-box {
+  background: #FFD600;
+  border-radius: 16px;
+  padding: 8px 24px;
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #222;
+  box-shadow: 0 2px 8px #0001;
+}
+.preco-box p {
+  margin: 0;
+}

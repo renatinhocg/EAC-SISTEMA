@@ -1,4 +1,5 @@
 import React, { useContext, useRef, useState } from 'react';
+import defaultAvatar from '../assets/img/default-avatar.svg';
 import { message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { BellOutlined, CameraOutlined, LogoutOutlined } from '@ant-design/icons';
@@ -38,21 +39,17 @@ const Perfil: React.FC = () => {
       const formData = new FormData();
       formData.append('foto', file);
 
-      const response = await api.post(`/usuarios/${user?.id}/foto`, formData, {
+      // Corrigido endpoint para upload no S3
+      const response = await api.post(`/usuarios_foto/${user?.id}/foto`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
 
-      if (response.data.success && user) {
-        // Após upload, buscar usuário atualizado do backend para garantir campo foto correto
-        const userResponse = await api.get(`/usuarios/${user.id}`);
-        if (userResponse.data) {
-          updateUser({ ...user, ...userResponse.data });
-        } else {
-          // fallback: atualiza só o campo foto
-          updateUser({ ...user, foto: response.data.foto });
-        }
+      // Atualiza o avatar imediatamente após upload
+      if (user && response.data && response.data.foto) {
+        updateUser({ ...user, foto: response.data.foto });
+        localStorage.setItem('user', JSON.stringify({ ...user, foto: response.data.foto }));
         message.success('Foto atualizada com sucesso!');
       }
     } catch (error) {
@@ -126,14 +123,19 @@ const Perfil: React.FC = () => {
             onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
           >
             <img 
-              src={getUserAvatarUrl(user?.foto)}
+              src={(() => {
+                const url = getUserAvatarUrl(user?.foto);
+                console.log('[Avatar Debug] user.foto:', user?.foto);
+                console.log('[Avatar Debug] URL final:', url);
+                return url;
+              })()}
               alt="Foto do Perfil"
               style={{ 
                 width: '100%', 
                 height: '100%', 
                 objectFit: 'cover'
               }}
-              onError={e => { e.currentTarget.onerror = null; e.currentTarget.src = '/default-avatar.svg'; }}
+              onError={e => { e.currentTarget.onerror = null; e.currentTarget.src = defaultAvatar; }}
             />
             {/* Overlay para indicar que é clicável */}
             <div style={{

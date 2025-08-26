@@ -12,7 +12,7 @@ axios.defaults.baseURL = API_BASE_URL;
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter basename="/admin">
+    <BrowserRouter>
       <App />
     </BrowserRouter>
   </StrictMode>

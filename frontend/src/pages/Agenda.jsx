@@ -58,8 +58,8 @@ const Agenda = () => {
   const handleView = record => { setSelectedEvent(record); setModalVisible(true); };
   const handleModalClose = () => { setModalVisible(false); setSelectedEvent(null); };
 
-  const handleCreate = () => navigate('/agendas/novo');
-  const handleEdit = record => navigate(`/agendas/${record.id}/editar`);
+  const handleCreate = () => navigate('/admin/agendas/novo');
+  const handleEdit = record => navigate(`/admin/agendas/${record.id}/editar`);
   const handleDelete = id => {
     axios.delete(getApiUrl(`agendas/${id}`))
       .then(() => { message.success('Evento deletado'); fetchData(); })
@@ -134,7 +134,7 @@ const Agenda = () => {
                               <Button icon={<EyeOutlined />} onClick={() => handleView(item)} />
                               <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(item)} />
                               {item.presenca_ativa ? (
-                                <Button type="default" onClick={() => navigate(`/agendas/${item.id}/presenca`)}>
+                                <Button type="default" onClick={() => navigate(`/admin/agendas/${item.id}/presenca`)}>
                                   Presença
                                 </Button>
                               ) : null}

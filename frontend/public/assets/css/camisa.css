@@ -1,0 +1,287 @@
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f0f2f5;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.header {
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    justify-content: flex-start;
+    padding-bottom: 20px;
+}
+
+.header-logo {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.header-logo img {
+    height: 70px;
+}
+
+.container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 1200px;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.pedido-info {
+    width: 100%;
+    max-width: 450px;
+    margin-bottom: 20px;
+}
+
+.pedido-info h1 {
+    font-size: 2.5rem;
+    color: #333;
+    font-weight: 700;
+}
+
+.pedido-info p {
+    color: #555;
+    line-height: 1.6;
+}
+
+.camisas-container {
+    background-color: #004dff;
+    border-radius: 20px;
+    padding: 30px;
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    flex: 1;
+    min-width: 450px;
+}
+
+.camisas-container .camisas-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.camisas-flex {
+    display: flex;
+    gap: 20px;
+    align-items: flex-end;
+}
+
+.camisa-item {
+    text-align: center;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.camisa-item img {
+    width: 100%;
+    max-width: 250px;
+    height: auto;
+    margin-bottom: 15px;
+}
+
+.preco-box {
+    background-color: #ffc107;
+    border-radius: 10px;
+    color: #333;
+    padding: 10px 20px;
+    font-weight: 700;
+    font-size: 1.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.preco-box p:first-child {
+    font-size: 1.8rem;
+    margin: 0;
+}
+.preco-box p:last-child {
+    font-size: 1rem;
+    margin: 0;
+}
+
+.form-container {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    flex: 1;
+    min-width: 450px;
+}
+
+.form-section {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 20px;
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.form-section h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 15px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+    flex: 1;
+}
+
+.form-group.full-width {
+    flex: 1 1 100%;
+}
+
+.form-section.row {
+    display: flex;
+    gap: 20px;
+}
+
+.form-group label {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.form-group input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.color-options .colors {
+    display: flex;
+    gap: 15px;
+}
+
+.color-box {
+    width: 40px;
+    height: 40px;
+    border: 2px solid #ccc;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.color-box.black {
+    background-color: #000;
+}
+.color-box.white {
+    background-color: #fff;
+}
+
+.color-box.active {
+    border-color: #004dff;
+    box-shadow: 0 0 0 3px #004dff;
+}
+
+.color-box input {
+    display: none;
+}
+
+.size-options .sizes {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.size-box {
+    padding: 8px 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    cursor: pointer;
+    background-color: #f9f9f9;
+    font-weight: 600;
+    color: #555;
+    transition: all 0.2s ease;
+}
+
+.size-box input {
+    display: none;
+}
+
+.size-box:hover {
+    background-color: #e0e0e0;
+}
+
+.size-box input:checked + .size-box {
+    background-color: #004dff;
+    color: white;
+    border-color: #004dff;
+}
+
+.btn {
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.2s ease;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.btn-primary {
+    background-color: #004dff;
+    color: white;
+    width: 100%;
+}
+
+.btn-primary:hover {
+    background-color: #003db3;
+}
+
+@media (max-width: 900px) {
+    .container {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .camisas-container, .form-container {
+        width: 100%;
+        min-width: unset;
+    }
+    
+    .camisas-flex {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .pedido-info {
+        text-align: center;
+    }
+    
+    .form-section.row {
+        flex-direction: column;
+    }
+}

@@ -1,4 +1,6 @@
 import React from 'react'
+import Camisa from './pages/Camisa';
+import Hamburguer from './pages/Hamburguer';
 import { Routes, Route } from 'react-router-dom'
 import Login from './pages/Login'
 import Layout from './components/Layout'
@@ -40,7 +42,7 @@ function App() {
 
   return (
     <>
-      <InstallPWAModal />
+  <InstallPWAModal />
       <Routes>
         {/* rota pública de login */}
         <Route path="/login" element={<Login />} />
@@ -59,6 +61,8 @@ function App() {
           <Route path="/notificacoes" element={<Notificacoes />} />
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/presenca-equipe" element={<PresencaEquipe />} />
+          <Route path="/camisa" element={<Camisa />} />
+            <Route path="/hamburguer" element={<Hamburguer />} />
         </Route>
       </Routes>
     </>

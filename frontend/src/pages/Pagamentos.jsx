@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Card, Button, Tag, Modal, message, Space, Statistic, Row, Col, Image, Select, Input } from 'antd';
+import defaultAvatar from '../assets/img/default-avatar.svg?url';
 import { CheckOutlined, CloseOutlined, EyeOutlined, DollarOutlined, UserOutlined, FileTextOutlined, SearchOutlined, TeamOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { API_BASE_URL } from '../config/api';
@@ -38,7 +39,9 @@ const Pagamentos = () => {
     // Filtro por status
     if (filtroStatus) {
       filtrados = filtrados.filter(p => {
-        const status = (p.status_pagamento || p.status || p.pagamento_status || 'sem_pagamento').toLowerCase();
+        let status = (p.status_pagamento || p.status || p.pagamento_status || 'sem_pagamento').toLowerCase();
+        if (status === 'aguardando aprovação') status = 'aguardando_aprovacao';
+        if (filtroStatus === 'aguardando aprovação') return status === 'aguardando_aprovacao';
         return status === filtroStatus;
       });
     }
@@ -83,17 +86,25 @@ const Pagamentos = () => {
       console.log('Dados processados:', data);
       // Agrupa por usuario_id e pega o pagamento de maior prioridade
       const prioridade = {
-        aprovado: 4,
-        aguardando_aprovacao: 3,
-        pendente: 2,
-        sem_pagamento: 1
+  aprovado: 4,
+  aguardando_aprovacao: 3,
+  'aguardando aprovação': 3,
+  pendente: 2,
+  sem_pagamento: 1
       };
       const pagamentosPorUsuario = {};
       for (const item of data) {
         const usuarioId = item.usuario_id || item.id;
-        const status = (item.status_pagamento || item.status || item.pagamento_status || 'sem_pagamento').toLowerCase();
+        let status = (item.status_pagamento || item.status || item.pagamento_status || 'sem_pagamento').toLowerCase();
+        if (status === 'aguardando aprovação') status = 'aguardando_aprovacao';
+        // Normaliza o status no próprio item para evitar inconsistência na renderização/filtros
+        item.status_pagamento = status;
+        item.status = status;
+        item.pagamento_status = status;
         if (usuarioId) {
-          if (!pagamentosPorUsuario[usuarioId] || prioridade[status] > prioridade[(pagamentosPorUsuario[usuarioId].status_pagamento || pagamentosPorUsuario[usuarioId].status || pagamentosPorUsuario[usuarioId].pagamento_status || 'sem_pagamento').toLowerCase()]) {
+          let statusAtual = (pagamentosPorUsuario[usuarioId]?.status_pagamento || pagamentosPorUsuario[usuarioId]?.status || pagamentosPorUsuario[usuarioId]?.pagamento_status || 'sem_pagamento').toLowerCase();
+          if (statusAtual === 'aguardando aprovação') statusAtual = 'aguardando_aprovacao';
+          if (!pagamentosPorUsuario[usuarioId] || prioridade[status] > prioridade[statusAtual]) {
             pagamentosPorUsuario[usuarioId] = item;
           }
         }
@@ -115,12 +126,12 @@ const Pagamentos = () => {
       // Verificar se response.data existe e tem as propriedades esperadas
       const data = response.data || {};
       setEstatisticas({
-        total: data.total || 0,
-        aprovados: data.aprovados || 0,
-        pendentes: data.pendentes || 0,
-        aguardando_aprovacao: data.aguardando_aprovacao || 0,
-        rejeitados: data.rejeitados || 0,
-        percentual_pagos: data.percentual_pagos || 0
+  total: data.total || 0,
+  aprovados: data.aprovados || 0,
+  pendentes: data.pendentes || 0,
+  aguardando_aprovacao: (data.aguardando_aprovacao || 0) + (data['aguardando aprovação'] || 0),
+  rejeitados: data.rejeitados || 0,
+  percentual_pagos: data.percentual_pagos || 0
       });
     } catch (error) {
       console.error('Erro ao carregar estatísticas:', error);
@@ -160,59 +171,69 @@ const Pagamentos = () => {
       return;
     }
 
-    console.log('Valor do comprovante:', comprovante);
-    
-    // Se o comprovante já vem com o path completo (uploads/comprovantes/), usar diretamente
-    // Senão, construir o path
-    const imageUrl = comprovante.startsWith('uploads/') 
-      ? `${API_BASE_URL.replace('/api', '')}/${comprovante}`
-      : `${API_BASE_URL.replace('/api', '')}/uploads/comprovantes/${comprovante}`;
-    
-    console.log('URL da imagem:', imageUrl);
-    console.log('API_BASE_URL:', API_BASE_URL);
-    
-    // Abrir modal diretamente com melhor tratamento de erro
-    Modal.info({
-      title: 'Comprovante de Pagamento',
-      width: 600,
-      content: (
-        <div style={{ textAlign: 'center', padding: '20px 0' }}>
-          <img
-            src={imageUrl}
-            alt="Comprovante"
-            style={{ 
-              maxWidth: '100%', 
-              maxHeight: '400px',
-              border: '1px solid #d9d9d9',
-              borderRadius: '8px'
-            }}
-            onLoad={() => console.log('✅ Imagem carregou com sucesso')}
-            onError={(e) => {
-              console.error('❌ Erro ao carregar imagem:', e);
-              console.error('❌ URL que falhou:', imageUrl);
-              e.target.style.display = 'none';
-              e.target.nextSibling.style.display = 'block';
-            }}
-          />
-          <div style={{ 
-            display: 'none', 
-            padding: '20px', 
-            background: '#f5f5f5', 
-            border: '1px solid #d9d9d9',
-            borderRadius: '8px',
-            color: '#666'
-          }}>
-            <p>❌ Erro ao carregar imagem</p>
-            <p><strong>URL:</strong> {imageUrl}</p>
-            <p><strong>Comprovante:</strong> {comprovante}</p>
+    const url = comprovante;
+    const isPdf = url.toLowerCase().endsWith('.pdf');
+
+    if (isPdf) {
+      Modal.info({
+        title: 'Comprovante de Pagamento (PDF)',
+        width: 400,
+        content: (
+          <div style={{ textAlign: 'center', padding: '20px 0' }}>
+            <p>O comprovante enviado é um PDF.</p>
+            <Button type="primary" href={url} target="_blank" download>
+              Baixar PDF
+            </Button>
+            <p style={{ marginTop: '16px', color: '#666', fontSize: '12px' }}>
+              <strong>URL:</strong> {url}
+            </p>
           </div>
-          <p style={{ marginTop: '16px', color: '#666', fontSize: '12px' }}>
-            <strong>URL:</strong> {imageUrl}
-          </p>
-        </div>
-      ),
-      okText: 'Fechar'
-    });
+        ),
+        okText: 'Fechar'
+      });
+    } else {
+      Modal.info({
+        title: 'Comprovante de Pagamento',
+        width: 600,
+        content: (
+          <div style={{ textAlign: 'center', padding: '20px 0' }}>
+            <img
+              src={url}
+              alt="Comprovante"
+              style={{ 
+                maxWidth: '100%', 
+                maxHeight: '400px',
+                border: '1px solid #d9d9d9',
+                borderRadius: '8px'
+              }}
+              onLoad={() => console.log('✅ Imagem carregou com sucesso')}
+              onError={(e) => {
+                console.error('❌ Erro ao carregar imagem:', e);
+                console.error('❌ URL que falhou:', url);
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'block';
+              }}
+            />
+            <div style={{ 
+              display: 'none', 
+              padding: '20px', 
+              background: '#f5f5f5', 
+              border: '1px solid #d9d9d9',
+              borderRadius: '8px',
+              color: '#666'
+            }}>
+              <p>❌ Erro ao carregar imagem</p>
+              <p><strong>URL:</strong> {url}</p>
+              <p><strong>Comprovante:</strong> {comprovante}</p>
+            </div>
+            <p style={{ marginTop: '16px', color: '#666', fontSize: '12px' }}>
+              <strong>URL:</strong> {url}
+            </p>
+          </div>
+        ),
+        okText: 'Fechar'
+      });
+    }
   };
 
   const confirmarAcao = (acao, usuarioId, nomeUsuario) => {
@@ -238,7 +259,8 @@ const Pagamentos = () => {
     switch (status) {
       case 'aprovado': return 'green';
       case 'pendente': return 'orange';
-      case 'aguardando_aprovacao': return 'blue';
+      case 'aguardando_aprovacao':
+      case 'aguardando aprovação': return 'blue';
       case 'rejeitado': return 'red';
       default: return 'default';
     }
@@ -248,7 +270,8 @@ const Pagamentos = () => {
     switch (status) {
       case 'aprovado': return 'Aprovado';
       case 'pendente': return 'Pendente';
-      case 'aguardando_aprovacao': return 'Aguardando Aprovação';
+      case 'aguardando_aprovacao':
+      case 'aguardando aprovação': return 'Aguardando Aprovação';
       case 'rejeitado': return 'Rejeitado';
       default: return status;
     }
@@ -268,16 +291,18 @@ const Pagamentos = () => {
           <Space>
             {record.foto && record.foto.trim() !== '' ? (
               <img 
-                src={`${API_BASE_URL.replace('/api', '')}/uploads/usuarios/${record.foto}`}
+                src={record.foto && record.foto.startsWith('http')
+                  ? record.foto
+                  : `${API_BASE_URL.replace('/api', '')}/uploads/usuarios/${record.foto}`}
                 alt={text || 'Usuário'}
                 style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }}
                 onError={(e) => {
-                  e.target.src = '/default-avatar.svg';
+                  e.target.src = defaultAvatar;
                 }}
               />
             ) : (
               <img 
-                src={'/default-avatar.svg'}
+                src={defaultAvatar}
                 alt={'Avatar padrão'}
                 style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }}
               />
@@ -286,7 +311,8 @@ const Pagamentos = () => {
           </Space>
         );
       },
-    },
+  },
+// import removido do meio do código, já está no topo
     {
       title: 'Equipe',
       dataIndex: 'equipe_nome',
@@ -309,7 +335,8 @@ const Pagamentos = () => {
       key: 'status_pagamento',
       render: (status, record) => {
         // Tenta buscar o status de várias formas possíveis
-        const statusPagamento = status || record.status || record.pagamento_status || 'sem_pagamento';
+        let statusPagamento = status || record.status || record.pagamento_status || 'sem_pagamento';
+        if (statusPagamento === 'aguardando aprovação') statusPagamento = 'aguardando_aprovacao';
         return (
           <Tag color={getStatusColor(statusPagamento)}>
             {getStatusText(statusPagamento)}
@@ -435,16 +462,16 @@ const Pagamentos = () => {
       
       {/* Estatísticas */}
       <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col span={6}>
+        <Col span={4}>
           <Card>
             <Statistic
               title="Total de Usuários"
-              value={estatisticas.total || 0}
+              value={pagamentos.length}
               prefix={<UserOutlined />}
             />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col span={4}>
           <Card>
             <Statistic
               title="Pagamentos Aprovados"
@@ -454,7 +481,7 @@ const Pagamentos = () => {
             />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col span={4}>
           <Card>
             <Statistic
               title="Pagamentos Pendentes"
@@ -464,11 +491,24 @@ const Pagamentos = () => {
             />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col span={4}>
           <Card>
             <Statistic
-              title="Percentual Pagos"
-              value={parseFloat(estatisticas.percentual_pagos || 0).toFixed(1)}
+              title="Aguardando Aprovação"
+              value={pagamentosFiltrados.filter(p => {
+                let status = (p.status_pagamento || p.status || p.pagamento_status || '').toLowerCase();
+                return status === 'aguardando_aprovacao';
+              }).length}
+              valueStyle={{ color: '#1890ff' }}
+              prefix={<SearchOutlined />}
+            />
+          </Card>
+        </Col>
+        <Col span={4}>
+          <Card>
+            <Statistic
+              title="Percentual Pago"
+              value={pagamentos.length > 0 ? ((estatisticas.aprovados / pagamentos.length) * 100).toFixed(1) : '0.0'}
               suffix="%"
               valueStyle={{ color: '#1890ff' }}
               prefix={<DollarOutlined />}

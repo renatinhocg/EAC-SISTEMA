@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
+import PresencaRelatorio from '../components/PresencaRelatorio';
 import { Card, Row, Col, Statistic, Spin } from 'antd';
 import { UserOutlined, CheckCircleOutlined, ClockCircleOutlined, FileTextOutlined } from '@ant-design/icons';
 import axios from 'axios';
@@ -99,41 +100,47 @@ const Dashboard = () => {
 								prefix={<FileTextOutlined />}
 								loading={loading}
 							/>
-						</Card>
-					</Col>
-				</Row>
+								</Card>
+							</Col>
+						</Row>
 
-				{/* Porcentagem geral de presença */}
-				<Row gutter={24} style={{ marginTop: 24 }}>
-					<Col span={8}>
-						<Card>
-							<Statistic
-								title="% Geral de Presença"
-								value={porcentagemPresenca}
-								suffix="%"
-								valueStyle={{ color: '#722ed1' }}
-								loading={loading}
-							/>
-						</Card>
-					</Col>
-					<Col span={16}>
-						<Card title="Usuários por Equipe">
-							{usuariosPorEquipe.length === 0 ? (
-								<Spin spinning={loading}>Nenhum dado</Spin>
-							) : (
-								<ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-									{usuariosPorEquipe.map(eq => (
-										<li key={eq.nome} style={{ marginBottom: 8, fontSize: 16 }}>
-											<b>{eq.nome}:</b> {eq.qtd} usuário(s)
-										</li>
-									))}
-								</ul>
-							)}
-						</Card>
-					</Col>
-				</Row>
-			</div>
-		);
+						{/* Porcentagem geral de presença */}
+						<Row gutter={24} style={{ marginTop: 24 }}>
+							<Col span={8}>
+								<Card>
+									<Statistic
+										title="% Geral de Presença"
+										value={porcentagemPresenca}
+										suffix="%"
+										valueStyle={{ color: '#722ed1' }}
+										loading={loading}
+									/>
+								</Card>
+							</Col>
+							<Col span={16}>
+								<Card title="Usuários por Equipe">
+									{usuariosPorEquipe.length === 0 ? (
+										<Spin spinning={loading}>Nenhum dado</Spin>
+									) : (
+										<ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+											{usuariosPorEquipe.map(eq => (
+												<li key={eq.nome} style={{ marginBottom: 8, fontSize: 16 }}>
+													<b>{eq.nome}:</b> {eq.qtd} usuário(s)
+												</li>
+											))}
+										</ul>
+									)}
+								</Card>
+							</Col>
+						</Row>
+
+						{/* Relatório de presenças por preparatória com gráficos */}
+						<div style={{ marginTop: 32 }}>
+							<h2 style={{ fontWeight: 600, fontSize: 22, marginBottom: 16 }}>Relatório de Presenças por Preparatória</h2>
+							<PresencaRelatorio />
+						</div>
+					</div>
+				 );
 };
 
 export default Dashboard;

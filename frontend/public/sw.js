@@ -1,3 +1,5 @@
+// Versão do SW: 2025-08-23 - 1.18
+
 // Service Worker customizado para push notification
 self.addEventListener('push', function(event) {
   console.log('Push recebido!');

@@ -22,7 +22,7 @@ const PushPage = () => {
 
   const loadPushHistory = () => {
     setHistoryLoading(true);
-    axios.get(getApiUrl('pushs-enviados')).then(res => {
+  axios.get(getApiUrl('pushs_enviados')).then(res => {
       const list = Array.isArray(res.data) ? res.data : [];
       setPushHistory(list);
     }).catch(() => {}).finally(() => setHistoryLoading(false));
@@ -46,9 +46,7 @@ const PushPage = () => {
   const columns = [
     { title: 'Título', dataIndex: 'titulo', key: 'titulo' },
     { title: 'Mensagem', dataIndex: 'mensagem', key: 'mensagem' },
-    { title: 'Equipe', dataIndex: 'equipe_id', key: 'equipe_id', render: id => id ? equipes.find(e => e.id === id)?.nome : 'Todos' },
-    { title: 'Status', dataIndex: 'status', key: 'status', render: v => v ? <span style={{color:'#1890ff'}}>{v}</span> : '-' },
-  { title: 'Data', dataIndex: 'created_at', key: 'created_at', render: v => v ? (typeof v === 'string' ? v : new Date(v).toLocaleString()) : '-' },
+    { title: 'Data', dataIndex: 'data_envio', key: 'data_envio', render: v => v ? (typeof v === 'string' ? v : new Date(v).toLocaleString()) : '-' },
   ];
 
   return (

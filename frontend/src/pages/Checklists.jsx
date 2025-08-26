@@ -31,8 +31,8 @@ const Checklists = () => {
       .catch(() => {});
   }, []);
 
-  const handleCreate = () => navigate('/checklists/novo');
-  const handleEdit = record => navigate(`/checklists/${record.id}/editar`);
+  const handleCreate = () => navigate('/admin/checklists/novo');
+  const handleEdit = record => navigate(`/admin/checklists/${record.id}/editar`);
   const handleDelete = id => {
     axios.delete(getApiUrl(`checklists/${id}`))
       .then(() => { message.success('Checklist deletada'); fetchData(); })

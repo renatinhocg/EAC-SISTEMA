@@ -1,7 +1,19 @@
-
+// Versão do SW: 2025-08-20 - 6.0
 self.__WB_MANIFEST;
 
 // Service Worker customizado para push notification
+self.addEventListener('fetch', event => {
+  const url = event.request.url;
+  // Garante que rotas dinâmicas nunca sejam cacheadas
+  if (
+    url.includes('/api/camisas') ||
+    url.includes('/api/hamburguer') ||
+    url.includes('/api/pagamentos')
+  ) {
+    event.respondWith(fetch(event.request));
+  }
+  // ...existing code...
+});
 self.addEventListener('push', function(event) {
   console.log('Push recebido!');
   event.waitUntil((async () => {

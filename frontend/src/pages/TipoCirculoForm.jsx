@@ -27,7 +27,7 @@ const TipoCirculoForm = () => {
         await axios.post(getApiUrl('tipo_circulo'), values);
         message.success('Tipo de círculo criado com sucesso');
       }
-      navigate('/tipo_circulo');
+  navigate('/admin/tipo_circulo');
     } catch {
       message.error('Erro ao salvar tipo de círculo');
     }
@@ -43,7 +43,7 @@ const TipoCirculoForm = () => {
           <Button type="primary" htmlType="submit">
             {isEdit ? 'Atualizar' : 'Criar'}
           </Button>
-          <Button style={{ marginLeft: 8 }} onClick={() => navigate('/tipo_circulo')}>
+          <Button style={{ marginLeft: 8 }} onClick={() => navigate('/admin/tipo_circulo')}>
             Cancelar
           </Button>
         </Form.Item>

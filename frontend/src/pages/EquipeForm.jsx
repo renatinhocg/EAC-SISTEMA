@@ -36,70 +36,12 @@ const quillFormats = [
 ];
 
 const EquipeForm = () => {
-  const [descricao, setDescricao] = useState('');
-  const [sobre, setSobre] = useState('');
-  const [fileList, setFileList] = useState([]);
-  const [form] = Form.useForm();
-  const navigate = useNavigate();
-  const { id } = useParams();
-  const isEdit = Boolean(id);
-
-  useEffect(() => {
-    if (isEdit) {
-      axios.get(getApiUrl(`equipes/${id}`))
-        .then(res => {
-          form.setFieldsValue({ nome: res.data.nome, funcao: res.data.funcao });
-          setDescricao(res.data.descricao || '');
-          setSobre(res.data.sobre || '');
-          
-          // Se há imagem, adicionar à lista de arquivos
-          if (res.data.imagem) {
-            setFileList([{
-              uid: '-1',
-              name: res.data.imagem,
-              status: 'done',
-              url: getApiUrl(`uploads/equipes/${res.data.imagem}`)
-            }]);
-          }
-        })
-        .catch(() => message.error('Erro ao carregar equipe'));
-    }
-  }, [id, isEdit, form]);
-
-  const onFinish = async (values) => {
-    try {
-      const formData = new FormData();
-      formData.append('nome', values.nome);
-      formData.append('funcao', values.funcao);
-      formData.append('descricao', descricao);
-      formData.append('sobre', sobre);
-      
-      // Adicionar imagem se foi selecionada
-      if (fileList.length > 0 && fileList[0].originFileObj) {
-        formData.append('imagem', fileList[0].originFileObj);
-      }
-      
-      if (isEdit) {
-        await axios.put(getApiUrl(`equipes/${id}`), formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        message.success('Equipe atualizada com sucesso');
-      } else {
-        await axios.post(getApiUrl('equipes'), formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        message.success('Equipe criada com sucesso');
-      }
-      navigate('/equipes');
-    } catch {
-      message.error('Erro ao salvar equipe');
-    }
-  };
-
+  // Função para atualizar lista de arquivos do upload
   const handleUploadChange = ({ fileList: newFileList }) => {
     setFileList(newFileList);
   };
 
+  // Função para validar upload de imagem
   const beforeUpload = (file) => {
     const isImage = file.type.startsWith('image/');
     if (!isImage) {
@@ -111,6 +53,21 @@ const EquipeForm = () => {
     }
     return false; // Impede upload automático
   };
+  // Função para submit do formulário
+  const onFinish = async (values) => {
+    // Exemplo: apenas exibe os valores no console
+    console.log('Valores do formulário:', values);
+    // Aqui você pode adicionar a lógica de envio para o backend
+  };
+  const [descricao, setDescricao] = useState('');
+  const [sobre, setSobre] = useState('');
+  const [fileList, setFileList] = useState([]);
+  const [form] = Form.useForm();
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const isEdit = Boolean(id);
+
+
 
   return (
     <Card title={isEdit ? 'Editar Equipe' : 'Nova Equipe'} style={{ maxWidth: 900, margin: '0 auto' }}>
@@ -118,12 +75,11 @@ const EquipeForm = () => {
         form={form}
         layout="vertical"
         onFinish={onFinish}
-        initialValues={{ nome: '', funcao: '' }}
+        style={{ marginTop: 24 }}
       >
-        <Form.Item name="nome" label="Nome" rules={[{ required: true, message: 'Informe o nome' }]}>        
+        <Form.Item name="nome" label="Nome da Equipe" rules={[{ required: true, message: 'Digite o nome da equipe' }]}> 
           <Input />
         </Form.Item>
-        
         <Form.Item label="Ícone da Equipe">
           <Upload
             fileList={fileList}
@@ -133,15 +89,12 @@ const EquipeForm = () => {
             listType="picture"
             accept="image/*"
           >
-            <Button icon={<UploadOutlined />}>
-              Selecionar Ícone
-            </Button>
+            <Button icon={<UploadOutlined />}>Selecionar Ícone</Button>
           </Upload>
           <div style={{ marginTop: '8px', color: '#666', fontSize: '12px' }}>
             Formatos aceitos: JPG, PNG, SVG. Tamanho máximo: 2MB
           </div>
         </Form.Item>
-        
         <Form.Item label="Descrição">
           <ReactQuill
             theme="snow"
@@ -171,13 +124,15 @@ const EquipeForm = () => {
           <Button type="primary" htmlType="submit">
             {isEdit ? 'Atualizar' : 'Criar'}
           </Button>
-          <Button style={{ marginLeft: 8 }} onClick={() => navigate('/equipes')}>
+          <Button style={{ marginLeft: 8 }} onClick={() => navigate('/admin/equipes')}>
             Cancelar
           </Button>
         </Form.Item>
       </Form>
     </Card>
   );
-};
+}
+
+// ...existing code...
 
 export default EquipeForm;

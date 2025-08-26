@@ -23,51 +23,6 @@ const ReflexaoDetalhe: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleDownload = async (filename: string) => {
-    try {
-      message.loading('Baixando arquivo...', 0);
-      
-      // Extrair apenas o nome do arquivo se vier com caminho completo
-      const fileName = filename.includes('/') ? filename.split('/').pop() : filename;
-      
-      const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-      const url = `${backendUrl}/api/reflexoes/download/${fileName}`;
-      
-      // Fazer fetch do arquivo
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-        throw new Error('Arquivo não encontrado');
-      }
-      
-      // Converter para blob
-      const blob = await response.blob();
-      
-      // Criar URL temporária para o blob
-      const blobUrl = window.URL.createObjectURL(blob);
-      
-      // Criar link para download
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.download = fileName || 'anexo';
-      link.style.display = 'none';
-      
-      // Adicionar ao DOM, clicar e remover
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      // Limpar URL temporária
-      window.URL.revokeObjectURL(blobUrl);
-      
-      message.destroy();
-      message.success('Download concluído!');
-    } catch (error) {
-      message.destroy();
-      message.error('Erro ao baixar anexo');
-      console.error('Erro no download:', error);
-    }
-  };
 
   useEffect(() => {
     if (!id) return;
@@ -166,8 +121,9 @@ const ReflexaoDetalhe: React.FC = () => {
               ANEXO:
             </Text>
             <div style={{ marginTop: '8px' }}>
-              <button
-                onClick={() => handleDownload(reflexao.anexo!)}
+              <a
+                href={reflexao.anexo}
+                download
                 style={{
                   background: '#4A90E2',
                   border: 'none',
@@ -175,16 +131,17 @@ const ReflexaoDetalhe: React.FC = () => {
                   color: 'white',
                   padding: '12px 16px',
                   cursor: 'pointer',
-                  display: 'flex',
+                  display: 'inline-flex',
                   alignItems: 'center',
                   gap: '8px',
                   fontSize: '16px',
-                  fontWeight: '500'
+                  fontWeight: '500',
+                  textDecoration: 'none'
                 }}
               >
                 <Download size={20} />
                 Baixar Anexo
-              </button>
+              </a>
             </div>
           </div>
         )}

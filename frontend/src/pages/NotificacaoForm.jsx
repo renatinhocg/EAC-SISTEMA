@@ -47,7 +47,7 @@ const NotificacaoForm = () => {
         await axios.post(getApiUrl('notificacoes'), payload);
         message.success('Notificação criada com sucesso');
       }
-      navigate('/notificacoes');
+  navigate('/admin/notificacoes');
     } catch (err) {
       console.error('Erro ao salvar notificação:', err);
       message.error('Erro ao salvar notificação');
@@ -82,7 +82,7 @@ const NotificacaoForm = () => {
           <Button type="primary" htmlType="submit">
             {isEdit ? 'Atualizar' : 'Criar'}
           </Button>
-          <Button style={{ marginLeft: 8 }} onClick={() => navigate('/notificacoes')}>
+          <Button style={{ marginLeft: 8 }} onClick={() => navigate('/admin/notificacoes')}>
             Cancelar
           </Button>
         </Form.Item>

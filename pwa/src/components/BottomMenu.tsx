@@ -34,16 +34,15 @@ const BottomMenu: React.FC = () => {
     <div
       style={{
         position: 'fixed',
-        bottom: '16px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: 'calc(100% - 24px)',
-        maxWidth: '360px',
-        height: '65px',
+        bottom: 0,
+        left: 0,
+        width: '100%',
+        maxWidth: 'none',
+        height: '80px',
         backgroundColor: 'white',
-        border: '1px solid #e0e0e0',
-        borderRadius: '16px',
-        boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+        borderTop: '1px solid #e0e0e0',
+        borderRadius: '0',
+        boxShadow: '0 -2px 16px rgba(0,0,0,0.08)',
         display: 'flex',
         zIndex: 1000
       }}
@@ -69,20 +68,21 @@ const BottomMenu: React.FC = () => {
           >
             <div
               style={{
-                width: '40px',
-                height: '40px',
+                width: '56px',
+                height: '56px',
                 display: 'flex',
+                padding: '11px 0 0 11px',
                 alignItems: 'center',
                 justifyContent: 'center',
-                borderRadius: '8px',
+                borderRadius: '12px',
                 backgroundColor: active ? '#2563eb' : 'transparent',
                 transition: 'background-color 0.2s'
               }}
             >
               <div style={{ 
                 color: active ? 'white' : '#6b7280',
-                width: '24px',
-                height: '24px'
+                width: '36px',
+                height: '32px'
               }}>
                 {item.icon}
               </div>

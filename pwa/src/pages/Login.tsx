@@ -1,18 +1,22 @@
 import React, { useContext, useState } from 'react';
+import logoEac from '../assets/img/logo-eac.svg';
 import { Form, Input, Button } from 'antd';
 import { AuthContext } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios, { type AxiosError } from 'axios';
+import IntroCarousel from './IntroCarousel';
 
 interface LocationState { from?: { pathname: string } }
 
 const Login: React.FC = () => {
-  const { login } = useContext(AuthContext);
+  const { login, user } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
 
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [showIntro, setShowIntro] = useState(!user);
+  // Removido: lógica de atualização de versão PWA
 
   const state = location.state as LocationState;
   const from = state?.from?.pathname ?? '/';
@@ -27,8 +31,6 @@ const Login: React.FC = () => {
       if (axios.isAxiosError(err)) {
         const axiosErr = err as AxiosError<{ error: string }>;
         const errorMessage = axiosErr.response?.data.error;
-        
-        // Personaliza as mensagens de erro para o usuário
         if (errorMessage === 'Usuário não encontrado') {
           setError('Email não cadastrado no sistema');
         } else if (errorMessage === 'Senha incorreta') {
@@ -46,10 +48,14 @@ const Login: React.FC = () => {
 
   // Limpa erro quando usuário começa a digitar
   const handleFormChange = () => {
-    if (error) {
-      setError(null);
-    }
+    if (error) setError(null);
   };
+
+  // Removido: efeito para mostrar botão de atualização do PWA
+
+  if (showIntro && !user) {
+    return <IntroCarousel onFinish={() => setShowIntro(false)} />;
+  }
 
   return (
     <div style={{ 
@@ -67,7 +73,7 @@ const Login: React.FC = () => {
         marginBottom: '40px' 
       }}>
         <img 
-          src="/logo-eac.svg" 
+          src={logoEac} 
           alt="Encontro de Adolescentes com Cristo" 
           style={{ 
             maxWidth: '280px', 
@@ -75,7 +81,6 @@ const Login: React.FC = () => {
           }} 
         />
       </div>
-
       {/* Box branco com formulário */}
       <div style={{ 
         width: '100%', 
@@ -104,7 +109,6 @@ const Login: React.FC = () => {
             Entre com suas credenciais
           </div>
         </div>
-
         {error && (
           <div style={{
             background: '#fef2f2',
@@ -133,7 +137,6 @@ const Login: React.FC = () => {
             </div>
           </div>
         )}
-        
         <Form 
           name="login" 
           onFinish={onFinish} 
@@ -148,7 +151,7 @@ const Login: React.FC = () => {
             style={{ marginBottom: '20px' }}
           >
             <Input 
-              placeholder="renato.coelho"
+              placeholder="jesus.cristo"
               style={{ 
                 height: '48px',
                 borderRadius: '12px',
@@ -156,7 +159,6 @@ const Login: React.FC = () => {
               }}
             />
           </Form.Item>
-          
           <Form.Item
             label={<span style={{ color: '#374151', fontWeight: '500' }}>Senha</span>}
             name="senha"
@@ -172,7 +174,6 @@ const Login: React.FC = () => {
               }}
             />
           </Form.Item>
-          
           <Form.Item>
             <Button 
               type="primary" 
@@ -192,7 +193,8 @@ const Login: React.FC = () => {
             </Button>
           </Form.Item>
         </Form>
-        versão 1.0
+    {/* Removido botão de atualizar versão do PWA */}
+        versão 1.0.1
       </div>
     </div>
   );

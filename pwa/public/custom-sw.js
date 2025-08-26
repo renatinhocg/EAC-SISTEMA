@@ -1,3 +1,4 @@
+// Versão do SW: 2025-08-23 - 1.17
 // Necessário para o injectManifest do vite-plugin-pwa
 self.__WB_MANIFEST;
 // Este arquivo será registrado como service worker customizado para push notification

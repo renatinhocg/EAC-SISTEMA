@@ -54,6 +54,7 @@ const PagamentoTaxa: React.FC = () => {
           description: 'Seu pagamento foi aprovado pela coordenação!'
         };
       case 'aguardando_aprovacao':
+      case 'aguardando aprovação':
         return {
           icon: <ClockCircleOutlined />,
           color: 'blue',
@@ -150,30 +151,32 @@ const PagamentoTaxa: React.FC = () => {
       // Atualizar informações do pagamento
       setPagamentoInfo({
         valor: 25,
-        status: 'aguardando_aprovacao',
+        status: 'aguardando aprovação',
         data_envio: new Date().toISOString()
       });
 
       setFileList([]);
-    } catch (error: any) {
+  } catch (error) {
       console.error('❌ Erro ao enviar comprovante:', error);
       
       let errorMessage = 'Erro ao enviar comprovante';
-      
-      if (error.response) {
-        // Erro da API
-        console.error('📊 Status:', error.response.status);
-        console.error('📝 Dados:', error.response.data);
-        errorMessage = error.response.data?.error || `Erro ${error.response.status}: ${error.response.statusText}`;
-      } else if (error.request) {
-        // Erro de rede
-        console.error('🌐 Erro de rede:', error.request);
-        errorMessage = 'Erro de conexão. Verifique sua internet.';
+      if (typeof error === 'object' && error !== null) {
+        const err = error as { response?: any; request?: any; message?: string };
+        if (err.response) {
+          // Erro da API
+          console.error('📊 Status:', err.response.status);
+          console.error('📝 Dados:', err.response.data);
+          errorMessage = err.response.data?.error || `Erro ${err.response.status}: ${err.response.statusText}`;
+        } else if (err.request) {
+          // Erro de rede
+          console.error('🌐 Erro de rede:', err.request);
+          errorMessage = 'Erro de conexão. Verifique sua internet.';
+        } else {
+          errorMessage = err.message || 'Erro desconhecido';
+        }
       } else {
-        // Outro erro
-        errorMessage = error.message || 'Erro desconhecido';
+        errorMessage = String(error);
       }
-      
       message.error(errorMessage);
     } finally {
       setLoading(false);

@@ -1,20 +1,21 @@
+
 require('dotenv').config();
+console.log('🔑 JWT_SECRET:', process.env.JWT_SECRET);
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
-
 // Middleware de autenticação
 const authenticateToken = require('./middleware/authenticateToken');
 
 const app = express();
-
-
-// Configuração CORS específica (deve vir antes de qualquer rota ou middleware)
+// Configuração CORS específica para liberar o domínio do admin
 app.use(cors({
   origin: [
+    'https://eac-pwa-project-production.up.railway.app',
     'https://eac-app-production.up.railway.app',
+    'https://app.eacpnsa.com.br',
     'http://localhost:5173',
     'http://localhost:5174',
     'http://localhost:5175',
@@ -24,8 +25,14 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
-
+// Servir arquivos estáticos da pasta de uploads dos usuários
+app.use('/uploads/usuarios', express.static(path.join(__dirname, 'uploads/usuarios')));
+// Log global de todas as requisições recebidas
 app.use(express.json());
+app.use((req, res, next) => {
+  console.log(`[REQ] ${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
+  next();
+});
 
 // ==================== ROTAS DA API - PRIMEIRA PRIORIDADE ====================
 // Importar rotas (conexão com DB é feita pelo db.js) - PRIMEIRO IMPORTAR
@@ -43,9 +50,13 @@ const pushsEnviadosRouter = require('./routes/pushs_enviados');
 const db = require('./db');
 const pagamentosRouter = require('./routes/pagamentos');
 
+const pedidoCamisaRouter = require('./routes/pedido_camisa');
+const camisasRouter = require('./routes/camisas');
+
 // ROTAS DE API - CONFIGURAR ANTES DE QUALQUER MIDDLEWARE
 app.use('/api/usuarios', usuariosRouter);
-app.use('/api/usuarios', usuariosFotoRouter);
+app.use('/api/pedido-camisa', pedidoCamisaRouter);
+app.use('/api/usuarios_foto', usuariosFotoRouter);
 app.use('/api/equipes', equipesRouter);
 app.use('/api/notificacoes', notificacoesRouter);
 app.use('/api/agendas', agendasRouter);
@@ -54,8 +65,13 @@ app.use('/api/reflexoes', reflexoesRouter);
 app.use('/api/presencas', presencasRouter);
 app.use('/api/tipo_circulo', tipoCirculoRouter);
 app.use('/api/push', pushRouter);
-app.use('/api/pushs-enviados', pushsEnviadosRouter);
+app.use('/api/pushs_enviados', pushsEnviadosRouter);
 app.use('/api/pagamentos', pagamentosRouter);
+app.use('/api/camisas', camisasRouter);
+const hamburguerRouter = require('./routes/hamburguer');
+app.use('/api/hamburguer', hamburguerRouter);
+const adminHamburguerRouter = require('./routes/admin_hamburguer');
+app.use('/api/admin/hamburguer', adminHamburguerRouter);
 
 // GET /api/pagamentos/usuarios - Listar usuários com status de pagamento (incluindo equipe)
 app.get('/api/pagamentos/usuarios', async (req, res) => {
@@ -597,25 +613,25 @@ app.use('/admin/assets', (req, res, next) => {
 }, express.static(path.join(__dirname, '../frontend/dist/admin/assets')));
 
 // Servir arquivos estáticos da PWA (apenas assets específicos)
-app.use('/assets', express.static(path.join(__dirname, '../pwa/dist/assets')));
-app.use('/favicon.svg', (req, res) => {
-  res.sendFile(path.join(__dirname, '../pwa/dist/favicon.svg'));
-});
-app.use('/manifest.json', (req, res) => {
-  res.sendFile(path.join(__dirname, '../pwa/dist/manifest.json'));
-});
 
-// ==================== SPA ROUTING ====================
-// Configurar SPA routing para o frontend admin
+// Servir arquivos estáticos do ADMIN
+app.use('/admin', express.static(path.join(__dirname, '../frontend/dist/admin')));
+app.use('/admin/assets', express.static(path.join(__dirname, '../frontend/dist/admin/assets')));
+
+// SPA routing para o ADMIN
 app.get('/admin/*', (req, res) => {
   console.log(`[ADMIN SPA] Requisição SPA: ${req.method} ${req.url}`);
   res.sendFile(path.join(__dirname, '../frontend/dist/admin/index.html'));
 });
 
-// Configurar SPA routing para o PWA (catch-all) - DEVE SER A ÚLTIMA ROTA
+// Servir arquivos estáticos da PWA
+app.use(express.static(path.join(__dirname, '../pwa/dist')));
+app.use('/assets', express.static(path.join(__dirname, '../pwa/dist/assets')));
+
+// SPA routing para o PWA (catch-all) - DEVE SER A ÚLTIMA ROTA
 app.get('*', (req, res) => {
-  // Se a rota começa com /api, retorna 404 ao invés de servir a PWA
-  if (req.path.startsWith('/api')) {
+  // Se a rota começa com /api ou /admin, retorna 404 ao invés de servir a PWA
+  if (req.path.startsWith('/api') || req.path.startsWith('/admin')) {
     return res.status(404).json({ error: 'API endpoint not found' });
   }
   res.sendFile(path.join(__dirname, '../pwa/dist/index.html'));

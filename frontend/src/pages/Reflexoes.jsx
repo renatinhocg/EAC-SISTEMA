@@ -38,8 +38,8 @@ const Reflexoes = () => {
   // Recarrega reflexões ao alterar filtros
   useEffect(() => { loadReflexoes(); }, [loadReflexoes]);
 
-  const handleCreate = () => navigate('/reflexoes/novo');
-  const handleEdit = record => navigate(`/reflexoes/${record.id}/editar`);
+  const handleCreate = () => navigate('/admin/reflexoes/novo');
+  const handleEdit = record => navigate(`/admin/reflexoes/${record.id}/editar`);
   const handleDelete = id => {
     axios.delete(getApiUrl(`reflexoes/${id}`))
       .then(() => { message.success('Reflexão deletada'); loadReflexoes(); })

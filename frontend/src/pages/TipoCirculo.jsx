@@ -19,8 +19,8 @@ const TipoCirculo = () => {
 
   useEffect(() => { fetchData(); }, []);
 
-  const handleCreate = () => navigate('/tipo_circulo/novo');
-  const handleEdit = record => navigate(`/tipo_circulo/${record.id}/editar`);
+  const handleCreate = () => navigate('/admin/tipo_circulo/novo');
+  const handleEdit = record => navigate(`/admin/tipo_circulo/${record.id}/editar`);
   const handleDelete = id => {
     axios.delete(getApiUrl(`tipo_circulo/${id}`))
       .then(() => { message.success('Tipo de círculo deletado'); fetchData(); })

@@ -63,7 +63,7 @@ const ChecklistForm = () => {
         message.success('Checklist criada com sucesso');
       }
       clearTimeout(loadingTimeout);
-      navigate('/checklists');
+  navigate('/admin/checklists');
     } catch (err) {
       clearTimeout(loadingTimeout);
       console.error('[ChecklistForm] Erro ao salvar checklist:', err);
@@ -101,7 +101,7 @@ const ChecklistForm = () => {
           <Button type="primary" htmlType="submit" loading={loading} disabled={loading}>
             {isEdit ? 'Atualizar' : 'Criar'}
           </Button>
-          <Button style={{ marginLeft: 8 }} onClick={() => navigate('/checklists')} disabled={loading}>
+          <Button style={{ marginLeft: 8 }} onClick={() => navigate('/admin/checklists')} disabled={loading}>
             Cancelar
           </Button>
         </Form.Item>

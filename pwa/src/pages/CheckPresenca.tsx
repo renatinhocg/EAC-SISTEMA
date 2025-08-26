@@ -18,27 +18,47 @@ interface Props {
 }
 
 const CheckPresenca: React.FC<Props> = ({ agendaId, equipeId }) => {
+  // ...existing code...
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [loading, setLoading] = useState(false);
   const [presencas, setPresencas] = useState<{ [usuarioId: number]: 'ok' | 'falta' | 'justificada' | undefined }>({});
   const [justificativaModal, setJustificativaModal] = useState<{ open: boolean, usuarioId?: number }>({ open: false });
   const [justificativa, setJustificativa] = useState('');
 
+  // Cálculo da porcentagem de presença após os hooks
+  const total = usuarios.length;
+  const presentes = Object.values(presencas).filter(v => v === 'ok').length;
+  const porcentagem = total > 0 ? Math.round((presentes / total) * 100) : 0;
   useEffect(() => {
     setLoading(true);
     api.get(`/equipes/${equipeId}/usuarios`)
       .then(res => setUsuarios(res.data))
       .catch(() => message.error('Erro ao carregar usuários da equipe'))
       .finally(() => setLoading(false));
+    fetchPresencas();
   }, [equipeId]);
 
+  const fetchPresencas = () => {
+    api.get(`/presencas/evento/${agendaId}/equipe/${equipeId}`)
+      .then(res => {
+        const map: { [usuarioId: number]: 'ok' | 'falta' | 'justificada' | undefined } = {};
+        res.data.forEach((p: any) => {
+          map[p.usuario_id] = p.presente === 1 ? 'ok' : p.presente === 2 ? 'justificada' : 'falta';
+        });
+        setPresencas(map);
+      })
+      .catch(() => setPresencas({}));
+  };
+
   const marcarPresenca = (usuarioId: number, status: 'ok' | 'falta' | 'justificada') => {
-    setPresencas(prev => ({ ...prev, [usuarioId]: status }));
     if (status === 'justificada') {
       setJustificativaModal({ open: true, usuarioId });
     } else {
       api.post(`/presencas/evento/${agendaId}/equipe/${equipeId}/usuario/${usuarioId}`, { status })
-        .then(() => message.success('Presença atualizada!'))
+        .then(() => {
+          message.success('Presença atualizada!');
+          fetchPresencas();
+        })
         .catch(() => message.error('Erro ao salvar presença.'));
     }
   };
@@ -46,7 +66,10 @@ const CheckPresenca: React.FC<Props> = ({ agendaId, equipeId }) => {
   const handleJustificativaOk = () => {
     if (justificativaModal.usuarioId) {
       api.post(`/presencas/evento/${agendaId}/equipe/${equipeId}/usuario/${justificativaModal.usuarioId}`, { status: 'justificada', justificativa })
-        .then(() => message.success('Justificativa salva!'))
+        .then(() => {
+          message.success('Justificativa salva!');
+          fetchPresencas();
+        })
         .catch(() => message.error('Erro ao salvar justificativa.'));
     }
     setJustificativaModal({ open: false });
@@ -64,9 +87,12 @@ const CheckPresenca: React.FC<Props> = ({ agendaId, equipeId }) => {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '32px 0' }}>
       <div style={{ width: '100%', maxWidth: 520 }}>
         <Title level={2} style={{ marginBottom: 0, textAlign: 'left' }}>Presença</Title>
-        <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 24, textAlign: 'left' }}>
+        <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 8, textAlign: 'left' }}>
           Marque a presença dos membros da equipe
         </Typography.Text>
+        <div style={{ marginBottom: 16 }}>
+          <strong>Presença: {porcentagem}%</strong>
+        </div>
         <Card bodyStyle={{ background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #0001', padding: 24 }}>
           {loading ? <Spin /> : (
             <>

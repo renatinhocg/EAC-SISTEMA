@@ -1,23 +1,25 @@
 // Função para pedir permissão e registrar push notification
-export async function subscribeUserToPush() {
+// Função para pedir permissão e registrar push notification, integrando com backend
+export async function subscribeUserToPush(usuario_id, equipe_id) {
   if ('serviceWorker' in navigator && 'PushManager' in window) {
     const registration = await navigator.serviceWorker.ready;
     let subscription = await registration.pushManager.getSubscription();
     if (!subscription) {
-      // Chave pública VAPID (substitua pela sua depois)
-      const vapidPublicKey = 'BNu...SUA_CHAVE_AQUI...';
-      const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
+      // Busca VAPID public key do backend
+      const res = await fetch('/api/push/vapid-public-key');
+      const { publicKey } = await res.json();
+      const convertedVapidKey = urlBase64ToUint8Array(publicKey);
       subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: convertedVapidKey
       });
-      // Envie subscription para o backend
-      await fetch('/api/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(subscription)
-      });
     }
+    // Sempre envia subscription para o backend, mesmo que já exista localmente
+    await fetch('/api/push/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subscription, usuario_id, equipe_id })
+    });
     return subscription;
   } else {
     throw new Error('Push notification não suportada');

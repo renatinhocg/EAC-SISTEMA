@@ -1,0 +1,9 @@
+RewriteEngine On
+# Proxy todas as requisições /api para o backend Railway
+RewriteCond %{REQUEST_URI} ^/api/
+RewriteRule ^api/(.*)$ https://eac-backend-production.up.railway.app/api/$1 [P,L]
+
+# SPA fallback para index.html
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.html [L]

@@ -33,20 +33,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const storedUser = localStorage.getItem('user')
     if (storedToken && storedUser) {
       setToken(storedToken)
-      setUser(JSON.parse(storedUser))
+      try {
+        const parsedUser = JSON.parse(storedUser)
+        console.log('[AuthContext] Usuário lido do localStorage:', parsedUser)
+        setUser(parsedUser)
+      } catch {
+        setUser(null)
+      }
       api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`
     }
     setLoading(false)
   }, [])
 
   const login = async (username: string, senha: string) => {
-    const response = await api.post('/usuarios/login', { username, senha })
-    const { token: newToken, user: newUser } = response.data
-    setToken(newToken)
-    setUser(newUser)
-    localStorage.setItem('token', newToken)
-    localStorage.setItem('user', JSON.stringify(newUser))
-    api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`
+  const response = await api.post('/usuarios/login', { username, senha })
+  const { token: newToken, user: newUser } = response.data
+  setToken(newToken)
+  setUser(newUser)
+  localStorage.setItem('token', newToken)
+  localStorage.setItem('user', JSON.stringify(newUser))
+  api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`
   }
 
   const logout = () => {

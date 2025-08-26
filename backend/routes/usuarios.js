@@ -1,3 +1,4 @@
+
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
@@ -5,6 +6,18 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const multer = require('multer');
 const path = require('path');
+
+// Listar todos os usuários (inclusive sem foto)
+router.get('/todos', (req, res) => {
+  const sql = `SELECT id, nome, email, foto FROM usuario ORDER BY id`;
+  db.query(sql, (err, result) => {
+    if (err) {
+      console.error('Erro ao buscar todos os usuários:', err);
+      return res.status(500).json({ error: 'Erro ao buscar todos os usuários' });
+    }
+    res.json(result);
+  });
+});
 
 // Configurar multer para upload de fotos
 const storage = multer.diskStorage({
@@ -39,6 +52,26 @@ const upload = multer({
 });
 
 // Listar todos os usuários com nome da equipe
+// Listar usuários que possuem foto cadastrada
+router.get('/com-foto', (req, res) => {
+  const sql = `SELECT id, nome, email, foto FROM usuario WHERE foto IS NOT NULL AND foto != '' AND foto != 'null' AND foto != 'undefined'`;
+  db.query(sql, (err, result) => {
+    if (err) {
+      console.error('Erro ao buscar usuários com foto:', err);
+      return res.status(500).json({ error: 'Erro ao buscar usuários com foto' });
+    }
+    // Garante que só retorna o nome do arquivo, nunca URL completa
+    const usuarios = result.map(u => ({
+      id: u.id,
+      nome: u.nome,
+      email: u.email,
+      foto: (u.foto && !u.foto.startsWith('http')) ? u.foto : ''
+    }));
+    res.json(usuarios);
+  });
+});
+
+// Listar todos os usuários com nome da equipe
 router.get('/', (req, res) => {
   console.log('📋 GET /usuarios - Listando usuários...');
   const sql = `
@@ -53,10 +86,8 @@ router.get('/', (req, res) => {
       return res.status(500).json({ error: err });
     }
     console.log('✅ Resultado RAW do PostgreSQL:', results.length, 'usuários encontrados');
-    
     // Fix: usar diretamente o results, pois nossa conexão customizada retorna o array direto
     const usuarios = results;
-    
     res.json(usuarios);
   });
 });
@@ -202,45 +233,54 @@ router.post('/', upload.single('foto'), (req, res) => {
 
 // Login de usuário
 router.post('/login', (req, res) => {
-  const { username, senha } = req.body;
+  let { username, senha } = req.body;
+  console.log('--- LOGIN REQUEST ---');
+  console.log('Body recebido:', req.body);
   if (!username || !senha) {
     return res.status(400).json({ error: 'Usuário e senha são obrigatórios' });
   }
-  db.query(
-    `SELECT u.*, e.id as e_id, e.nome as equipe_nome 
-     FROM usuario u 
-     LEFT JOIN equipe e ON u.equipe_id = e.id 
-     WHERE u.username = $1`,
-    [username],
-    async (err, results) => {
-      if (err) return res.status(500).json({ error: err });
-      if (results.length === 0) return res.status(401).json({ error: 'Usuário não encontrado' });
-      
-      const user = results[0];
-      
-      console.log('🔍 Dados do usuário no login - RAW:', JSON.stringify(user, null, 2));
-      console.log('🔍 Tipo usuario específico:', user.tipo_usuario);
-      console.log('🔍 Equipe específica:', user.equipe_nome, user.e_id);
-      
-      // Verificar senha com bcrypt
-      try {
-        const isValidPassword = await bcrypt.compare(senha, user.senha);
-        if (!isValidPassword) {
-          return res.status(401).json({ error: 'Senha incorreta' });
+    // Força username para minúsculo para login insensível a caixa
+    username = username.trim().toLowerCase();
+    db.query(
+      `SELECT u.*, e.id as e_id, e.nome as equipe_nome 
+       FROM usuario u 
+       LEFT JOIN equipe e ON u.equipe_id = e.id 
+       WHERE LOWER(u.username) = $1`,
+      [username],
+      async (err, results) => {
+        if (err) {
+          console.log('Erro SQL:', err);
+          return res.status(500).json({ error: err });
         }
-      } catch (error) {
-        return res.status(500).json({ error: 'Erro ao verificar senha' });
-      }
-      
-      const token = jwt.sign(
-        { id: user.id, email: user.email, nome: user.nome, tipo_usuario: user.tipo_usuario },
-        process.env.JWT_SECRET || 'secret-key',
-        { expiresIn: '24h' }
-      );
-      
-      res.json({
-        token,
-        user: {
+        if (results.length === 0) {
+          console.log('Usuário não encontrado:', username);
+          return res.status(401).json({ error: 'Usuário não encontrado' });
+        }
+
+        const user = results[0];
+        console.log('🔍 Dados do usuário no login - RAW:', JSON.stringify(user, null, 2));
+        console.log('🔍 Tipo usuario específico:', user.tipo_usuario);
+        console.log('🔍 Equipe específica:', user.equipe_nome, user.e_id);
+
+        // Verificar senha com bcrypt
+        try {
+          const isValidPassword = await bcrypt.compare(senha, user.senha);
+          if (!isValidPassword) {
+            console.log('Senha incorreta para usuário:', username);
+            return res.status(401).json({ error: 'Senha incorreta' });
+          }
+        } catch (error) {
+          console.log('Erro ao verificar senha:', error);
+          return res.status(500).json({ error: 'Erro ao verificar senha' });
+        }
+
+        const token = jwt.sign(
+          { id: user.id, email: user.email, nome: user.nome, tipo_usuario: user.tipo_usuario },
+          process.env.JWT_SECRET || 'secret-key',
+          { expiresIn: '45d' }
+        );
+
+        const responseUser = {
           id: user.id,
           nome: user.nome,
           email: user.email,
@@ -250,10 +290,16 @@ router.post('/login', (req, res) => {
             id: user.e_id,
             nome: user.equipe_nome
           } : null
-        }
-      });
-    }
-  );
+        };
+        console.log('--- LOGIN RESPONSE ---');
+        console.log('Token:', token);
+        console.log('User enviado:', JSON.stringify(responseUser, null, 2));
+        res.json({
+          token,
+          user: responseUser
+        });
+      }
+    );
 });
 
 // Editar usuário (genérico)
@@ -278,51 +324,30 @@ router.put('/:id', (req, res) => {
 });
 
 // Upload de foto do usuário
+// Upload de foto para usuário existente
 router.post('/:id/foto', upload.single('foto'), (req, res) => {
-  console.log(`📷 POST /usuarios/${req.params.id}/foto - Upload de foto`);
-  console.log('📷 Arquivo recebido:', req.file);
-  
-  if (!req.file) {
-    return res.status(400).json({ error: 'Nenhum arquivo foi enviado' });
-  }
-  
-  const fotoPath = req.file.filename;
   const userId = req.params.id;
-  
-  // Copiar arquivo para a pasta da PWA
-  const fs = require('fs');
-  const sourcePath = req.file.path;
-  const pwaDir = path.join(__dirname, '../../pwa/public/uploads/usuarios/');
-  const destPath = path.join(pwaDir, fotoPath);
-  
-  // Criar pasta se não existir
-  if (!fs.existsSync(pwaDir)) {
-    fs.mkdirSync(pwaDir, { recursive: true });
+  if (!req.file) {
+    return res.status(400).json({ error: 'Nenhum arquivo enviado.' });
   }
-  
-  // Copiar arquivo
-  fs.copyFileSync(sourcePath, destPath);
-  console.log(`📷 Arquivo copiado para PWA: ${destPath}`);
-  
-  console.log(`📷 Atualizando usuário ${userId} com foto: ${fotoPath}`);
-  
-  db.query(
-    'UPDATE usuario SET foto = $1 WHERE id = $2',
-    [fotoPath, userId],
-    (err, result) => {
-      if (err) {
-        console.error('❌ Erro ao atualizar foto do usuário:', err);
-        return res.status(500).json({ error: err });
-      }
-      
-      console.log('✅ Foto atualizada com sucesso');
-      res.json({ 
-        success: true, 
-        caminho: `/uploads/usuarios/${fotoPath}`,
-        filename: fotoPath 
-      });
+  const fotoPath = req.file.filename;
+  // Atualiza o campo foto do usuário
+  db.query('UPDATE usuario SET foto = $1 WHERE id = $2', [fotoPath, userId], (err, result) => {
+    if (err) {
+      return res.status(500).json({ error: err });
     }
-  );
+    // Copiar arquivo para a pasta da PWA
+    const fs = require('fs');
+    const path = require('path');
+    const sourcePath = req.file.path;
+    const pwaDir = path.join(__dirname, '../../pwa/public/uploads/usuarios/');
+    const destPath = path.join(pwaDir, fotoPath);
+    if (!fs.existsSync(pwaDir)) {
+      fs.mkdirSync(pwaDir, { recursive: true });
+    }
+    fs.copyFileSync(sourcePath, destPath);
+    res.json({ success: true, foto: fotoPath });
+  });
 });
 
 // Servir fotos dos usuários

@@ -1,4 +1,5 @@
 import React from 'react';
+import logoSplash from '../assets/img/logo-splash.png';
 
 const SplashScreen: React.FC = () => {
   return (
@@ -11,12 +12,11 @@ const SplashScreen: React.FC = () => {
       background: '#141B34', // Cor de fundo igual ao tema do app
     }}>
       <img 
-        src="/logo-splash.png" 
+        src={logoSplash} 
         alt="Logo EAC" 
         style={{ 
           maxWidth: 387, 
           marginBottom: 24,
-   
         }} 
       />
       <div style={{

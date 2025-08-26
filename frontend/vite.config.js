@@ -5,7 +5,7 @@ import { fileURLToPath, URL } from 'node:url'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/',
+  base: '/admin/',
   build: {
     outDir: 'dist/admin',
     emptyOutDir: true
@@ -37,4 +37,14 @@ export default defineConfig({
       }
     })
   ],
-})
+  // base: '/admin/',
+    server: {
+      proxy: {
+        '/api': {
+          target: 'http://localhost:3001',
+          changeOrigin: true,
+          secure: false,
+        },
+      },
+    },
+});

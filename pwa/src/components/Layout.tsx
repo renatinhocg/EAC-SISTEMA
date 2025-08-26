@@ -7,7 +7,7 @@ const Layout: React.FC = () => {
   const location = useLocation();
   
   // Rotas onde o menu flutuante deve ser ocultado
-  const hideMenuRoutes = ['/presenca-detalhe', '/reflexoes/'];
+  const hideMenuRoutes = ['/presenca-detalhe', '/reflexoes/', '/camisa'];
   const shouldHideMenu = hideMenuRoutes.some(route => 
     location.pathname.startsWith(route)
   );

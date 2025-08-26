@@ -1,3 +1,5 @@
+import bannerCamisa from '../assets/img/bannerv2.png';
+// import bannerHamburguer from '../assets/img/banner-hamburguer.png'; // caso tenha um banner específico
 import React, { useContext, useEffect, useState } from 'react';
 import { Avatar } from 'antd';
 import { useNavigate } from 'react-router-dom';
@@ -36,32 +38,36 @@ const Home: React.FC = () => {
           
           // Carregar membros da equipe
           const membersResponse = await api.get(`/equipes/${user.equipe.id}/membros`);
-          console.log('✅ Membros carregados:', membersResponse.data);
-          console.log('✅ Quantidade de membros:', membersResponse.data?.length || 0);
-          setTeamMembers(membersResponse.data || []);
-          
-          // Carregar detalhes da equipe
-          const teamResponse = await api.get(`/equipes/${user.equipe.id}`);
-          console.log('✅ Detalhes da equipe carregados:', teamResponse.data);
-          setTeamDetails(teamResponse.data || null);
-          
-        } catch (error: any) {
-          console.error('❌ Erro ao carregar dados da equipe:', error);
-          console.error('❌ Detalhes do erro:', error.response?.data || error.message);
-          setTeamMembers([]);
-          setTeamDetails(null);
+            setTeamMembers(membersResponse.data || []);
+            // Carregar detalhes da equipe
+            const teamResponse = await api.get(`/equipes/${user.equipe.id}`);
+            setTeamDetails(teamResponse.data || null);
+          } catch (error) {
+            console.error('❌ Erro ao carregar dados da equipe:', error);
+            setTeamMembers([]);
+            setTeamDetails(null);
+          }
+        } else {
+          console.warn('⚠️ Usuário não tem equipe configurada:', user);
         }
-      } else {
-        console.warn('⚠️ Usuário não tem equipe configurada:', user);
-      }
-    };
+      };
     loadTeamData();
   }, [user]);
 
   // Debug do usuário
   useEffect(() => {
-    console.log('👤 Dados do usuário logado:', user);
-    console.log('📷 Foto do usuário:', user?.foto);
+    if (user) {
+      console.group('🐞 Debug Usuário Logado');
+      console.log('Objeto completo do usuário:', user);
+      console.log('ID:', user.id);
+      console.log('Nome:', user.nome);
+      console.log('Tipo de usuário:', user.tipo_usuario);
+      console.log('Equipe:', user.equipe);
+      console.log('Foto:', user.foto);
+      console.groupEnd();
+    } else {
+      console.warn('⚠️ Nenhum usuário logado');
+    }
   }, [user]);
 
   if (!user) {
@@ -169,17 +175,22 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-      {/* Banner amarelo com imagem */}
-      <div style={{
-        padding: '0',
-        marginBottom: '20px',
-        position: 'relative',
-        overflow: 'hidden',
-        height: '140px'
-      }}>
-        <img 
-          src="../public/banner-camisa.png"
-          alt="Banner da equipe"
+      {/* Banner amarelo com imagem - agora clicável */}
+      <div
+        style={{
+          padding: '0',
+          marginBottom: '20px',
+          position: 'relative',
+          overflow: 'hidden',
+          height: '140px',
+          cursor: 'pointer'
+        }}
+  onClick={() => navigate('/camisa')}
+  title="Ir para página da camisa"
+      >
+        <img
+          src={bannerCamisa}
+          alt="Banner da camisa"
           style={{
             width: '100%',
             height: '100%',
@@ -296,39 +307,22 @@ const Home: React.FC = () => {
         gap: '12px',
         marginBottom: '20px'
       }}>
-        {/* Card Pós-montagem */}
-        <div 
-          style={{ 
-            background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-            borderRadius: '16px',
-            padding: '20px',
-            cursor: 'pointer',
-            boxShadow: '0 4px 20px rgba(239, 68, 68, 0.3)',
-            gridColumn: '1 / -1'
-          }}
         
-        >
-          <div style={{ fontSize: '20px', fontWeight: '700', marginBottom: '8px' }}>
-            Pós-montagem
-          </div>
-          <div style={{ fontSize: '16px', fontWeight: '600', marginBottom: '2px' }}>
-            17.08.2025
-          </div>
-          <div style={{ fontSize: '16px', fontWeight: '600' }}>
-            17h
-          </div>
-        </div>
 
         {/* Card Hambúrguer */}
-        <div style={{
-          background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)',
-          borderRadius: '16px',
-          padding: '16px',
-          cursor: 'pointer',
-          color: '#1a202c',
-          position: 'relative',
-          overflow: 'hidden'
-        }}>
+        <div
+          style={{
+            background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)',
+            borderRadius: '16px',
+            padding: '16px',
+            cursor: 'pointer',
+            color: '#1a202c',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+          onClick={() => navigate('/hamburguer')}
+          title="Ir para página do hambúrguer"
+        >
           <div style={{ 
             fontSize: '12px', 
             fontWeight: '600', 
@@ -403,6 +397,28 @@ const Home: React.FC = () => {
             fontSize: '24px'
           }}>
             💳
+          </div>
+        </div>
+        {/* Card Pós-montagem */}
+        <div 
+          style={{ 
+            background: 'linear-gradient(135deg, #FDC608 0%, #dc2626 100%)',
+            borderRadius: '16px',
+            padding: '20px',
+            cursor: 'pointer',
+            boxShadow: '0 4px 20px rgba(239, 68, 68, 0.3)',
+            gridColumn: '1 / -1'
+          }}
+        
+        >
+          <div style={{ fontSize: '20px', fontWeight: '700', marginBottom: '8px' }}>
+            2ª Preparatória
+          </div>
+          <div style={{ fontSize: '16px', fontWeight: '600', marginBottom: '2px' }}>
+            31.08.2025
+          </div>
+          <div style={{ fontSize: '16px', fontWeight: '600' }}>
+            17:00
           </div>
         </div>
       </div>
