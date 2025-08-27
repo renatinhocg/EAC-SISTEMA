@@ -1,6 +1,8 @@
 import React from 'react'
 import Camisa from './pages/Camisa';
+import CriancaPage from './pages/CriancaPage';
 import Hamburguer from './pages/Hamburguer';
+import AdminCriancaPage from './pages/AdminCriancaPage';
 import { Routes, Route } from 'react-router-dom'
 import Login from './pages/Login'
 import Layout from './components/Layout'
@@ -62,9 +64,12 @@ function App() {
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/presenca-equipe" element={<PresencaEquipe />} />
           <Route path="/camisa" element={<Camisa />} />
-            <Route path="/hamburguer" element={<Hamburguer />} />
+          <Route path="/hamburguer" element={<Hamburguer />} />
+          <Route path="/admin/crianca" element={<RequireAuth><Layout /><AdminCriancaPage /></RequireAuth>} />
         </Route>
-      </Routes>
+  {/* Página de crianças sem Layout/footer */}
+  <Route path="/crianca" element={<CriancaPage />} />
+  </Routes>
     </>
   )
 }

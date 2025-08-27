@@ -76,7 +76,7 @@ const Login = ({ onLogin }) => {
         
         {/* Força atualização do Service Worker e cache ao carregar a tela de login */}
         <ForceSWUpdate />
-        versão 1.0.7
+        versão 1.0.8
       </div>
       
     </div>

@@ -1,4 +1,4 @@
-// Versão do SW: 2025-08-23 - 1.17
+// Versão do SW: 2025-08-23 - 1.18
 
 // Service Worker básico para PWA
 self.addEventListener('install', event => {

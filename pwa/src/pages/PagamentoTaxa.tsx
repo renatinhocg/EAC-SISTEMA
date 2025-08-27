@@ -314,7 +314,7 @@ const PagamentoTaxa: React.FC = () => {
             Enviar Comprovante
           </h3>
           
-          <Upload {...uploadProps} style={{ marginBottom: '16px' }}>
+          <Upload {...uploadProps} style={{ marginBottom: '16px' }} disabled={pagamentoInfo?.status === 'aguardando_aprovacao' || pagamentoInfo?.status === 'aguardando aprovação'}>
             <Button 
               icon={<UploadOutlined />}
               style={{ 
@@ -324,9 +324,9 @@ const PagamentoTaxa: React.FC = () => {
                 fontSize: '16px',
                 fontWeight: '500'
               }}
-              disabled={pagamentoInfo?.status === 'aguardando_aprovacao'}
+              disabled={pagamentoInfo?.status === 'aguardando_aprovacao' || pagamentoInfo?.status === 'aguardando aprovação'}
             >
-              {pagamentoInfo?.status === 'aguardando_aprovacao' 
+              {(pagamentoInfo?.status === 'aguardando_aprovacao' || pagamentoInfo?.status === 'aguardando aprovação')
                 ? 'Comprovante já enviado' 
                 : 'Selecionar Comprovante'
               }
@@ -341,7 +341,7 @@ const PagamentoTaxa: React.FC = () => {
             />
           )}
 
-          {fileList.length > 0 && pagamentoInfo?.status !== 'aguardando_aprovacao' && (
+          {fileList.length > 0 && !(pagamentoInfo?.status === 'aguardando_aprovacao' || pagamentoInfo?.status === 'aguardando aprovação') && (
             <Button
               type="primary"
               onClick={handleUpload}
@@ -355,6 +355,7 @@ const PagamentoTaxa: React.FC = () => {
                 background: '#22c55e',
                 borderColor: '#22c55e'
               }}
+              disabled={pagamentoInfo?.status === 'aguardando_aprovacao' || pagamentoInfo?.status === 'aguardando aprovação'}
             >
               {loading ? 'Enviando...' : 'Enviar Comprovante'}
             </Button>

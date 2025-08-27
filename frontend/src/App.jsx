@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import CriancaAdmin from './pages/CriancaAdmin';
 import Camisa from './pages/Camisa';
 import CamisaPedido from './pages/CamisaPedido';
 import AdminHamburguer from './pages/AdminHamburguer';
@@ -93,6 +94,7 @@ function App() {
             <Route path="pagamentos" element={<Pagamentos />} />
             <Route path="camisa" element={<Camisa />} />
             <Route path="hamburguer" element={<AdminHamburguer />} />
+            <Route path="crianca" element={<CriancaAdmin />} />
             <Route path="agendas/:agendaId/presenca" element={<AgendaPresencaEquipes />} />
             <Route path="agendas/:agendaId/presenca/equipe/:equipeId" element={<AgendaEquipePresenca />} />
             <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />

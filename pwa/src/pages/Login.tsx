@@ -194,7 +194,7 @@ const Login: React.FC = () => {
           </Form.Item>
         </Form>
     {/* Removido botão de atualizar versão do PWA */}
-        versão 1.0.1
+        versão 1.0.2
       </div>
     </div>
   );

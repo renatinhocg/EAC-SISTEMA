@@ -44,7 +44,8 @@ const AdminLayout = ({ user, onLogout }) => {
     { key: 'camisa', icon: <FileTextOutlined />, label: <Link to="/admin/camisa">Camisa</Link> },
     { key: 'notificacoes', icon: <NotificationOutlined />, label: <Link to="/admin/notificacoes">Notificações</Link> },
     { key: 'push', icon: <NotificationOutlined />, label: <Link to="/admin/push">Push</Link> },
-    { key: 'admin_hamburguer', icon: <FileTextOutlined />, label: <Link to="/admin/hamburguer">Hambúrguer</Link> },
+  { key: 'admin_hamburguer', icon: <FileTextOutlined />, label: <Link to="/admin/hamburguer">Hambúrguer</Link> },
+  { key: 'crianca', icon: <TeamOutlined />, label: <Link to="/admin/crianca">Crianças</Link> },
   { key: 'fotos', icon: <UserOutlined />, label: <Link to="/admin/fotos">Fotos</Link> },
   ];
 

@@ -16,7 +16,7 @@ const allIcons: { path: string; icon: React.ReactNode; key: string }[] = [
   { path: '/checklist', icon: <CheckSquare />, key: 'checklist' },
   { path: '/presenca', icon: <Users />, key: 'presenca' },
   { path: '/reflexoes', icon: <FileText />, key: 'reflexoes' },
-  { path: '/calendario', icon: <Calendar />, key: 'calendario' }
+  { path: '/calendario', icon: <Calendar />, key: 'calendario' },
 ]
 
 const BottomMenu: React.FC = () => {
@@ -27,7 +27,10 @@ const BottomMenu: React.FC = () => {
   // Segmentação para integrantes
   let icons = allIcons
   if (user?.tipo_usuario?.toLowerCase() === 'integrante') {
-    icons = allIcons.filter(item => !['sobre', 'checklist', 'presenca'].includes(item.key))
+    icons = allIcons.filter(item => !['sobre', 'checklist', 'presenca', 'adminCrianca'].includes(item.key))
+  }
+  if (user?.tipo_usuario?.toLowerCase() !== 'admin') {
+    icons = icons.filter(item => item.key !== 'adminCrianca');
   }
 
   return (

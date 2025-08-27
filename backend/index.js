@@ -52,6 +52,7 @@ const pagamentosRouter = require('./routes/pagamentos');
 
 const pedidoCamisaRouter = require('./routes/pedido_camisa');
 const camisasRouter = require('./routes/camisas');
+const criancaRouter = require('./routes/crianca');
 
 // ROTAS DE API - CONFIGURAR ANTES DE QUALQUER MIDDLEWARE
 app.use('/api/usuarios', usuariosRouter);
@@ -72,6 +73,7 @@ const hamburguerRouter = require('./routes/hamburguer');
 app.use('/api/hamburguer', hamburguerRouter);
 const adminHamburguerRouter = require('./routes/admin_hamburguer');
 app.use('/api/admin/hamburguer', adminHamburguerRouter);
+app.use('/api/crianca', criancaRouter);
 
 // GET /api/pagamentos/usuarios - Listar usuários com status de pagamento (incluindo equipe)
 app.get('/api/pagamentos/usuarios', async (req, res) => {
